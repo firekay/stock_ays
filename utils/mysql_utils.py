@@ -1,7 +1,10 @@
+# encoding: UTF-8
+
 import sys
 sys.path.append('..')
 from configparser import ConfigParser
-from models import *
+from peewee import *
+
 
 def __get_db(threadlocals=True, autocommit=True, 
                       fields=None, ops=None, 
@@ -28,13 +31,27 @@ def close():
     database.close()
     
     
+# def conn(fn):
+#     """执行前连接数据库，执行后断开连接"""
+#     def inner(*args,**kargs):
+#         connect()
+#         try:
+#             return fn(*args,**kargs)
+#         finally:
+#             close()
+#     return inner
+
 def conn(fn):
-    """执行前连接数据库，执行后注销"""
-    def inner(fn):
+    """执行前连接数据库，执行后断开连接"""
+    def inner(*args,**kargs):
         connect()
-        fn()
-        close()
-    return inner(fn)
+        try:
+            return fn(*args,**kargs)
+        finally:
+            if not database.is_closed():
+                close()
+    return inner
+
 
 
 
