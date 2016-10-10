@@ -4,10 +4,10 @@ from dateutil.relativedelta import *
 from dateutil.easter import *
 from dateutil.rrule import *
 from dateutil.parser import *
-import datetime
+from datetime import datetime
 
 def get_today():
-    return datetime.date.today()
+    return datetime.now().strftime('%Y%m%d')
 
 
 if __name__ == '__main__':

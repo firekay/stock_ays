@@ -14,12 +14,10 @@ def __get_db(threadlocals=True, autocommit=True,
     config.read('resources/mysql.cfg')
     host = config.get('mysqld', 'host')
     port = config.get('mysqld', 'port')
-    database = config.get('mysqld', 'database')
+    db = config.get('mysqld', 'database')
     user = config.get('mysqld', 'user')
     passwd = config.get('mysqld', 'passwd')
-    print(host + port)
-    print(user + passwd)
-    return MySQLDatabase(database, host='localhost', user=user, passwd=passwd)    
+    return MySQLDatabase(db, host='localhost', user=user, passwd=passwd)    
 
 database = __get_db()
 

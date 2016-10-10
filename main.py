@@ -4,6 +4,7 @@ import tushare as ts
 from peewee import *
 from data import stock_classified as sc
 from macro_data import macroscopic_data as md
+from data import base_data as bd
 
 
 def stock_classified():
@@ -64,12 +65,21 @@ def macro_data():
     rrr.create_table()
     rrr.save_data(date='2010-11-29')
 
+    
+def base_data():
+    '''基本面数据'''
+    print('begin base data')
+    #stock_basic = bd.StockBasic() 
+    bd.StockBasic.create_tbl()
+    #print('created table')
+    bd.StockBasic.save_data()
+    print('end')
 
 def main():
-    macro_data()
+    #macro_data()
+    base_data()
 
 
 if __name__ == '__main__':
     main()
-    
     
