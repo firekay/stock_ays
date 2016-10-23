@@ -4,7 +4,15 @@ import sys
 sys.path.append('..')
 from configparser import ConfigParser
 from peewee import *
+from playhouse.pool import PooledMySQLDatabase
 
+config = ConfigParser()
+config.read('resources/mysql.cfg')
+__host = config.get('mysqld', 'host')
+__port = config.get('mysqld', 'port')
+__db = config.get('mysqld', 'database')
+__user = config.get('mysqld', 'user')
+__passwd = config.get('mysqld', 'passwd')
 
 def __get_db(threadlocals=True, autocommit=True, 
                       fields=None, ops=None, 
@@ -19,14 +27,24 @@ def __get_db(threadlocals=True, autocommit=True,
     passwd = config.get('mysqld', 'passwd')
     return MySQLDatabase(db, host='localhost', user=user, passwd=passwd)    
 
-database = __get_db()
+def __get_pooled_db():
+
+    return PooledMySQLDatabase(database=__db, max_connections=128, 
+                               stale_timeout=120, host=__host, port=int(__port),
+                               user=__user, passwd=__passwd)
+
+
+database = __get_pooled_db()
+
+# def connect():
+#     database.connect()
 
 def connect():
-    database.connect()
+    database._connect(database=__db, host=__host, port=int(__port),
+                               user=__user, passwd=__passwd)
 
-
-def close():
-    database.close()
+def close(conn):
+    database._close(conn)
     
     
 # def conn(fn):
@@ -42,12 +60,11 @@ def close():
 def conn(fn):
     """执行前连接数据库，执行后断开连接"""
     def inner(*args,**kargs):
-        connect()
+        conn = connect()
         try:
             return fn(*args,**kargs)
         finally:
-            if not database.is_closed():
-                close()
+            close(conn)
     return inner
 
 

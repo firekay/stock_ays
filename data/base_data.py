@@ -11,7 +11,7 @@ today = str(get_today())
 class BaseModel(Model):
     class Meta:
         database = database        
-
+        
 
 class StockBasic(BaseModel):
     """概念分类"""

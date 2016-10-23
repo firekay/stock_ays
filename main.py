@@ -4,8 +4,26 @@ import tushare as ts
 from peewee import *
 from data import stock_classified as sc
 from macro_data import macroscopic_data as md
+import logging
+import logging.config
 from data import base_data as bd
+from models import model
+from service import data_service as dser
+from service import business_service as bser
+from utils import util
 
+
+today = util.get_today()
+today_line = util.get_today_line()
+
+yestoday = util.get_yestoday()
+yestoday_line = util.get_yestoday_line()
+before_yestd_line = util.get_before_yestd_line()
+
+tomorrow = util.get_tomorrow()
+tomorrow_line = util.get_tomorrow_line()
+logging.config.fileConfig("logging.conf")
+logger = logging.getLogger()
 
 def stock_classified():
     print('begin')
@@ -75,9 +93,39 @@ def base_data():
     bd.StockBasic.save_data()
     print('end')
 
+
+def save_data():
+    """下载并保持交易数据"""
+    
+    # logger.info('Begin save all stocks history data')
+    # bser.save_all_stocks_his_data()
+    # logger.info('End save all stocks history data')
+    # print('End save all stocks history data')
+
+    print('Begin save today all stocks history data')
+    logger.info('Begin save today all stocks history data')
+    # bser.save_today_all_stocks_his_data()
+    bser.save_all_stocks_his_data(start=before_yestd_line, end=yestoday_line)
+    logger.info('End save today all stocks history data')
+    print('End save today all stocks history data')
+ 
+    # logger.info('Begin save today all data')
+    # bser.save_today_all_data()
+    # logger.info('End save today all data')
+    # print('End save today all data')
+
+    # logger.info('Begin save tick data')
+    # bser.save_tick_data()
+    # logger.info('End save tick data')
+    # print('End save tick data')
+
 def main():
     #macro_data()
-    base_data()
+    #base_data()
+    #model.create_tables()
+    #dser.get_stocks()
+    # dser.save_his_data_scd('600848',start = '2016-10-13', end = '2016-10-14')
+    save_data()
 
 
 if __name__ == '__main__':
