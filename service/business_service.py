@@ -4,13 +4,14 @@ import logging.config
 from utils import util
 import threading
 import time
+from models.model import *
+
 
 today = util.get_today()
 today_line = util.get_today_line()
 
 yestoday = util.get_yestoday()
 yestoday_line = util.get_yestoday_line()
-before_yestd_line = util.get_before_yestd_line()
 
 tomorrow = util.get_tomorrow()
 tomorrow_line = util.get_tomorrow_line()
@@ -21,6 +22,9 @@ logger = logging.getLogger()
 def save_all_stocks_his_data(start=None, end=None):
     """下载并保持所有的股票的数据：D, W, M, 5, 15, 30, 60"""
     
+    
+    threading.Thread(name='save_his_data', target=dsvc.save_his_data).start()
+    threading.Thread(name='save_his_data_scd', target=dsvc.save_his_data_scd).start()
     stocks = dsvc.get_stocks()
     i = 0
     for stock in stocks:
@@ -28,8 +32,9 @@ def save_all_stocks_his_data(start=None, end=None):
         #if i == 160:
             #time.sleep(10)
             #i = 0
-        threading.Thread(name='save_his_data_' + str(i), target=dsvc.save_his_data, args=(stock.code, start, end)).start()
-        threading.Thread(name='save_his_data_scd_' + str(i), target=dsvc.save_his_data_scd, args=(stock.code, start, end)).start()
+        threading.Thread(name='get_his_data_' + str(i), target=dsvc.get_his_data, args=(stock.code, start, end)).start()
+        threading.Thread(name='get_his_data_scd_' + str(i), target=dsvc.get_his_data_scd, args=(stock.code, start, end)).start()
+        time.sleep(0.5)
         #dsvc.save_his_data(stock.code,start=start, end=end, ktype='D')
         #dsvc.save_his_data(stock.code,start=start, end=end)
         #dsvc.save_his_data_scd(stock.code,start=start, end=end)
@@ -39,6 +44,7 @@ def save_today_all_stocks_his_data():
     """下载并保存当天数据"""
     save_all_stocks_his_data(today_line, tomorrow_line)
 
+    
     
     
 def save_today_all_data():
@@ -95,3 +101,17 @@ def save_one_years_big_trade_data():
 def save_today_big_trade_data():
     """获取当天大盘指数实时行情列表。"""
     __save_big_trade_data(today_line)
+
+
+def save_industry_classified():
+    """处理行业分类"""
+    print('save_industry_classified')
+    dsvc.truncate_table(IndustryClassified)
+    dsvc.save_industry_classified()
+
+
+def save_concept_classified():
+    """处理股票概念分类.现实的二级市场交易中，经常会以”概念”来炒作，在数据分析过程中，可根据概念分类监测资金等信息的变动情况。"""
+    dsvc.truncate_table(ConceptClassified)
+    dsvc.save_concept_classified()
+    

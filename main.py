@@ -18,7 +18,6 @@ today_line = util.get_today_line()
 
 yestoday = util.get_yestoday()
 yestoday_line = util.get_yestoday_line()
-before_yestd_line = util.get_before_yestd_line()
 
 tomorrow = util.get_tomorrow()
 tomorrow_line = util.get_tomorrow_line()
@@ -27,6 +26,9 @@ logger = logging.getLogger()
 
 def stock_classified():
     print('begin')
+    #bser.save_industry_classified()
+    bser.save_concept_classified()
+    
     #sme = sc.SmeClassified()
     # sme.create_sme_classified()
     #sme.save_sme_classified()
@@ -58,10 +60,11 @@ def stock_classified():
     #ter = sc.Terminated()
     #ter.create_terminated()
     #ter.save_terminated()
-    print('begin suspend')
-    suspend = sc.Suspend()
+    #print('begin suspend')
+    #suspend = sc.Suspend()
     #suspend.create_suspend()
-    suspend.save_suspend()
+    #suspend.save_suspend()
+    
 
     
     print('end')
@@ -105,7 +108,7 @@ def save_data():
     print('Begin save today all stocks history data')
     logger.info('Begin save today all stocks history data')
     # bser.save_today_all_stocks_his_data()
-    bser.save_all_stocks_his_data(start=before_yestd_line, end=yestoday_line)
+    bser.save_all_stocks_his_data(start=util.get_ndays_before_line(6), end=yestoday_line)
     logger.info('End save today all stocks history data')
     print('End save today all stocks history data')
  
@@ -125,7 +128,8 @@ def main():
     #model.create_tables()
     #dser.get_stocks()
     # dser.save_his_data_scd('600848',start = '2016-10-13', end = '2016-10-14')
-    save_data()
+    #save_data()
+    stock_classified()
 
 
 if __name__ == '__main__':

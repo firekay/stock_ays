@@ -26,8 +26,8 @@ def get_tomorrow():
 def get_tomorrow_line():
     return (datetime.datetime.now()+ datetime.timedelta(days = 1)).strftime('%Y-%m-%d')
 
-def get_before_yestd_line():
-    return (datetime.datetime.now()+ datetime.timedelta(days = -2)).strftime('%Y-%m-%d')
+def get_ndays_before_line(n):
+    return (datetime.datetime.now()+ datetime.timedelta(days = -n)).strftime('%Y-%m-%d')
 
 
 if __name__ == '__main__':
@@ -35,6 +35,6 @@ if __name__ == '__main__':
     print(str(get_today_line()))
     print(get_yestoday())
     print(str(get_yestoday_line()))
-    print(str(get_before_yestd_line()))
     print(get_tomorrow())
     print(str(get_tomorrow_line()))
+    print(get_ndays_before_line(6))

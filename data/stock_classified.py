@@ -11,6 +11,7 @@ class BaseModel(Model):
         database = database        
         
 class IndustryClassified(BaseModel):
+    """行业分类"""
     class Meta:
         db_table = 'industry_classified'
         

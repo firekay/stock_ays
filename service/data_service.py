@@ -1,4 +1,8 @@
 # encoding: UTF-8
+import sys
+print(sys.path)
+sys.path.append('/home/kay/WorkspacePython/stock_analysis')
+print(sys.path)
 
 import traceback
 import logging
@@ -9,6 +13,7 @@ import pandas as pd
 from utils.mysql_utils import *
 from utils.util import *
 import threading
+import time
 from models.model import *
 from queue import Queue
 
@@ -17,6 +22,70 @@ logger = logging.getLogger()
 today = get_today_line()
 
 his_data_queue = Queue()
+his_data_scd_queue = Queue()
+
+@conn
+def save_his_data():
+    logger.info('begin save his data thread.')
+    while(1):
+        if his_data_queue.empty():
+            time.sleep(0.01)
+        else:
+            logger.info('his_data_queue\'s size is: %s' % (his_data_queue.qsize()))
+            his_data = his_data_queue.get()
+            code = his_data[0]
+            ktype = his_data[1]
+            data = his_data[2]
+            logger.info('get code: %s, ktype: %s from his_data_queue' % (code, ktype))
+            data_dicts = [ {'code': code, 'ktype': ktype, 'date': row[14], 
+                'open': row[0], 'hign': row[1], 'close': row[2], 
+                'low': row[3], 'volume': row[4], 
+                'price_change': row[5], 'p_change':row[6], 
+                'ma5':row[7], 'ma10': row[8], 'ma20': row[9],
+                'v_ma5': row[10], 'v_ma10': row[11], 
+                'v_ma20': row[12], 'turnover': row[13]} 
+                for row in data ]
+            logger.info(data_dicts)
+            HistoryData.insert_many(data_dicts).execute()
+            
+            if code == get_max_stock():
+                break
+
+
+@conn
+def save_his_data_scd():
+    logger.info('begin save his data_scd thread.')
+    while(1):
+        if his_data_queue.empty():
+            time.sleep(0.01)
+        else:
+            logger.info('his_data_scd_queue\'s size is: %s' % (his_data_scd_queue.qsize()))
+            his_data = his_data_scd_queue.get()
+            code = his_data[0]
+            ktype = his_data[1]
+            data = his_data[2]
+            logger.info('get code: %s ktype: %s from his_data_scd_queue' % (code, ktype))
+            data_dicts = [ {'code': code, 'ktype': ktype, 'date': row[14], 
+                            'time': row[15], 'open': row[0], 'hign': row[1],
+                            'close': row[2], 'low': row[3], 'volume': row[4], 
+                            'price_change': row[5], 'p_change':row[6], 
+                            'ma5':row[7], 'ma10': row[8], 'ma20': row[9],
+                            'v_ma5': row[10], 'v_ma10': row[11], 
+                            'v_ma20': row[12], 'turnover': row[13]} 
+                           for row in data ]
+            logger.info(data_dicts)
+            HistoryDataScd.insert_many(data_dicts).execute()
+            
+            if code == get_max_stock():
+                break
+
+@conn
+def get_max_stock():
+    """获取股票列表"""
+    stocks = StockBasic.select(StockBasic.code).order_by(StockBasic.code.desc()).limit(1)
+    max_sotck = [stock.code for stock in stocks][0]
+    return max_sotck
+
 
 @conn
 def get_stocks():
@@ -24,8 +93,7 @@ def get_stocks():
     return StockBasic.select(StockBasic.code).order_by(StockBasic.code)
 
 
-@conn
-def save_his_data(code, start=None, end=None,
+def get_his_data(code, start=None, end=None,
                   ktype=None, retry_count=10,
                   pause=0.001):
     """获取个股历史交易数据（包括均线数据），可以通过参数设置获取日k线、周k线、月k线数据。
@@ -33,28 +101,26 @@ def save_his_data(code, start=None, end=None,
     适合搭配均线数据进行选股和分析，如果需要全部历史数据，请调用下一个接口get_h_data()。"""
     ktypes = list(['D','W', 'M'])
     def _deal_data(code, start, end, ktype, retry_count, pause):
-        logger.info('Begin: %s,%s,%s' % (code, start, ktype))
-        print('Begin: %s,%s,%s' % (code, start, ktype))
+        logger.info('Begin get data: %s,%s,%s' % (code, start, ktype))
+        print('Begin get data: %s,%s,%s' % (code, start, ktype))
         try:
             data_df = ts.get_hist_data(code, start, end, ktype, retry_count, pause)
-            data_df['date'] = pd.Series(data_df.axes[0], index=data_df.index)
-            data = data_df.values
-            data_dicts = [ {'code': code, 'ktype': ktype, 'date': row[14], 
-                            'open': row[0], 'hign': row[1], 'close': row[2], 
-                            'low': row[3], 'volume': row[4], 
-                            'price_change': row[5], 'p_change':row[6], 
-                            'ma5':row[7], 'ma10': row[8], 'ma20': row[9],
-                            'v_ma5': row[10], 'v_ma10': row[11], 
-                            'v_ma20': row[12], 'turnover': row[13]} 
-                           for row in data ]
-            HistoryData.insert_many(data_dicts).execute()
+            if not data_df.empty:
+                data_df['date'] = pd.Series(data_df.axes[0], index=data_df.index)
+                data = data_df.values
+                his_data_queue.put((code, ktype, data))
+                logger.info('End get data: %s,%s,%s' % (code, start, ktype))
+                print('End get data: %s,%s,%s' % (code, start, ktype))
+            else:
+                logger.info('Empty get data: %s,%s,%s,%s' % (code, start, end, ktype))
+
         except Exception as e:
-            logger.error('%s,%s,%s' % (code, start, ktype))
+            logger.error('Get data error: %s,%s,%s' % (code, start, ktype))
             logger.error(traceback.format_exc())
             print('%s,%s,%s' % (code, start, ktype))
             print(traceback.format_exc())
-        logger.info('End: %s,%s,%s' % (code, start, ktype))
-        print('End: %s,%s,%s' % (code, start, ktype))
+        logger.info('End get data: %s,%s,%s' % (code, start, ktype))
+        print('End get data: %s,%s,%s' % (code, start, ktype))
 
     if ktype is None:
         for ktype in ktypes:
@@ -62,11 +128,10 @@ def save_his_data(code, start=None, end=None,
             #_deal_data(code, start, end, ktype, retry_count, pause)
     else:
         threading.Thread(target=_deal_data, args=(code, start, end, ktype, retry_count, pause)).start()
-        #_deal_data(code, start, end, ktype, retry_count, pause)
+        #_deal_data(code, start, end, ktype, retry_count, pause))
 
 
-@conn
-def save_his_data_scd(code, start=None, end=None,
+def get_his_data_scd(code, start=None, end=None,
                   ktype=None, retry_count=10,
                   pause=0.001):
     """获取个股历史交易数据（包括均线数据），可以通过参数设置获取5分钟、15分钟、30分钟和60分钟k线数据。
@@ -74,28 +139,103 @@ def save_his_data_scd(code, start=None, end=None,
     适合搭配均线数据进行选股和分析，如果需要全部历史数据，请调用下一个接口get_h_data()。"""
     ktypes = list(['5', '15', '30', '60'])
     def deal_data(code, start, end, ktype, retry_count, pause):
-        logger.info('Begin: %s,%s,%s' % (code, start, ktype))
-        print('Begin: %s,%s,%s' % (code, start, ktype))
+        logger.info('Begin get data: %s,%s,%s' % (code, start, ktype))
+        print('Begin get data: %s,%s,%s' % (code, start, ktype))
         try:
             data_df = ts.get_hist_data(code, start, end, ktype, retry_count, pause)
-            data_df['date'] = pd.Series(data_df.index.map(lambda s: s.split(' ')[0]), index=data_df.index)
-            data_df['time'] = pd.Series(data_df.index.map(lambda s: s.split(' ')[1]), index=data_df.index)
-            data = data_df.values
-            data_dicts = [ {'code': code, 'ktype': ktype, 'date': row[14], 'time': row[15], 'open': row[0], 'hign': row[1], 'close': row[2], 'low': row[3], 'volume': row[4], 'price_change': row[5], 'p_change':row[6], 'ma5':row[7], 'ma10': row[8], 'ma20': row[9], 'v_ma5': row[10], 'v_ma10': row[11], 'v_ma20': row[12], 'turnover': row[13]} for row in data ]
-            HistoryDataScd.insert_many(data_dicts).execute()
+            if not data_df.empty:
+                data_df['date'] = pd.Series(data_df.index.map(lambda s: s.split(' ')[0]), index=data_df.index)
+                data_df['time'] = pd.Series(data_df.index.map(lambda s: s.split(' ')[1]), index=data_df.index)
+                data = data_df.values
+                his_data_scd_queue.put((code, ktype, data))
+                logger.info('End get data: %s,%s,%s' % (code, start, ktype))
+                print('End get data: %s,%s,%s' % (code, start, ktype))
+            else:
+                logger.info('Empty get data: %s,%s,%s,%s' % (code, start, end, ktype))
         except Exception as e:
-            logger.error('%s,%s,%s' % (code, start, ktype))
+            logger.error('Get data error:%s,%s,%s' % (code, start, ktype))
             logger.error(traceback.format_exc())
-            print('%s,%s,%s' % (code, start, ktype))
+            print('Get data error:%s,%s,%s' % (code, start, ktype))
             print(traceback.format_exc())
-        logger.info('End: %s,%s,%s' % (code, start, ktype))
-        print('End: %s,%s,%s' % (code, start, ktype))
 
     if ktype is None:
         for ktype in ktypes:
             deal_data(code, start, end, ktype, retry_count, pause)
     else:
         deal_data(code, start, end, ktype, retry_count, pause)
+
+# @conn
+# def save_his_data(code, start=None, end=None,
+#                   ktype=None, retry_count=10,
+#                   pause=0.001):
+#     """获取个股历史交易数据（包括均线数据），可以通过参数设置获取日k线、周k线、月k线数据。
+#     本接口只能获取近3年的日线数据，
+#     适合搭配均线数据进行选股和分析，如果需要全部历史数据，请调用下一个接口get_h_data()。"""
+#     ktypes = list(['D','W', 'M'])
+#     def _deal_data(code, start, end, ktype, retry_count, pause):
+#         logger.info('Begin: %s,%s,%s' % (code, start, ktype))
+#         print('Begin: %s,%s,%s' % (code, start, ktype))
+#         try:
+#             data_df = ts.get_hist_data(code, start, end, ktype, retry_count, pause)
+#             data_df['date'] = pd.Series(data_df.axes[0], index=data_df.index)
+#             data = data_df.values
+#             data_dicts = [ {'code': code, 'ktype': ktype, 'date': row[14], 
+#                             'open': row[0], 'hign': row[1], 'close': row[2], 
+#                             'low': row[3], 'volume': row[4], 
+#                             'price_change': row[5], 'p_change':row[6], 
+#                             'ma5':row[7], 'ma10': row[8], 'ma20': row[9],
+#                             'v_ma5': row[10], 'v_ma10': row[11], 
+#                             'v_ma20': row[12], 'turnover': row[13]} 
+#                            for row in data ]
+#             HistoryData.insert_many(data_dicts).execute()
+#         except Exception as e:
+#             logger.error('%s,%s,%s' % (code, start, ktype))
+#             logger.error(traceback.format_exc())
+#             print('%s,%s,%s' % (code, start, ktype))
+#             print(traceback.format_exc())
+#         logger.info('End: %s,%s,%s' % (code, start, ktype))
+#         print('End: %s,%s,%s' % (code, start, ktype))
+
+#     if ktype is None:
+#         for ktype in ktypes:
+#             threading.Thread(target=_deal_data, args=(code, start, end, ktype, retry_count, pause)).start()
+#             #_deal_data(code, start, end, ktype, retry_count, pause)
+#     else:
+#         threading.Thread(target=_deal_data, args=(code, start, end, ktype, retry_count, pause)).start()
+#         #_deal_data(code, start, end, ktype, retry_count, pause)
+
+
+# @conn
+# def save_his_data_scd(code, start=None, end=None,
+#                   ktype=None, retry_count=10,
+#                   pause=0.001):
+#     """获取个股历史交易数据（包括均线数据），可以通过参数设置获取5分钟、15分钟、30分钟和60分钟k线数据。
+#     本接口只能获取近3年的日线数据，
+#     适合搭配均线数据进行选股和分析，如果需要全部历史数据，请调用下一个接口get_h_data()。"""
+#     ktypes = list(['5', '15', '30', '60'])
+#     def deal_data(code, start, end, ktype, retry_count, pause):
+#         logger.info('Begin: %s,%s,%s' % (code, start, ktype))
+#         print('Begin: %s,%s,%s' % (code, start, ktype))
+#         try:
+#             data_df = ts.get_hist_data(code, start, end, ktype, retry_count, pause)
+#             data_df['date'] = pd.Series(data_df.index.map(lambda s: s.split(' ')[0]), index=data_df.index)
+#             data_df['time'] = pd.Series(data_df.index.map(lambda s: s.split(' ')[1]), index=data_df.index)
+#             data = data_df.values
+#             data_dicts = [ {'code': code, 'ktype': ktype, 'date': row[14], 'time': row[15], 'open': row[0], 'hign': row[1], 'close': row[2], 'low': row[3], 'volume': row[4], 'price_change': row[5], 'p_change':row[6], 'ma5':row[7], 'ma10': row[8], 'ma20': row[9], 'v_ma5': row[10], 'v_ma10': row[11], 'v_ma20': row[12], 'turnover': row[13]} for row in data ]
+#             HistoryDataScd.insert_many(data_dicts).execute()
+#         except Exception as e:
+#             logger.error('%s,%s,%s' % (code, start, ktype))
+#             logger.error(traceback.format_exc())
+#             print('%s,%s,%s' % (code, start, ktype))
+#             print(traceback.format_exc())
+#         logger.info('End: %s,%s,%s' % (code, start, ktype))
+#         print('End: %s,%s,%s' % (code, start, ktype))
+
+#     if ktype is None:
+#         for ktype in ktypes:
+#             deal_data(code, start, end, ktype, retry_count, pause)
+#     else:
+#         deal_data(code, start, end, ktype, retry_count, pause)
 
 
 def save_revote_his_data(code, start=None, end=None, autype='qfq',
@@ -193,3 +333,56 @@ def save_big_trade_data(code=None, date=None, vol=400, retry_count=10, pause=0.0
     logger.info('End get %s\'s big trade data in %s.' % (code, date))
     print('End get %s\'s big trade data in %s.' % (code, date))
 
+
+def save_industry_classified():
+    '''在现实交易中，经常会按行业统计股票的涨跌幅或资金进出，本接口按照sina财经对沪深股票进行的行业分类，返回所有股票所属行业的信息。'''
+    logger.info('Begin get industry classified.')
+    try:
+        data_df = ts.get_industry_classified(standard=type)
+        data = data_df.values
+        data_dicts = [ {'code': row[0], 'name': row[1], 'c_name': row[2]} for row in data ]
+        IndustryClassified.insert_many(data_dicts).execute()
+    except Exception as e:
+        logger.error('Get industry classified.')
+        logger.error(traceback.format_exc())
+    logger.info('End get industry classified.')
+
+
+
+def save_concept_classified():
+    """返回股票概念的分类数据，现实的二级市场交易中，经常会以”概念”来炒作，在数据分析过程中，可根据概念分类监测资金等信息的变动情况。"""
+    logger.info('Begin get concept clssified.')
+    try:
+        data_df = ts.get_concept_classified()    
+        print(data_df)    
+        data = data_df.values
+        data_dicts = [ {'code': row[0], 'name': row[1], 'c_name': row[2]} for row in data ]
+        ConceptClassified.insert_many(data_dicts).execute()
+    except Exception as e:
+        logger.error('Get concept clssified.')
+        logger.error(traceback.format_exc())
+    logger.info('End get concept clssified.')
+
+
+def truncate_table(cls):
+    """清空表
+    
+    参数为model中的类名。
+    """
+    print(cls)
+    cls.truncate_table()
+
+
+def create_table(cls):
+    """创建表。
+
+    参数为model中的类名
+    """
+    cls.create_table()
+
+
+# if __name__ == '__main__':
+    # import sys
+    # print(sys.path())
+    # sys.path.append('/home/kay/WorkspacePython/stock_analysis')
+    # print(get_max_stock())
