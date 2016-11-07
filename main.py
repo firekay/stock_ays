@@ -1,3 +1,4 @@
+# encoding: UTF-8
 import sys
 from configparser import ConfigParser
 import tushare as ts
@@ -26,7 +27,7 @@ logger = logging.getLogger()
 
 def stock_classified():
     print('begin')
-    #bser.save_industry_classified()
+    bser.save_industry_classified()
     bser.save_concept_classified()
     
     #sme = sc.SmeClassified()
