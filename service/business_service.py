@@ -26,15 +26,15 @@ def save_all_stocks_his_data(start=None, end=None):
     threading.Thread(name='save_his_data', target=dsvc.save_his_data).start()
     threading.Thread(name='save_his_data_scd', target=dsvc.save_his_data_scd).start()
     stocks = dsvc.get_stocks()
-    i = 0
+    # i = 0
     for stock in stocks:
-        i = i + 1
+        # i = i + 1
         #if i == 160:
             #time.sleep(10)
             #i = 0
-        threading.Thread(name='get_his_data_' + str(i), target=dsvc.get_his_data, args=(stock.code, start, end)).start()
-        threading.Thread(name='get_his_data_scd_' + str(i), target=dsvc.get_his_data_scd, args=(stock.code, start, end)).start()
-        time.sleep(0.5)
+        dsvc.get_his_data(stock.code, start, end)
+        dsvc.get_his_data_scd(stock.code, start, end)
+        # time.sleep(1)
         #dsvc.save_his_data(stock.code,start=start, end=end, ktype='D')
         #dsvc.save_his_data(stock.code,start=start, end=end)
         #dsvc.save_his_data_scd(stock.code,start=start, end=end)
@@ -45,6 +45,11 @@ def save_today_all_stocks_his_data():
     save_all_stocks_his_data(today_line, tomorrow_line)
 
     
+def save_realtime_quetes2file(codes):
+    def _deal_realtime_quotes_data(codes):
+        data_df = dsvc.get_realtime_quotes(codes)
+
+
     
     
 def save_today_all_data():
@@ -170,7 +175,29 @@ def save_suspend():
     dsvc.save_suspend()
 
 
+def save_stock_basic():
+    dsvc.truncate_table(StockBasic)
+    dsvc.save_stock_basic()
 
+
+def create_tables():
+    cls_models = [IndustryClassified, ConceptClassified, SmeClassified,
+              AreaClassified, GemClassified, StClassified,
+              Hs300, Sz50, Zz500, Terminated, Suspend,
+              StockBasic, HistoryData, HistoryDataScd,
+              RevoteHistoryData, TodayAllData, TickData,
+              BigIndexData, BigTradeData]
+    dsvc.create_tables(cls_models)
+    
+    
+def drop_tables():
+    cls_models = [IndustryClassified, ConceptClassified, SmeClassified,
+              AreaClassified, GemClassified, StClassified,
+              Hs300, Sz50, Zz500, Terminated, Suspend,
+              StockBasic, HistoryData, HistoryDataScd,
+              RevoteHistoryData, TodayAllData, TickData,
+              BigIndexData, BigTradeData]
+    dsvc.drop_tables(cls_models)
 
 
 

@@ -282,8 +282,8 @@ class BigTradeData(BaseModel):
     type = CharField()
 
 
-@conn
 def create_tables():
+    """Use data_service model's create tables."""
     # IndustryClassified.create_table()
     # ConceptClassified.create_table()
     # SmeClassified.create_table()
@@ -304,3 +304,4 @@ def create_tables():
     # BigIndex.create_table()
     # BigTradeData.create_table()
     print('End create table ...')
+    

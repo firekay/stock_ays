@@ -4,7 +4,6 @@ from configparser import ConfigParser
 import tushare as ts
 from peewee import *
 from data import stock_classified as sc
-from macro_data import macroscopic_data as md
 import logging
 import logging.config
 from data import base_data as bd
@@ -25,10 +24,21 @@ tomorrow_line = util.get_tomorrow_line()
 logging.config.fileConfig("logging.conf")
 logger = logging.getLogger()
 
+
 def stock_classified():
-    print('begin')
+    print('stock classified begin')
     bser.save_industry_classified()
     bser.save_concept_classified()
+    bser.save_area_classified()
+    bser.save_sme_classified()
+    bser.save_gem_classified()
+    bser.save_st_classified()
+    bser.save_hs300s()
+    bser.save_sz50s()
+    bser.save_zz500s()
+    bser.save_terminated()
+    bser.save_suspend()
+    print('stock classified end')
     
     #sme = sc.SmeClassified()
     # sme.create_sme_classified()
@@ -87,16 +97,17 @@ def macro_data():
     rrr.create_table()
     rrr.save_data(date='2010-11-29')
 
-    
-def base_data():
-    '''基本面数据'''
-    print('begin base data')
-    #stock_basic = bd.StockBasic() 
-    bd.StockBasic.create_tbl()
-    #print('created table')
-    bd.StockBasic.save_data()
-    print('end')
 
+def create_tables():
+    print("Create tables begin.")
+    bser.create_tables()
+    print("Create tables end.")
+    
+def drop_tables():
+    print("Drop tables begin.")
+    bser.drop_tables()
+    print("Drop tables end.")
+    
 
 def save_data():
     """下载并保持交易数据"""
@@ -106,12 +117,11 @@ def save_data():
     # logger.info('End save all stocks history data')
     # print('End save all stocks history data')
 
-    print('Begin save today all stocks history data')
     logger.info('Begin save today all stocks history data')
-    # bser.save_today_all_stocks_his_data()
-    bser.save_all_stocks_his_data(start=util.get_ndays_before_line(6), end=yestoday_line)
+    #bser.save_today_all_stocks_his_data()
+    bser.save_all_stocks_his_data()
+    # bser.save_all_stocks_his_data(start=util.get_ndays_before_line(6), end=yestoday_line)
     logger.info('End save today all stocks history data')
-    print('End save today all stocks history data')
  
     # logger.info('Begin save today all data')
     # bser.save_today_all_data()
@@ -127,10 +137,11 @@ def main():
     #macro_data()
     #base_data()
     #model.create_tables()
-    #dser.get_stocks()
     # dser.save_his_data_scd('600848',start = '2016-10-13', end = '2016-10-14')
-    #save_data()
-    stock_classified()
+    save_data()
+    # stock_classified()
+    #create_tables()
+    
 
 
 if __name__ == '__main__':

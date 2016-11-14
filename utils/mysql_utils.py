@@ -31,7 +31,7 @@ def __get_pooled_db():
 
     return PooledMySQLDatabase(database=__db, max_connections=128, 
                                stale_timeout=120, host=__host, port=int(__port),
-                               user=__user, passwd=__passwd)
+                               user=__user, passwd=__passwd, charset='utf8')
 
 
 database = __get_pooled_db()

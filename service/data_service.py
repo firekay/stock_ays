@@ -20,8 +20,8 @@ today = get_today_line()
 his_data_queue = Queue()
 his_data_scd_queue = Queue()
 
-@conn
 def save_his_data():
+    """保存个股历史交易数据到mysql, 周线"""
     logger.info('begin save his data thread.')
     while(1):
         if his_data_queue.empty():
@@ -32,7 +32,7 @@ def save_his_data():
             code = his_data[0]
             ktype = his_data[1]
             data = his_data[2]
-            logger.info('get code: %s, ktype: %s from his_data_queue' % (code, ktype))
+            logger.info('Get code: %s, ktype: %s from his_data_queue' % (code, ktype))
             data_dicts = [ {'code': code, 'ktype': ktype, 'date': row[14], 
                 'open': row[0], 'hign': row[1], 'close': row[2], 
                 'low': row[3], 'volume': row[4], 
@@ -41,15 +41,15 @@ def save_his_data():
                 'v_ma5': row[10], 'v_ma10': row[11], 
                 'v_ma20': row[12], 'turnover': row[13]} 
                 for row in data ]
-            logger.info(data_dicts)
+            # logger.info(data_dicts)
             HistoryData.insert_many(data_dicts).execute()
             
             if code == get_max_stock():
                 break
 
 
-@conn
 def save_his_data_scd():
+    """保存个股历史交易数据到mysql, 分钟线"""
     logger.info('begin save his data_scd thread.')
     while(1):
         if his_data_queue.empty():
@@ -69,21 +69,19 @@ def save_his_data_scd():
                             'v_ma5': row[10], 'v_ma10': row[11], 
                             'v_ma20': row[12], 'turnover': row[13]} 
                            for row in data ]
-            logger.info(data_dicts)
+            # logger.info(data_dicts)
             HistoryDataScd.insert_many(data_dicts).execute()
             
             if code == get_max_stock():
                 break
 
-@conn
 def get_max_stock():
-    """获取股票列表"""
+    """获取最大股票"""
     stocks = StockBasic.select(StockBasic.code).order_by(StockBasic.code.desc()).limit(1)
     max_sotck = [stock.code for stock in stocks][0]
     return max_sotck
 
 
-@conn
 def get_stocks():
     """获取股票列表"""
     return StockBasic.select(StockBasic.code).order_by(StockBasic.code)
@@ -120,11 +118,11 @@ def get_his_data(code, start=None, end=None,
 
     if ktype is None:
         for ktype in ktypes:
-            threading.Thread(target=_deal_data, args=(code, start, end, ktype, retry_count, pause)).start()
-            #_deal_data(code, start, end, ktype, retry_count, pause)
+            # threading.Thread(target=_deal_data, args=(code, start, end, ktype, retry_count, pause)).start()
+            _deal_data(code, start, end, ktype, retry_count, pause)
     else:
-        threading.Thread(target=_deal_data, args=(code, start, end, ktype, retry_count, pause)).start()
-        #_deal_data(code, start, end, ktype, retry_count, pause))
+        # threading.Thread(target=_deal_data, args=(code, start, end, ktype, retry_count, pause)).start()
+        _deal_data(code, start, end, ktype, retry_count, pause)
 
 
 def get_his_data_scd(code, start=None, end=None,
@@ -134,7 +132,7 @@ def get_his_data_scd(code, start=None, end=None,
     本接口只能获取近3年的日线数据，
     适合搭配均线数据进行选股和分析，如果需要全部历史数据，请调用下一个接口get_h_data()。"""
     ktypes = list(['5', '15', '30', '60'])
-    def deal_data(code, start, end, ktype, retry_count, pause):
+    def _deal_data(code, start, end, ktype, retry_count, pause):
         logger.info('Begin get data: %s,%s,%s' % (code, start, ktype))
         print('Begin get data: %s,%s,%s' % (code, start, ktype))
         try:
@@ -156,82 +154,9 @@ def get_his_data_scd(code, start=None, end=None,
 
     if ktype is None:
         for ktype in ktypes:
-            deal_data(code, start, end, ktype, retry_count, pause)
+            _deal_data(code, start, end, ktype, retry_count, pause)
     else:
-        deal_data(code, start, end, ktype, retry_count, pause)
-
-# @conn
-# def save_his_data(code, start=None, end=None,
-#                   ktype=None, retry_count=10,
-#                   pause=0.001):
-#     """获取个股历史交易数据（包括均线数据），可以通过参数设置获取日k线、周k线、月k线数据。
-#     本接口只能获取近3年的日线数据，
-#     适合搭配均线数据进行选股和分析，如果需要全部历史数据，请调用下一个接口get_h_data()。"""
-#     ktypes = list(['D','W', 'M'])
-#     def _deal_data(code, start, end, ktype, retry_count, pause):
-#         logger.info('Begin: %s,%s,%s' % (code, start, ktype))
-#         print('Begin: %s,%s,%s' % (code, start, ktype))
-#         try:
-#             data_df = ts.get_hist_data(code, start, end, ktype, retry_count, pause)
-#             data_df['date'] = pd.Series(data_df.axes[0], index=data_df.index)
-#             data = data_df.values
-#             data_dicts = [ {'code': code, 'ktype': ktype, 'date': row[14], 
-#                             'open': row[0], 'hign': row[1], 'close': row[2], 
-#                             'low': row[3], 'volume': row[4], 
-#                             'price_change': row[5], 'p_change':row[6], 
-#                             'ma5':row[7], 'ma10': row[8], 'ma20': row[9],
-#                             'v_ma5': row[10], 'v_ma10': row[11], 
-#                             'v_ma20': row[12], 'turnover': row[13]} 
-#                            for row in data ]
-#             HistoryData.insert_many(data_dicts).execute()
-#         except Exception as e:
-#             logger.error('%s,%s,%s' % (code, start, ktype))
-#             logger.error(traceback.format_exc())
-#             print('%s,%s,%s' % (code, start, ktype))
-#             print(traceback.format_exc())
-#         logger.info('End: %s,%s,%s' % (code, start, ktype))
-#         print('End: %s,%s,%s' % (code, start, ktype))
-
-#     if ktype is None:
-#         for ktype in ktypes:
-#             threading.Thread(target=_deal_data, args=(code, start, end, ktype, retry_count, pause)).start()
-#             #_deal_data(code, start, end, ktype, retry_count, pause)
-#     else:
-#         threading.Thread(target=_deal_data, args=(code, start, end, ktype, retry_count, pause)).start()
-#         #_deal_data(code, start, end, ktype, retry_count, pause)
-
-
-# @conn
-# def save_his_data_scd(code, start=None, end=None,
-#                   ktype=None, retry_count=10,
-#                   pause=0.001):
-#     """获取个股历史交易数据（包括均线数据），可以通过参数设置获取5分钟、15分钟、30分钟和60分钟k线数据。
-#     本接口只能获取近3年的日线数据，
-#     适合搭配均线数据进行选股和分析，如果需要全部历史数据，请调用下一个接口get_h_data()。"""
-#     ktypes = list(['5', '15', '30', '60'])
-#     def deal_data(code, start, end, ktype, retry_count, pause):
-#         logger.info('Begin: %s,%s,%s' % (code, start, ktype))
-#         print('Begin: %s,%s,%s' % (code, start, ktype))
-#         try:
-#             data_df = ts.get_hist_data(code, start, end, ktype, retry_count, pause)
-#             data_df['date'] = pd.Series(data_df.index.map(lambda s: s.split(' ')[0]), index=data_df.index)
-#             data_df['time'] = pd.Series(data_df.index.map(lambda s: s.split(' ')[1]), index=data_df.index)
-#             data = data_df.values
-#             data_dicts = [ {'code': code, 'ktype': ktype, 'date': row[14], 'time': row[15], 'open': row[0], 'hign': row[1], 'close': row[2], 'low': row[3], 'volume': row[4], 'price_change': row[5], 'p_change':row[6], 'ma5':row[7], 'ma10': row[8], 'ma20': row[9], 'v_ma5': row[10], 'v_ma10': row[11], 'v_ma20': row[12], 'turnover': row[13]} for row in data ]
-#             HistoryDataScd.insert_many(data_dicts).execute()
-#         except Exception as e:
-#             logger.error('%s,%s,%s' % (code, start, ktype))
-#             logger.error(traceback.format_exc())
-#             print('%s,%s,%s' % (code, start, ktype))
-#             print(traceback.format_exc())
-#         logger.info('End: %s,%s,%s' % (code, start, ktype))
-#         print('End: %s,%s,%s' % (code, start, ktype))
-
-#     if ktype is None:
-#         for ktype in ktypes:
-#             deal_data(code, start, end, ktype, retry_count, pause)
-#     else:
-#         deal_data(code, start, end, ktype, retry_count, pause)
+        _deal_data(code, start, end, ktype, retry_count, pause)
 
 
 def save_revote_his_data(code, start=None, end=None, autype='qfq',
@@ -295,6 +220,20 @@ def save_tick_data(code=None, date=None, retry_count=10):
         print(traceback.format_exc())
     logger.info('End get %s\'s tick data in %s.' % (code, date))
     print('End. %s ' % (today))
+
+
+def get_realtime_quotes(codes):
+    """获取实时分笔数据，可以实时取得股票当前报价和成交信息.
+    codes : string, array-like object (list, tuple, Series).
+    """
+
+    try:
+        data_df = ts.get_realtime_quotes(codes)
+        return data_df
+    except Exception as e:
+        logger.error('Get %s\'s data error.' % (code))
+        logger.error(traceback.format_exc())
+        print(traceback.format_exc())
 
 
 def save_big_index_data():
@@ -487,13 +426,28 @@ def save_suspend():
     logger.info('End get suspend classified.')
 
 
+def save_stock_basic():
+    logger.info('Begin get stock basic.')
+    try:
+        data_df = ts.get_stock_basics()
+        data_df['code'] = pd.Series(data_df.axes[0], index=data_df.index)
+        data = data_df.values
+        print(data)
+        data_dicts = [ {'code': row[15], 'name': row[0], 'industry': row[1], 'area': row[2], 'pe': row[3], 'outstanding': row[4], 'totals': row[5], 'totalAssets':row[6], 'liquidAssets':row[7], 'fixedAssets': row[8], 'reserved': row[9], 'reservedPerShare': row[10], 'eps': row[11], 'bvps': row[12], 'pb': row[13], 'timeToMarket': row[14], 'insert_date': today} for row in data ]
+        # connect()
+        StockBasic.insert_many(data_dicts).execute()
+    except Exception as e:
+        logger.info('Get stock basic.')
+        logger.error('Get suspend classified.')
+        logger.error(traceback.format_exc())
+    logger.info('End get stock basic.')
 
+    
 def truncate_table(cls):
     """清空表
     
     参数为model中的类名。
     """
-    print(cls)
     cls.truncate_table()
 
 
@@ -505,8 +459,24 @@ def create_table(cls):
     cls.create_table()
 
 
+def create_tables(classes):
+    """参数为列表， 列表中数据是model中的类名"""
+    [ create_table(cls) for cls in classes ]
+    
+    
+def drop_table(cls):
+    """删除单个表, 参数为model中的类名"""
+    cls.drop_table()
+    
+    
+def drop_tables(classes):
+    """参数为列表， 列表中数据是model中的类名"""
+    [ drop_table(cls) for cls in classes ]
+    
 # if __name__ == '__main__':
     # import sys
     # print(sys.path())
     # sys.path.append('/home/kay/WorkspacePython/stock_analysis')
     # print(get_max_stock())
+
+    
