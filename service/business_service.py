@@ -1,3 +1,4 @@
+# encoding: UTF-8
 import service.data_service as dsvc
 import logging
 import logging.config
@@ -39,7 +40,11 @@ def save_all_stocks_his_data(start=None, end=None):
         #dsvc.save_his_data(stock.code,start=start, end=end)
         #dsvc.save_his_data_scd(stock.code,start=start, end=end)
         
-        
+def save_yestoday_all_stocks_his_data():
+    """下载并保存昨天数据"""
+    save_all_stocks_his_data(yestoday_line, today_line)
+
+
 def save_today_all_stocks_his_data():
     """下载并保存当天数据"""
     save_all_stocks_his_data(today_line, tomorrow_line)
@@ -179,6 +184,43 @@ def save_stock_basic():
     dsvc.truncate_table(StockBasic)
     dsvc.save_stock_basic()
 
+def save_news():
+    """获取即时财经新闻，类型包括国内财经、证券、外汇、期货、港股和美股等新闻信息。数据更新较快，使用过程中可用定时任务来获取。
+    
+    根据time和url的元组来判断数据库中是否有数据， 如果存在此新闻就不加入， 如果不存在就插入到mongodb中。
+    """
+    #news_df = dsvc.get_news(top=5)
+    #dsvc.save_news2mongo(news_df)
+    # 数据写入csv文件
+    #news_df.to_csv('logs/latest_news.csv', sep='\t', encoding='utf-8')
+    
+    # 从数据库中初始化time_urls， 不再添加已有的新闻
+    # TODO: 改为通过url来定义唯一新闻
+    time_urls = set(dsvc.get_news_time_and_url_in_mongo())
+    while(True):
+        logger.info('The size of time_urls is: %d' % len(time_urls))
+        news_df = dsvc.get_news(top=5)
+        if(news_df is not None):
+            news_time_urls = [tuple(time_url) for time_url in news_df[['time', 'url']].values]
+            #news_time_urls = news_df[['time', 'url']].apply(lambda x: "('{}', '{}')".format(x[0], x[1]), axis=1) # return type str not a type tuple
+            for i, time_url in enumerate(news_time_urls):
+                if(time_url not in time_urls):
+                    time_urls.add(time_url)
+                else:
+                    news_df.drop(i, inplace=True)
+                    
+            # TODO: drop不能删掉元素， 重新写
+            #for i, time in enumerate(news_times):
+                #if(time in times):
+                    #news_df.drop(i)
+                #else:
+                    #times.add(time)
+            if(not news_df.empty):
+                dsvc.save_news2mongo(news_df)
+        time.sleep(60)
+        
+                
+        
 
 def create_tables():
     cls_models = [IndustryClassified, ConceptClassified, SmeClassified,
@@ -198,26 +240,3 @@ def drop_tables():
               RevoteHistoryData, TodayAllData, TickData,
               BigIndexData, BigTradeData]
     dsvc.drop_tables(cls_models)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
