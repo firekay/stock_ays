@@ -1,4 +1,5 @@
 # encoding: UTF-8
+"""调用接口的到数据，以及存入mysql， mongodb"""
 import sys
 import traceback
 import logging
@@ -6,6 +7,8 @@ import logging.config
 from peewee import *
 import tushare as ts
 import pandas as pd
+import json
+from utils import mongo_utils
 from utils.mysql_utils import *
 from utils.util import *
 import threading
@@ -19,6 +22,7 @@ today = get_today_line()
 
 his_data_queue = Queue()
 his_data_scd_queue = Queue()
+
 
 def save_his_data():
     """保存个股历史交易数据到mysql, 周线"""
@@ -99,7 +103,7 @@ def get_his_data(code, start=None, end=None,
         print('Begin get data: %s,%s,%s' % (code, start, ktype))
         try:
             data_df = ts.get_hist_data(code, start, end, ktype, retry_count, pause)
-            if not data_df.empty:
+            if data_df is not None and not data_df.empty:
                 data_df['date'] = pd.Series(data_df.axes[0], index=data_df.index)
                 data = data_df.values
                 his_data_queue.put((code, ktype, data))
@@ -113,15 +117,13 @@ def get_his_data(code, start=None, end=None,
             logger.error(traceback.format_exc())
             print('%s,%s,%s' % (code, start, ktype))
             print(traceback.format_exc())
-        logger.info('End get data: %s,%s,%s' % (code, start, ktype))
-        print('End get data: %s,%s,%s' % (code, start, ktype))
 
     if ktype is None:
         for ktype in ktypes:
-            # threading.Thread(target=_deal_data, args=(code, start, end, ktype, retry_count, pause)).start()
+            #threading.Thread(target=_deal_data, args=(code, start, end, ktype, retry_count, pause)).start()
             _deal_data(code, start, end, ktype, retry_count, pause)
     else:
-        # threading.Thread(target=_deal_data, args=(code, start, end, ktype, retry_count, pause)).start()
+        #threading.Thread(target=_deal_data, args=(code, start, end, ktype, retry_count, pause)).start()
         _deal_data(code, start, end, ktype, retry_count, pause)
 
 
@@ -137,7 +139,7 @@ def get_his_data_scd(code, start=None, end=None,
         print('Begin get data: %s,%s,%s' % (code, start, ktype))
         try:
             data_df = ts.get_hist_data(code, start, end, ktype, retry_count, pause)
-            if not data_df.empty:
+            if data_df is not None and not data_df.empty:
                 data_df['date'] = pd.Series(data_df.index.map(lambda s: s.split(' ')[0]), index=data_df.index)
                 data_df['time'] = pd.Series(data_df.index.map(lambda s: s.split(' ')[1]), index=data_df.index)
                 data = data_df.values
@@ -154,9 +156,84 @@ def get_his_data_scd(code, start=None, end=None,
 
     if ktype is None:
         for ktype in ktypes:
+            #threading.Thread(target=_deal_data, args=(code, start, end, ktype, retry_count, pause)).start()
             _deal_data(code, start, end, ktype, retry_count, pause)
     else:
+        #threading.Thread(target=_deal_data, args=(code, start, end, ktype, retry_count, pause)).start()
         _deal_data(code, start, end, ktype, retry_count, pause)
+
+# @conn
+# def save_his_data(code, start=None, end=None,
+#                   ktype=None, retry_count=10,
+#                   pause=0.001):
+#     """获取个股历史交易数据（包括均线数据），可以通过参数设置获取日k线、周k线、月k线数据。
+#     本接口只能获取近3年的日线数据，
+#     适合搭配均线数据进行选股和分析，如果需要全部历史数据，请调用下一个接口get_h_data()。"""
+#     ktypes = list(['D','W', 'M'])
+#     def _deal_data(code, start, end, ktype, retry_count, pause):
+#         logger.info('Begin: %s,%s,%s' % (code, start, ktype))
+#         print('Begin: %s,%s,%s' % (code, start, ktype))
+#         try:
+#             data_df = ts.get_hist_data(code, start, end, ktype, retry_count, pause)
+#             data_df['date'] = pd.Series(data_df.axes[0], index=data_df.index)
+#             data = data_df.values
+#             data_dicts = [ {'code': code, 'ktype': ktype, 'date': row[14], 
+#                             'open': row[0], 'hign': row[1], 'close': row[2], 
+#                             'low': row[3], 'volume': row[4], 
+#                             'price_change': row[5], 'p_change':row[6], 
+#                             'ma5':row[7], 'ma10': row[8], 'ma20': row[9],
+#                             'v_ma5': row[10], 'v_ma10': row[11], 
+#                             'v_ma20': row[12], 'turnover': row[13]} 
+#                            for row in data ]
+#             HistoryData.insert_many(data_dicts).execute()
+#         except Exception as e:
+#             logger.error('%s,%s,%s' % (code, start, ktype))
+#             logger.error(traceback.format_exc())
+#             print('%s,%s,%s' % (code, start, ktype))
+#             print(traceback.format_exc())
+#         logger.info('End: %s,%s,%s' % (code, start, ktype))
+#         print('End: %s,%s,%s' % (code, start, ktype))
+
+#     if ktype is None:
+#         for ktype in ktypes:
+#             threading.Thread(target=_deal_data, args=(code, start, end, ktype, retry_count, pause)).start()
+#             #_deal_data(code, start, end, ktype, retry_count, pause)
+#     else:
+#         threading.Thread(target=_deal_data, args=(code, start, end, ktype, retry_count, pause)).start()
+#         #_deal_data(code, start, end, ktype, retry_count, pause)
+
+
+# @conn
+# def save_his_data_scd(code, start=None, end=None,
+#                   ktype=None, retry_count=10,
+#                   pause=0.001):
+#     """获取个股历史交易数据（包括均线数据），可以通过参数设置获取5分钟、15分钟、30分钟和60分钟k线数据。
+#     本接口只能获取近3年的日线数据，
+#     适合搭配均线数据进行选股和分析，如果需要全部历史数据，请调用下一个接口get_h_data()。"""
+#     ktypes = list(['5', '15', '30', '60'])
+#     def deal_data(code, start, end, ktype, retry_count, pause):
+#         logger.info('Begin: %s,%s,%s' % (code, start, ktype))
+#         print('Begin: %s,%s,%s' % (code, start, ktype))
+#         try:
+#             data_df = ts.get_hist_data(code, start, end, ktype, retry_count, pause)
+#             data_df['date'] = pd.Series(data_df.index.map(lambda s: s.split(' ')[0]), index=data_df.index)
+#             data_df['time'] = pd.Series(data_df.index.map(lambda s: s.split(' ')[1]), index=data_df.index)
+#             data = data_df.values
+#             data_dicts = [ {'code': code, 'ktype': ktype, 'date': row[14], 'time': row[15], 'open': row[0], 'hign': row[1], 'close': row[2], 'low': row[3], 'volume': row[4], 'price_change': row[5], 'p_change':row[6], 'ma5':row[7], 'ma10': row[8], 'ma20': row[9], 'v_ma5': row[10], 'v_ma10': row[11], 'v_ma20': row[12], 'turnover': row[13]} for row in data ]
+#             HistoryDataScd.insert_many(data_dicts).execute()
+#         except Exception as e:
+#             logger.error('%s,%s,%s' % (code, start, ktype))
+#             logger.error(traceback.format_exc())
+#             print('%s,%s,%s' % (code, start, ktype))
+#             print(traceback.format_exc())
+#         logger.info('End: %s,%s,%s' % (code, start, ktype))
+#         print('End: %s,%s,%s' % (code, start, ktype))
+
+#     if ktype is None:
+#         for ktype in ktypes:
+#             deal_data(code, start, end, ktype, retry_count, pause)
+#     else:
+#         deal_data(code, start, end, ktype, retry_count, pause)
 
 
 def save_revote_his_data(code, start=None, end=None, autype='qfq',
@@ -220,20 +297,6 @@ def save_tick_data(code=None, date=None, retry_count=10):
         print(traceback.format_exc())
     logger.info('End get %s\'s tick data in %s.' % (code, date))
     print('End. %s ' % (today))
-
-
-def get_realtime_quotes(codes):
-    """获取实时分笔数据，可以实时取得股票当前报价和成交信息.
-    codes : string, array-like object (list, tuple, Series).
-    """
-
-    try:
-        data_df = ts.get_realtime_quotes(codes)
-        return data_df
-    except Exception as e:
-        logger.error('Get %s\'s data error.' % (code))
-        logger.error(traceback.format_exc())
-        print(traceback.format_exc())
 
 
 def save_big_index_data():
@@ -432,7 +495,6 @@ def save_stock_basic():
         data_df = ts.get_stock_basics()
         data_df['code'] = pd.Series(data_df.axes[0], index=data_df.index)
         data = data_df.values
-        print(data)
         data_dicts = [ {'code': row[15], 'name': row[0], 'industry': row[1], 'area': row[2], 'pe': row[3], 'outstanding': row[4], 'totals': row[5], 'totalAssets':row[6], 'liquidAssets':row[7], 'fixedAssets': row[8], 'reserved': row[9], 'reservedPerShare': row[10], 'eps': row[11], 'bvps': row[12], 'pb': row[13], 'timeToMarket': row[14], 'insert_date': today} for row in data ]
         # connect()
         StockBasic.insert_many(data_dicts).execute()
@@ -442,6 +504,36 @@ def save_stock_basic():
         logger.error(traceback.format_exc())
     logger.info('End get stock basic.')
 
+    
+def get_news(top=None, show_content=True):
+    """获取即时财经新闻，类型包括国内财经、证券、外汇、期货、港股和美股等新闻信息。数据更新较快，使用过程中可用定时任务来获取。"""
+    data_df = None
+    logger.info('Begin get latest news.')
+    try:
+        data_df = ts.get_latest_news(top, show_content)
+        now = str(get_time())
+        logger.info('End get latest news.')
+    except Exception as e:
+        logger.info('Error get latest news.')
+        logger.info(traceback.format_exc())
+    finally:
+        return data_df
+    
+def get_news_time_and_url_in_mongo():
+    
+    db = mongo_utils.get_db()
+    db_time_urls = db.news.find({}, {'time':1, 'url':1})
+    time_urls = [(time_url['time'], time_url['url']) for time_url in db_time_urls]
+    mongo_utils.close()
+    return time_urls
+    
+    
+def save_news2mongo(df):
+    db = mongo_utils.get_db()
+    news = json.loads(df.T.to_json()).values()
+    db.news.insert(news)
+    mongo_utils.close()
+    
     
 def truncate_table(cls):
     """清空表
