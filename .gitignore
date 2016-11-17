@@ -183,4 +183,4 @@ target
 .classpath
 .project
 WebCrawler/out
-*log.out
+*.out
