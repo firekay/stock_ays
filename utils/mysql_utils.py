@@ -7,7 +7,7 @@ from peewee import *
 from playhouse.pool import PooledMySQLDatabase
 
 config = ConfigParser()
-config.read('resources/mysql.cfg')
+config.read('resources/db.cfg')
 __host = config.get('mysqld', 'host')
 __port = config.get('mysqld', 'port')
 __db = config.get('mysqld', 'database')
@@ -19,7 +19,7 @@ def __get_db(threadlocals=True, autocommit=True,
                       autorollback=False, 
                       use_speedups=True):
     config = ConfigParser()
-    config.read('resources/mysql.cfg')
+    config.read('resources/db.cfg')
     host = config.get('mysqld', 'host')
     port = config.get('mysqld', 'port')
     db = config.get('mysqld', 'database')
