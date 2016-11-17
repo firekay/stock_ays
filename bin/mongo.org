@@ -1,0 +1,5 @@
+-- 查找最新的信息（按时间排序）
+db.getCollection('news').find({}).sort({'time':-1})
+
+-- 查询有多少条信息
+db.getCollection('news').find({}).length()
