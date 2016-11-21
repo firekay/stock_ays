@@ -10,7 +10,7 @@ def save_data():
     """下载并保持交易数据"""
 
     logger.info('Begin save today all stocks history data')
-    # bser.save_yestoday_all_stocks_his_data()
+    #bser.save_yestoday_all_stocks_his_data()
     bser.save_today_all_stocks_his_data()
     logger.info('End save today all stocks history data')
 

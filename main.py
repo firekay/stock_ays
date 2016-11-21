@@ -10,7 +10,9 @@ from data import base_data as bd
 from models import model
 from service import data_service as dser
 from service import business_service as bser
+from strategys import common_strategy as cstg
 from utils import util
+from strategys import common_strategy as cmstg
 
 
 today = util.get_today()
@@ -118,8 +120,8 @@ def save_data():
     # print('End save all stocks history data')
 
     logger.info('Begin save today all stocks history data')
+    bser.save_yestoday_all_stocks_his_data()
     #bser.save_today_all_stocks_his_data()
-    bser.save_all_stocks_his_data()
     # bser.save_all_stocks_his_data(start=util.get_ndays_before_line(6), end=yestoday_line)
     logger.info('End save today all stocks history data')
  
@@ -133,14 +135,20 @@ def save_data():
     # logger.info('End save tick data')
     # print('End save tick data')
 
+def strategy():
+    cstg.macd_service()
+    
+
 def main():
+    strategy()
     #macro_data()
     #base_data()
     #model.create_tables()
     # dser.save_his_data_scd('600848',start = '2016-10-13', end = '2016-10-14')
-    save_data()
+    #save_data()
     # stock_classified()
     #create_tables()
+    #bser.save_news()
     
 
 
