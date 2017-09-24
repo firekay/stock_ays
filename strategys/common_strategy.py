@@ -10,8 +10,7 @@ import time
 from models.model import *
 import pandas as pd
 
-logging.config.fileConfig("logging.conf")
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 #def _macd(x):
     #two_ops = []

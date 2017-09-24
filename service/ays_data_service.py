@@ -17,8 +17,7 @@ from models.model import *
 from queue import Queue
 
 
-logging.config.fileConfig("logging.conf")
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 today = get_today_line()
 
 

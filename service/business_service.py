@@ -17,8 +17,7 @@ yestoday_line = util.get_yestoday_line()
 tomorrow = util.get_tomorrow()
 tomorrow_line = util.get_tomorrow_line()
 
-logging.config.fileConfig("logging.conf")
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 def save_all_stocks_his_data(start=None, end=None):
     """下载并保持所有的股票的数据：D, W, M, 5, 15, 30, 60"""

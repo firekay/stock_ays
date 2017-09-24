@@ -1,11 +1,12 @@
 # encoding: UTF-8
+import os
+import yaml
 import sys
 from configparser import ConfigParser
 import tushare as ts
 from peewee import *
 from data import stock_classified as sc
 import logging
-import logging.config
 from data import base_data as bd
 from models import model
 from service import data_service as dser
@@ -14,7 +15,7 @@ from strategys import common_strategy as cstg
 from utils import util
 from strategys import common_strategy as cmstg
 
-
+logger = logging.getLogger(__name__)
 today = util.get_today()
 today_line = util.get_today_line()
 
@@ -23,8 +24,29 @@ yestoday_line = util.get_yestoday_line()
 
 tomorrow = util.get_tomorrow()
 tomorrow_line = util.get_tomorrow_line()
-logging.config.fileConfig("logging.conf")
-logger = logging.getLogger()
+
+reload(sys)
+sys.setdefaultencoding('utf8')
+
+
+def setup_logging(
+        default_path='resources/logging.yaml',
+        default_level=logging.INFO,
+        env_key='LOG_CFG'
+):
+    """Setup logging configuration
+
+    """
+    path = default_path
+    value = os.getenv(env_key, None)
+    if value:
+        path = value
+    if os.path.exists(path):
+        with open(path, 'rt') as f:
+            config = yaml.load(f.read())
+        logging.config.dictConfig(config)
+    else:
+        logging.basicConfig(level=default_level)
 
 
 def stock_classified():
@@ -151,4 +173,5 @@ def main():
     
 
 if __name__ == '__main__':
+    setup_logging()
     main()

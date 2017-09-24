@@ -1,0 +1,78 @@
+---
+
+version: 1
+
+disable_existing_loggers: False
+
+formatters:
+
+    simple:
+        format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    whole:
+        format: "%(asctime)s - %(levelname)s - %(funcName)s - %(lineno)s  - %(thread)d - %(threadName)s - %(message)s"
+#        format: "%(asctime)s - %(pathname)s - %(levelname)s - %(funcName)s - %(lineno)s - %(thread)d - %(threadName)s - %(message)s"
+
+
+handlers:
+
+    console:
+
+        class: logging.StreamHandler
+
+        level: DEBUG
+
+        formatter: simple
+
+        stream: ext://sys.stdout
+
+
+    info_file_handler:
+
+        class: logging.handlers.RotatingFileHandler
+
+        level: INFO
+
+        formatter: whole
+
+        filename: ../logs/info.log
+
+        maxBytes: 10485760 # 10MB
+
+        backupCount: 10
+
+        encoding: utf8
+
+
+    error_file_handler:
+
+        class: logging.handlers.RotatingFileHandler
+
+        level: ERROR
+
+        formatter: whole
+
+        filename: ../logs/errors.log
+
+        maxBytes: 10485760 # 10MB
+
+        backupCount: 10
+
+        encoding: utf8
+
+
+loggers:
+
+    my_module:
+
+        level: ERROR
+
+        handlers: [console]
+
+        propagate: no
+
+
+root:
+
+    level: DEBUG
+
+    handlers: [console, info_file_handler, error_file_handler]

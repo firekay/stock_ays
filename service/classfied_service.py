@@ -14,5 +14,4 @@ yestoday_line = util.get_yestoday_line()
 tomorrow = util.get_tomorrow()
 tomorrow_line = util.get_tomorrow_line()
 
-logging.config.fileConfig("logging.conf")
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
