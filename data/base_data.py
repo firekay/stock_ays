@@ -37,13 +37,13 @@ class StockBasic(BaseModel):
     insert_date =  DateField('%Y%m%d')
 
     @conn
-    def create_tbl():
+    def create_tbl(self):
         # connect()
         StockBasic.create_table()
         # close()
 
     @conn
-    def save_data():
+    def save_data(self):
         data_df = ts.get_stock_basics()
         data_df['code'] = pd.Series(data_df.axes[0], index=data_df.index)
         data = data_df.values

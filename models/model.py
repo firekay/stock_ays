@@ -12,6 +12,7 @@ class BaseModel(Model):
     class Meta:
         database = database
 
+
 ########股票分类数据########
 class IndustryClassified(BaseModel):
     class Meta:
@@ -282,6 +283,8 @@ class BigTradeData(BaseModel):
     type = CharField()
 
 
+@DeprecationWarning
+# '请查看business_service.create_tables'
 def create_tables():
     """Use data_service model's create tables."""
     # IndustryClassified.create_table()
@@ -298,10 +301,9 @@ def create_tables():
     # StockBasic.create_table()
     print('begin create table ...')
     HistoryData.create_table()
-    HistoryData_scd.create_table()
+    HistoryDataScd.create_table()
     # RevoteHistoryData.create_table()
     # TickData.create_table()
     # BigIndex.create_table()
     # BigTradeData.create_table()
     print('End create table ...')
-    

@@ -220,8 +220,6 @@ def save_news():
         time.sleep(60)
         
                 
-        
-
 def create_tables():
     cls_models = [IndustryClassified, ConceptClassified, SmeClassified,
               AreaClassified, GemClassified, StClassified,

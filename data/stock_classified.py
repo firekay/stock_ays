@@ -6,10 +6,13 @@ from utils.util import *
 import tushare as ts
 
 database = database
+
+
 class BaseModel(Model):
     class Meta:
         database = database        
-        
+
+
 class IndustryClassified(BaseModel):
     """行业分类"""
     class Meta:
@@ -30,9 +33,10 @@ class IndustryClassified(BaseModel):
         data = data_df.values
         data_dicts = [ {'code': row[0], 'name': row[1], 'c_name': row[2]} for row in data ]
         print(data)
-        mutils.connect()
+        connect()
         IndustryClassified.insert_many(data_dicts).execute()
-        mutils.close()
+        close()
+
 
 ########################################################################
 class ConceptClassified(BaseModel):
@@ -197,7 +201,7 @@ class Sz50(BaseModel):
             data_df = ts.get_sz50s()    
             print(data_df)    
             data = data_df.values
-            data_dicts = [ {'code': row[0], 'name': row[1]} for row in data ]
+            data_dicts = [{'code': row[0], 'name': row[1]} for row in data]
             Sz50.insert_many(data_dicts).execute()
             
 

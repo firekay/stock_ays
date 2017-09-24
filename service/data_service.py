@@ -245,18 +245,18 @@ def save_revote_his_data(code, start=None, end=None, autype='qfq',
     print('Begin: %s,%s,%s' % (code, start, autype))
     try:
         data_df = ts.get_h_data(code, start, end, autype,
-               index, retry_count, pause, drop_facto)
+               index, retry_count, pause, drop_factor)
         data_df['date'] = pd.Series(data_df.index, index=data_df.index)
         data = data_df.values
         data_dicts = [ {'code': code, 'autype': autype, 'date': row[6], 'open': row[0], 'hign': row[1], 'close': row[2], 'low': row[3], 'volume': row[4], 'amount': row[5]} for row in data ]
         RevoteHistoryData.insert_many(data_dicts).execute()
     except Exception as e:
-        logger.error('%s,%s,%s' % (code, start, ktype))
+        logger.error('%s,%s' % (code, start))
         logger.error(traceback.format_exc())
-        print('%s,%s,%s' % (code, start, ktype))
+        print('%s,%s' % (code, start))
         print(traceback.format_exc())
-    logger.info('End: %s,%s,%s' % (code, start, ktype))
-    print('End: %s,%s,%s' % (code, start, ktype))
+    logger.info('End: %s,%s' % (code, start))
+    print('End: %s,%s' % (code, start))
 
 
 def save_today_all_data():
@@ -283,7 +283,7 @@ def save_tick_data(code=None, date=None, retry_count=10):
 
     当code为None,或者code长度不为6,或者date为None时直接返回None"""
     if code is None or date is None:
-        logger.error('Get tick data. But code or date is None.' % (code, date))
+        logger.error('Get tick data. But code or date is None.')
         return None
     logger.info('Begin get %s\'s tick data in %s.' % (code, date))
     try:
@@ -305,7 +305,7 @@ def save_big_index_data():
     try:
         data_df = ts.get_index()
         data = data_df.values
-        data_dicts = [ {'date': today, 'code': row[0], 'name': row[1], 'change': row[2], 'open': row[3], 'preclose': row[4], 'close': row[5], 'high': row[6], 'low': row[7], 'volume': row[8], 'amount': row[9]} for row in data ]
+        data_dicts = [{'date': today, 'code': row[0], 'name': row[1], 'change': row[2], 'open': row[3], 'preclose': row[4], 'close': row[5], 'high': row[6], 'low': row[7], 'volume': row[8], 'amount': row[9]} for row in data]
         BigIndexData.insert_many(data_dicts).execute()
     except Exception as e:
         logger.error('Get %s\'s big index data.' % (today))
@@ -353,7 +353,7 @@ def save_concept_classified():
     try:
         data_df = ts.get_concept_classified()    
         data = data_df.values
-        data_dicts = [ {'code': row[0], 'name': row[1], 'c_name': row[2]} for row in data ]
+        data_dicts = [{'code': row[0], 'name': row[1], 'c_name': row[2]} for row in data]
         ConceptClassified.insert_many(data_dicts).execute()
     except Exception as e:
         logger.error('Get concept clssified股票概念的分类数据.')

@@ -39,9 +39,11 @@ database = __get_pooled_db()
 # def connect():
 #     database.connect()
 
+
 def connect():
     database._connect(database=__db, host=__host, port=int(__port),
                                user=__user, passwd=__passwd)
+
 
 def close(conn):
     database._close(conn)
