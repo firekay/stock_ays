@@ -10,7 +10,9 @@ import logging
 from data import base_data as bd
 from models import model
 from service import data_service as dser
+from service import table_service
 from service import business_service as bser
+from service import base_service
 from strategys import common_strategy as cstg
 from utils import util
 from strategys import common_strategy as cmstg
@@ -121,17 +123,17 @@ def stock_classified():
 #     rrr.save_data(date='2010-11-29')
 
 
-def create_tables():
-    print("Create tables begin.")
-    bser.create_tables()
-    print("Create tables end.")
-
-
 def drop_tables():
-    print("Drop tables begin.")
-    bser.drop_tables()
-    print("Drop tables end.")
-    
+    logger.info('Begin drop tables.')
+    table_service.drop_all_tables()
+    logger.info('End drop tables.')
+
+
+def create_tables():
+    logger.info("Create tables begin.")
+    table_service.create_all_tables()
+    logger.info("Create tables end.")
+
 
 def save_data():
     """下载并保持交易数据"""
@@ -139,36 +141,36 @@ def save_data():
     logger.info('Begin save all stocks history data')
     bser.save_all_stocks_his_data()
     logger.info('End save all stocks history data')
-    print('End save all stocks history data')
 
-    logger.info('Begin save today all stocks history data')
-    bser.save_yestoday_all_stocks_his_data()
-    bser.save_today_all_stocks_his_data()
-    bser.save_all_stocks_his_data(start=util.get_ndays_before_line(6), end=yestoday_line)
-    logger.info('End save today all stocks history data')
- 
-    logger.info('Begin save today all data')
-    bser.save_today_all_data()
-    logger.info('End save today all data')
-    print('End save today all data')
-
-    logger.info('Begin save tick data')
-    bser.save_tick_data()
-    logger.info('End save tick data')
-    print('End save tick data')
+    # logger.info('Begin save today all stocks history data')
+    # bser.save_yestoday_all_stocks_his_data()
+    # bser.save_today_all_stocks_his_data()
+    # bser.save_all_stocks_his_data(start=util.get_ndays_before_line(6), end=yestoday_line)
+    # logger.info('End save today all stocks history data')
+    #
+    # logger.info('Begin save today all data')
+    # bser.save_today_all_data()
+    # logger.info('End save today all data')
+    # print('End save today all data')
+    #
+    # logger.info('Begin save tick data')
+    # bser.save_tick_data()
+    # logger.info('End save tick data')
+    # print('End save tick data')
 
 
 def strategy():
     cstg.macd_service()
-    
+
 
 def main():
-    # macro_data()
-    # base_data()
-    # dser.save_his_data_scd('600848',start = '2016-10-13', end = '2016-10-14')
-    save_data()
-    stock_classified()
+    # drop_tables()
     # create_tables()
+    # base_service.save_stocks_basic_data()
+    save_data()
+    # dser.save_his_data_scd('600848',start = '2016-10-13', end = '2016-10-14')
+    # stock_classified()
+    # table_service.create_tables()
     # bser.save_news()
     
 

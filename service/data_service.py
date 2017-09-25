@@ -26,27 +26,49 @@ his_data_scd_queue = Queue()
 def save_his_data():
     """保存个股历史交易数据到mysql, 周线"""
     logger.info('begin save his data thread.')
-    while(1):
+
+    # @conn
+    # def d_insert():
+    #     HistoryDataD.insert_many(data_dicts).execute()
+    #
+    # @conn
+    # def w_insert():
+    #     HistoryDataW.insert_many(data_dicts).execute()
+    #
+    # @conn
+    # def m_insert():
+    #     HistoryDataD.insert_many(data_dicts).execute()
+
+    while True:
         if his_data_queue.empty():
             time.sleep(0.01)
         else:
-            logger.info('his_data_queue\'s size is: %s' % (his_data_queue.qsize()))
-            his_data = his_data_queue.get()
-            code = his_data[0]
-            ktype = his_data[1]
-            data = his_data[2]
-            logger.info('Get code: %s, ktype: %s from his_data_queue' % (code, ktype))
-            data_dicts = [ {'code': code, 'ktype': ktype, 'date': row[14], 
-                'open': row[0], 'hign': row[1], 'close': row[2], 
-                'low': row[3], 'volume': row[4], 
-                'price_change': row[5], 'p_change':row[6], 
-                'ma5':row[7], 'ma10': row[8], 'ma20': row[9],
-                'v_ma5': row[10], 'v_ma10': row[11], 
-                'v_ma20': row[12], 'turnover': row[13]} 
-                for row in data ]
-            # logger.info(data_dicts)
-            HistoryData.insert_many(data_dicts).execute()
-            
+            try:
+                logger.info('his_data_queue\'s size is: %s' % (his_data_queue.qsize()))
+                his_data = his_data_queue.get()
+                code = his_data[0]
+                ktype = his_data[1]
+                data = his_data[2]
+                logger.info('Get code: %s, ktype: %s from his_data_queue' % (code, ktype))
+                data_dicts = [{'code': code, 'date': row[14],
+                    'open': row[0], 'hign': row[1], 'close': row[2],
+                    'low': row[3], 'volume': row[4],
+                    'price_change': row[5], 'p_change':row[6],
+                    'ma5':row[7], 'ma10': row[8], 'ma20': row[9],
+                    'v_ma5': row[10], 'v_ma10': row[11],
+                    'v_ma20': row[12], 'turnover': row[13]}
+                    for row in data]
+                # logger.info(data_dicts)
+                if ktype.upper() == 'D':
+                    HistoryDataD.insert_many(data_dicts).execute()
+                if ktype.upper() == 'W':
+                    HistoryDataW.insert_many(data_dicts).execute()
+                if ktype.upper() == 'M':
+                    HistoryDataM.insert_many(data_dicts).execute()
+            except Exception as e:
+                logger.exception('Save data error. Code is %s, ktype is %s' % (code, ktype))
+                logger.error(data)
+
             if code == get_max_stock():
                 break
 
@@ -64,19 +86,20 @@ def save_his_data_scd():
             ktype = his_data[1]
             data = his_data[2]
             logger.info('get code: %s ktype: %s from his_data_scd_queue' % (code, ktype))
-            data_dicts = [ {'code': code, 'ktype': ktype, 'date': row[14], 
+            data_dicts = [{'code': code, 'ktype': ktype, 'date': row[14],
                             'time': row[15], 'open': row[0], 'hign': row[1],
                             'close': row[2], 'low': row[3], 'volume': row[4], 
                             'price_change': row[5], 'p_change':row[6], 
                             'ma5':row[7], 'ma10': row[8], 'ma20': row[9],
                             'v_ma5': row[10], 'v_ma10': row[11], 
                             'v_ma20': row[12], 'turnover': row[13]} 
-                           for row in data ]
+                           for row in data]
             # logger.info(data_dicts)
             HistoryDataScd.insert_many(data_dicts).execute()
             
             if code == get_max_stock():
                 break
+
 
 def get_max_stock():
     """获取最大股票"""
@@ -90,16 +113,14 @@ def get_stocks():
     return StockBasic.select(StockBasic.code).order_by(StockBasic.code)
 
 
-def get_his_data(code, start=None, end=None,
-                  ktype=None, retry_count=10,
-                  pause=0.001):
+def get_his_data(code, start=None, end=None, ktype=None, retry_count=10, pause=0.001):
     """获取个股历史交易数据（包括均线数据），可以通过参数设置获取日k线、周k线、月k线数据。
     本接口只能获取近3年的日线数据，
     适合搭配均线数据进行选股和分析，如果需要全部历史数据，请调用下一个接口get_h_data()。"""
-    ktypes = list(['D','W', 'M'])
+    ktypes = list(['D', 'W', 'M'])
+
     def _deal_data(code, start, end, ktype, retry_count, pause):
         logger.info('Begin get data: %s,%s,%s' % (code, start, ktype))
-        print('Begin get data: %s,%s,%s' % (code, start, ktype))
         try:
             data_df = ts.get_hist_data(code, start, end, ktype, retry_count, pause)
             if data_df is not None and not data_df.empty:
@@ -107,15 +128,11 @@ def get_his_data(code, start=None, end=None,
                 data = data_df.values
                 his_data_queue.put((code, ktype, data))
                 logger.info('End get data: %s,%s,%s' % (code, start, ktype))
-                print('End get data: %s,%s,%s' % (code, start, ktype))
             else:
                 logger.info('Empty get data: %s,%s,%s,%s' % (code, start, end, ktype))
 
         except Exception as e:
-            logger.error('Get data error: %s,%s,%s' % (code, start, ktype))
-            logger.error(traceback.format_exc())
-            print('%s,%s,%s' % (code, start, ktype))
-            print(traceback.format_exc())
+            logger.exception('Get data error: %s,%s,%s' % (code, start, ktype))
 
     if ktype is None:
         for ktype in ktypes:
@@ -133,6 +150,7 @@ def get_his_data_scd(code, start=None, end=None,
     本接口只能获取近3年的日线数据，
     适合搭配均线数据进行选股和分析，如果需要全部历史数据，请调用下一个接口get_h_data()。"""
     ktypes = list(['5', '15', '30', '60'])
+
     def _deal_data(code, start, end, ktype, retry_count, pause):
         logger.info('Begin get data: %s,%s,%s' % (code, start, ktype))
         print('Begin get data: %s,%s,%s' % (code, start, ktype))
@@ -144,11 +162,10 @@ def get_his_data_scd(code, start=None, end=None,
                 data = data_df.values
                 his_data_scd_queue.put((code, ktype, data))
                 logger.info('End get data: %s,%s,%s' % (code, start, ktype))
-                print('End get data: %s,%s,%s' % (code, start, ktype))
             else:
                 logger.info('Empty get data: %s,%s,%s,%s' % (code, start, end, ktype))
         except Exception as e:
-            logger.error('Get data error:%s,%s,%s' % (code, start, ktype))
+            logger.exception('Get data error:%s,%s,%s' % (code, start, ktype))
             logger.error(traceback.format_exc())
             print('Get data error:%s,%s,%s' % (code, start, ktype))
             print(traceback.format_exc())
@@ -176,14 +193,14 @@ def get_his_data_scd(code, start=None, end=None,
 #             data_df = ts.get_hist_data(code, start, end, ktype, retry_count, pause)
 #             data_df['date'] = pd.Series(data_df.axes[0], index=data_df.index)
 #             data = data_df.values
-#             data_dicts = [ {'code': code, 'ktype': ktype, 'date': row[14], 
+#             data_dicts = [{'code': code, 'ktype': ktype, 'date': row[14],
 #                             'open': row[0], 'hign': row[1], 'close': row[2], 
 #                             'low': row[3], 'volume': row[4], 
 #                             'price_change': row[5], 'p_change':row[6], 
 #                             'ma5':row[7], 'ma10': row[8], 'ma20': row[9],
 #                             'v_ma5': row[10], 'v_ma10': row[11], 
 #                             'v_ma20': row[12], 'turnover': row[13]} 
-#                            for row in data ]
+#                            for row in data]
 #             HistoryData.insert_many(data_dicts).execute()
 #         except Exception as e:
 #             logger.error('%s,%s,%s' % (code, start, ktype))
@@ -218,7 +235,7 @@ def get_his_data_scd(code, start=None, end=None,
 #             data_df['date'] = pd.Series(data_df.index.map(lambda s: s.split(' ')[0]), index=data_df.index)
 #             data_df['time'] = pd.Series(data_df.index.map(lambda s: s.split(' ')[1]), index=data_df.index)
 #             data = data_df.values
-#             data_dicts = [ {'code': code, 'ktype': ktype, 'date': row[14], 'time': row[15], 'open': row[0], 'hign': row[1], 'close': row[2], 'low': row[3], 'volume': row[4], 'price_change': row[5], 'p_change':row[6], 'ma5':row[7], 'ma10': row[8], 'ma20': row[9], 'v_ma5': row[10], 'v_ma10': row[11], 'v_ma20': row[12], 'turnover': row[13]} for row in data ]
+#             data_dicts = [{'code': code, 'ktype': ktype, 'date': row[14], 'time': row[15], 'open': row[0], 'hign': row[1], 'close': row[2], 'low': row[3], 'volume': row[4], 'price_change': row[5], 'p_change':row[6], 'ma5':row[7], 'ma10': row[8], 'ma20': row[9], 'v_ma5': row[10], 'v_ma10': row[11], 'v_ma20': row[12], 'turnover': row[13]} for row in data]
 #             HistoryDataScd.insert_many(data_dicts).execute()
 #         except Exception as e:
 #             logger.error('%s,%s,%s' % (code, start, ktype))
@@ -247,7 +264,7 @@ def save_revote_his_data(code, start=None, end=None, autype='qfq',
                index, retry_count, pause, drop_factor)
         data_df['date'] = pd.Series(data_df.index, index=data_df.index)
         data = data_df.values
-        data_dicts = [ {'code': code, 'autype': autype, 'date': row[6], 'open': row[0], 'hign': row[1], 'close': row[2], 'low': row[3], 'volume': row[4], 'amount': row[5]} for row in data ]
+        data_dicts = [{'code': code, 'autype': autype, 'date': row[6], 'open': row[0], 'hign': row[1], 'close': row[2], 'low': row[3], 'volume': row[4], 'amount': row[5]} for row in data]
         RevoteHistoryData.insert_many(data_dicts).execute()
     except Exception as e:
         logger.error('%s,%s' % (code, start))
@@ -266,7 +283,7 @@ def save_today_all_data():
     try:
         data_df = ts.get_today_all()
         data = data_df.values
-        data_dicts = [ {'code': row[0], 'name': row[1], 'date': today, 'changepercent': row[2], 'trade': row[3], 'open': row[4], 'hign': row[5], 'low': row[6], 'settlement': row[7], 'volume': row[8], 'turnoverratio': row[9], 'amount': row[10], 'per': row[11], 'mktcap': row[12], 'nmc': row[13]} for row in data ]
+        data_dicts = [{'code': row[0], 'name': row[1], 'date': today, 'changepercent': row[2], 'trade': row[3], 'open': row[4], 'hign': row[5], 'low': row[6], 'settlement': row[7], 'volume': row[8], 'turnoverratio': row[9], 'amount': row[10], 'per': row[11], 'mktcap': row[12], 'nmc': row[13]} for row in data]
         TodayAllData.insert_many(data_dicts).execute()
     except Exception as e:
         logger.error('Get %s\'s all stock data.' % (today))
@@ -288,7 +305,7 @@ def save_tick_data(code=None, date=None, retry_count=10):
     try:
         data_df = ts.get_tick_data(code, date,retry_count)
         data = data_df.values
-        data_dicts = [ {'code': code, 'date': date, 'time': row[0], 'price': row[1], 'pchange': '', 'change': row[2], 'volume': row[3], 'amount': row[4], 'type': row[5]} for row in data ]
+        data_dicts = [{'code': code, 'date': date, 'time': row[0], 'price': row[1], 'pchange': '', 'change': row[2], 'volume': row[3], 'amount': row[4], 'type': row[5]} for row in data]
         TickData.insert_many(data_dicts).execute()
     except Exception as e:
         logger.error('Get %s\'s tick data in %s.' % (code, date))
@@ -320,7 +337,7 @@ def save_big_trade_data(code=None, date=None, vol=400, retry_count=10, pause=0.0
     try:
         data_df = ts.get_sina_dd(code, date, vol, retry_count, pause)
         data = data_df.values
-        data_dicts = [ {'date': date, 'code': row[0], 'name': row[1], 'time': row[2], 'price': row[3], 'volume': row[4], 'preprice': row[5], 'type': row[6]} for row in data ]
+        data_dicts = [{'date': date, 'code': row[0], 'name': row[1], 'time': row[2], 'price': row[3], 'volume': row[4], 'preprice': row[5], 'type': row[6]} for row in data]
         BigTradeData.insert_many(data_dicts).execute()
     except Exception as e:
         logger.error('Get %s\'s big trade data in %s.' % (code, date))
@@ -337,7 +354,7 @@ def save_industry_classified():
     try:
         data_df = ts.get_industry_classified(standard=type)
         data = data_df.values
-        data_dicts = [ {'code': row[0], 'name': row[1], 'c_name': row[2]} for row in data ]
+        data_dicts = [{'code': row[0], 'name': row[1], 'c_name': row[2]} for row in data]
         IndustryClassified.insert_many(data_dicts).execute()
     except Exception as e:
         logger.error('Get industry classified行业信息.')
@@ -366,7 +383,7 @@ def save_area_classified():
     try:
         data_df = ts.get_area_classified()    
         data = data_df.values
-        data_dicts = [ {'code': row[0], 'name': row[1], 'area': row[2]} for row in data ]
+        data_dicts = [{'code': row[0], 'name': row[1], 'area': row[2]} for row in data]
         AreaClassified.insert_many(data_dicts).execute()
     except Exception as e:
         logger.error('Get area clssified.')
@@ -380,7 +397,7 @@ def save_sme_classified():
     try:
         data_df = ts.get_sme_classified()    
         data = data_df.values
-        data_dicts = [ {'code': row[0], 'name': row[1]} for row in data ]
+        data_dicts = [{'code': row[0], 'name': row[1]} for row in data]
         SmeClassified.insert_many(data_dicts).execute()
     except Exception as e:
         logger.error('Get sme中小板 classified.')
@@ -394,7 +411,7 @@ def save_gem_classified():
     try:
         data_df = ts.get_gem_classified()    
         data = data_df.values
-        data_dicts = [ {'code': row[0], 'name': row[1]} for row in data ]
+        data_dicts = [{'code': row[0], 'name': row[1]} for row in data]
         GemClassified.insert_many(data_dicts).execute()
     except Exception as e:
         logger.error('Get gem 创业板股票数据classified.')
@@ -408,7 +425,7 @@ def save_st_classified():
     try:
         data_df = ts.get_st_classified()    
         data = data_df.values
-        data_dicts = [ {'code': row[0], 'name': row[1]} for row in data ]
+        data_dicts = [{'code': row[0], 'name': row[1]} for row in data]
         StClassified.insert_many(data_dicts).execute()
     except Exception as e:
         logger.error('Get st classified.')
@@ -422,7 +439,7 @@ def save_hs300s():
     try:
         data_df = ts.get_hs300s()
         data = data_df.values
-        data_dicts = [ {'code': row[0], 'name': row[1], 'date': row[2], 'weight': row[3]} for row in data ]
+        data_dicts = [{'code': row[0], 'name': row[1], 'date': row[2], 'weight': row[3]} for row in data]
         Hs300.insert_many(data_dicts).execute()
     except Exception as e:
         logger.error('Get hs300 classified.')
@@ -436,7 +453,7 @@ def save_sz50s():
     try:
         data_df = ts.get_sz50s()    
         data = data_df.values
-        data_dicts = [ {'code': row[0], 'name': row[1]} for row in data ]
+        data_dicts = [{'code': row[0], 'name': row[1]} for row in data]
         Sz50.insert_many(data_dicts).execute()
     except Exception as e:
         logger.error('Get sz50 classified.')
@@ -450,7 +467,7 @@ def save_zz500s():
     try:
         data_df = ts.get_zz500s()    
         data = data_df.values
-        data_dicts = [ {'code': row[0], 'name': row[1]} for row in data ]
+        data_dicts = [{'code': row[0], 'name': row[1]} for row in data]
         Zz500.insert_many(data_dicts).execute()
     except Exception as e:
         logger.error('Get zz500 classified.')
@@ -465,7 +482,7 @@ def save_terminated():
         today = str(get_today())
         data_df = ts.get_terminated()
         data = data_df.values
-        data_dicts = [ {'code': row[0], 'name': row[1], 'o_date': row[2], 't_date': row[3], 'insert_date': today} for row in data ]
+        data_dicts = [{'code': row[0], 'name': row[1], 'o_date': row[2], 't_date': row[3], 'insert_date': today} for row in data]
         Terminated.insert_many(data_dicts).execute()
     except Exception as e:
         logger.error('Get terminated classified.')
@@ -480,7 +497,7 @@ def save_suspend():
         today = str(get_today())
         data_df = ts.get_terminated()
         data = data_df.values
-        data_dicts = [ {'code': row[0], 'name': row[1], 'o_date': row[2], 't_date': row[3], 'insert_date': today} for row in data ]
+        data_dicts = [{'code': row[0], 'name': row[1], 'o_date': row[2], 't_date': row[3], 'insert_date': today} for row in data]
         Suspend.insert_many(data_dicts).execute()
     except Exception as e:
         logger.error('Get suspend classified.')
@@ -494,7 +511,7 @@ def save_stock_basic():
         data_df = ts.get_stock_basics()
         data_df['code'] = pd.Series(data_df.axes[0], index=data_df.index)
         data = data_df.values
-        data_dicts = [ {'code': row[15], 'name': row[0], 'industry': row[1], 'area': row[2], 'pe': row[3], 'outstanding': row[4], 'totals': row[5], 'totalAssets':row[6], 'liquidAssets':row[7], 'fixedAssets': row[8], 'reserved': row[9], 'reservedPerShare': row[10], 'eps': row[11], 'bvps': row[12], 'pb': row[13], 'timeToMarket': row[14], 'insert_date': today} for row in data ]
+        data_dicts = [{'code': row[15], 'name': row[0], 'industry': row[1], 'area': row[2], 'pe': row[3], 'outstanding': row[4], 'totals': row[5], 'totalAssets':row[6], 'liquidAssets':row[7], 'fixedAssets': row[8], 'reserved': row[9], 'reservedPerShare': row[10], 'eps': row[11], 'bvps': row[12], 'pb': row[13], 'timeToMarket': row[14], 'insert_date': today} for row in data]
         # connect()
         StockBasic.insert_many(data_dicts).execute()
     except Exception as e:
@@ -534,36 +551,7 @@ def save_news2mongo(df):
     mongo_utils.close()
     
     
-def truncate_table(cls):
-    """清空表
-    
-    参数为model中的类名。
-    """
-    cls.truncate_table()
 
-
-def create_table(cls):
-    """创建表。
-
-    参数为model中的类名
-    """
-    cls.create_table()
-
-
-def create_tables(classes):
-    """参数为列表， 列表中数据是model中的类名"""
-    [ create_table(cls) for cls in classes ]
-    
-    
-def drop_table(cls):
-    """删除单个表, 参数为model中的类名"""
-    cls.drop_table()
-    
-    
-def drop_tables(classes):
-    """参数为列表， 列表中数据是model中的类名"""
-    [ drop_table(cls) for cls in classes ]
-    
 # if __name__ == '__main__':
     # import sys
     # print(sys.path())

@@ -1,4 +1,4 @@
-# encoding: UTF-8
+#encoding: UTF-8
 
 from peewee import *
 from utils.mysql_utils import *
@@ -8,12 +8,14 @@ import pandas as pd
 
 
 today = str(get_today())
+
+
 class BaseModel(Model):
     class Meta:
         database = database
 
 
-########股票分类数据########
+# 股票分类数据
 class IndustryClassified(BaseModel):
     class Meta:
         db_table = 'industry_classified'
@@ -122,7 +124,8 @@ class Suspend(BaseModel):
     t_date = CharField()    
     insert_date = CharField()    
 
-########基本面数据########
+
+# 基本面数据
 class StockBasic(BaseModel):
     """股票列表"""
     class Meta:
@@ -143,33 +146,87 @@ class StockBasic(BaseModel):
     eps = DecimalField(max_digits=12, decimal_places=3)
     bvps = DecimalField(max_digits=12, decimal_places=2)
     pb = DecimalField(max_digits=12, decimal_places=2)
-    timeToMarket = DateField('%Y%m%d')
-    insert_date =  DateField('%Y%m%d')
+    timeToMarket = IntegerField()
+    undp = DecimalField(max_digits=12, decimal_places=2)
+    perundp = DecimalField(max_digits=12, decimal_places=2)
+    rev = DecimalField(max_digits=12, decimal_places=2)
+    profit = DecimalField(max_digits=12, decimal_places=2)
+    gpr = DecimalField(max_digits=12, decimal_places=2)
+    npr = DecimalField(max_digits=12, decimal_places=2)
+    holders = DecimalField(max_digits=12, decimal_places=2)
+    insert_date = DateField('%Y%m%d')
 
 
-########交易数据########
-class HistoryData(BaseModel):
-    """历史行情: D, W, M"""
+# 交易数据: 天
+class HistoryDataD(BaseModel):
+    """历史行情: D"""
     class Meta:
-        db_table = 'history_data'
+        db_table = 'history_data_d'
 
-    code = CharField()
-    ktype = CharField(5)
+    code = CharField(8)
     date = DateField('%Y-%m-%d')
     open = DecimalField(max_digits=8, decimal_places=2)
     hign = DecimalField(max_digits=8, decimal_places=2)
     close = DecimalField(max_digits=8, decimal_places=2)
     low = DecimalField(max_digits=8, decimal_places=2)
     volume = DecimalField(max_digits=12, decimal_places=2)
-    price_change = DecimalField(max_digits=5, decimal_places=2)
-    p_change = DecimalField(max_digits=5, decimal_places=2)
+    price_change = DecimalField(max_digits=10, decimal_places=2)
+    p_change = DecimalField(max_digits=10, decimal_places=2)
     ma5 = DecimalField(max_digits=10, decimal_places=3)
     ma10 = DecimalField(max_digits=10, decimal_places=4)
     ma20 = DecimalField(max_digits=10, decimal_places=4)
     v_ma5 =  DecimalField(max_digits=12, decimal_places=2)
     v_ma10 = DecimalField(max_digits=12, decimal_places=2)
     v_ma20 = DecimalField(max_digits=12, decimal_places=2)
-    turnover = DecimalField(max_digits=5, decimal_places=2)
+    turnover = DecimalField(max_digits=10, decimal_places=2)
+
+
+# 交易数据: 周
+class HistoryDataW(BaseModel):
+    """历史行情:  W"""
+    class Meta:
+        db_table = 'history_data_w'
+
+    code = CharField(8)
+    date = DateField('%Y-%m-%d')
+    open = DecimalField(max_digits=8, decimal_places=2)
+    hign = DecimalField(max_digits=8, decimal_places=2)
+    close = DecimalField(max_digits=8, decimal_places=2)
+    low = DecimalField(max_digits=8, decimal_places=2)
+    volume = DecimalField(max_digits=12, decimal_places=2)
+    price_change = DecimalField(max_digits=10, decimal_places=2)
+    p_change = DecimalField(max_digits=10, decimal_places=2)
+    ma5 = DecimalField(max_digits=10, decimal_places=3)
+    ma10 = DecimalField(max_digits=10, decimal_places=4)
+    ma20 = DecimalField(max_digits=10, decimal_places=4)
+    v_ma5 =  DecimalField(max_digits=12, decimal_places=2)
+    v_ma10 = DecimalField(max_digits=12, decimal_places=2)
+    v_ma20 = DecimalField(max_digits=12, decimal_places=2)
+    turnover = DecimalField(max_digits=10, decimal_places=2)
+
+
+# 交易数据: 月
+class HistoryDataM(BaseModel):
+    """历史行情:  M"""
+    class Meta:
+        db_table = 'history_data_m'
+
+    code = CharField(8)
+    date = DateField('%Y-%m-%d')
+    open = DecimalField(max_digits=8, decimal_places=2)
+    hign = DecimalField(max_digits=8, decimal_places=2)
+    close = DecimalField(max_digits=8, decimal_places=2)
+    low = DecimalField(max_digits=8, decimal_places=2)
+    volume = DecimalField(max_digits=12, decimal_places=2)
+    price_change = DecimalField(max_digits=10, decimal_places=2)
+    p_change = DecimalField(max_digits=10, decimal_places=2)
+    ma5 = DecimalField(max_digits=10, decimal_places=3)
+    ma10 = DecimalField(max_digits=10, decimal_places=4)
+    ma20 = DecimalField(max_digits=10, decimal_places=4)
+    v_ma5 =  DecimalField(max_digits=12, decimal_places=2)
+    v_ma10 = DecimalField(max_digits=12, decimal_places=2)
+    v_ma20 = DecimalField(max_digits=12, decimal_places=2)
+    turnover = DecimalField(max_digits=10, decimal_places=2)
 
 
 class HistoryDataScd(BaseModel):
@@ -186,8 +243,8 @@ class HistoryDataScd(BaseModel):
     close = DecimalField(max_digits=8, decimal_places=2)
     low = DecimalField(max_digits=8, decimal_places=2)
     volume = DecimalField(max_digits=12, decimal_places=2)
-    price_change = DecimalField(max_digits=5, decimal_places=2)
-    p_change = DecimalField(max_digits=5, decimal_places=2)
+    price_change = DecimalField(max_digits=10, decimal_places=2)
+    p_change = DecimalField(max_digits=10, decimal_places=2)
     ma5 = DecimalField(max_digits=10, decimal_places=3)
     ma10 = DecimalField(max_digits=10, decimal_places=4)
     ma20 = DecimalField(max_digits=10, decimal_places=4)
@@ -195,6 +252,7 @@ class HistoryDataScd(BaseModel):
     v_ma10 = DecimalField(max_digits=12, decimal_places=2)
     v_ma20 = DecimalField(max_digits=12, decimal_places=2)
     turnover = DecimalField(max_digits=5, decimal_places=2)
+
 
 class RevoteHistoryData(BaseModel):
     """复权数据"""
@@ -281,29 +339,3 @@ class BigTradeData(BaseModel):
     volume = DecimalField(max_digits=10, decimal_places=2)
     preprice = DecimalField(max_digits=8, decimal_places=2)
     type = CharField()
-
-
-@DeprecationWarning
-# '请查看business_service.create_tables'
-def create_tables():
-    """Use data_service model's create tables."""
-    # IndustryClassified.create_table()
-    # ConceptClassified.create_table()
-    # SmeClassified.create_table()
-    # AreaClassified.create_table()
-    # GemClassified.create_table()
-    # StClassified.create_table()
-    # Hs300.create_table()
-    # Sz50.create_table()
-    # Zz500.create_table()
-    # Terminated.create_table()
-    # Suspend.create_table()
-    # StockBasic.create_table()
-    print('begin create table ...')
-    HistoryData.create_table()
-    HistoryDataScd.create_table()
-    # RevoteHistoryData.create_table()
-    # TickData.create_table()
-    # BigIndex.create_table()
-    # BigTradeData.create_table()
-    print('End create table ...')
