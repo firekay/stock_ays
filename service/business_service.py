@@ -27,6 +27,38 @@ def check_thread_alive(thread):
         logger.warn('Thread %s not alive.' % thread.getName())
 
 
+def save_select_stocks_his_data(stocks, start=None, end=None, ktype=None, retry_count=10, pause=0.00):
+    """获取个股历史交易数据（包括均线数据），可以通过参数设置获取日k线、周k线、月k线数据。
+    本接口只能获取近3年的日线数据
+    """
+    ktypes = list(['D', 'W', 'M'])
+    last_stock_code = stocks[-1]
+    logger.info(last_stock_code)
+    save_his_data_thread = threading.Thread(name='save_his_data', target=dsvc.save_his_data, args=(last_stock_code,))
+    save_his_data_thread.start()
+
+    def _deal_data(code, start, end, ktype, retry_count, pause):
+        logger.info('Begin get data: %s,%s,%s' % (code, start, ktype))
+        try:
+            data_df = ts.get_hist_data(code, start, end, ktype, retry_count, pause)
+            if data_df is not None and not data_df.empty:
+                data_df['date'] = pd.Series(data_df.axes[0], index=data_df.index)
+                data = data_df.values
+                dsvc.his_data_queue.put((code, ktype, data))
+                logger.info('End get data: %s,%s,%s' % (code, start, ktype))
+            else:
+                logger.info('Empty get data: %s,%s,%s,%s' % (code, start, end, ktype))
+        except Exception as e:
+            logger.exception('Get data error: %s,%s,%s' % (code, start, ktype))
+
+    for stock in stocks:
+        if ktype is None:
+            for ktype in ktypes:
+                _deal_data(stock, start, end, ktype, retry_count, pause)
+        else:
+            _deal_data(stock, start, end, ktype, retry_count, pause)
+
+
 def save_all_stocks_his_data(start=None, end=None):
     """下载并保持所有的股票的数据：D, W, M, 5, 15, 30, 60"""
 
@@ -36,7 +68,7 @@ def save_all_stocks_his_data(start=None, end=None):
     # pool.wait()
     save_his_data_thread = threading.Thread(name='save_his_data', target=dsvc.save_his_data)
     save_his_data_thread.start()
-    threading.Timer(1, check_thread_alive, args=[save_his_data_thread]).start()
+    threading.Timer(1, check_thread_alive, args=(save_his_data_thread)).start()
 
     # threading.Thread(name='save_his_data_scd', target=dsvc.save_his_data_scd).start()
 

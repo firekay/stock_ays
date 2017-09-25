@@ -23,7 +23,7 @@ his_data_queue = Queue()
 his_data_scd_queue = Queue()
 
 
-def save_his_data():
+def save_his_data(last_stock_code=None):
     """保存个股历史交易数据到mysql, 周线"""
     logger.info('begin save his data thread.')
 
@@ -38,6 +38,13 @@ def save_his_data():
     # @conn
     # def m_insert():
     #     HistoryDataD.insert_many(data_dicts).execute()
+    logger.info("Last stock code is: %s" % last_stock_code)
+    if last_stock_code:
+        max_stock_code = last_stock_code
+    else:
+        max_stock_code = get_max_stock()
+
+    logger.info("Max stock code is: %s" % max_stock_code)
 
     while True:
         if his_data_queue.empty():
@@ -69,7 +76,7 @@ def save_his_data():
                 logger.exception('Save data error. Code is %s, ktype is %s' % (code, ktype))
                 logger.error(data)
 
-            if code == get_max_stock():
+            if code == max_stock_code:
                 break
 
 

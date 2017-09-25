@@ -135,6 +135,13 @@ def create_tables():
     logger.info("Create tables end.")
 
 
+def save_select_stock_code_data():
+    stock_codes = ['600623', '600622', '603999', '600619', '600629', '600617', '600602', '600620', '600618', '600621']
+    logger.info('Begin save select stocks history data')
+    bser.save_select_stocks_his_data(stocks=stock_codes, ktype='W')
+    logger.info('End save select stocks history data')
+
+
 def save_data():
     """下载并保持交易数据"""
     
@@ -167,7 +174,8 @@ def main():
     # drop_tables()
     # create_tables()
     # base_service.save_stocks_basic_data()
-    save_data()
+    # save_data()
+    save_select_stock_code_data()
     # dser.save_his_data_scd('600848',start = '2016-10-13', end = '2016-10-14')
     # stock_classified()
     # table_service.create_tables()
