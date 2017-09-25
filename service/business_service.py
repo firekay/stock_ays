@@ -68,7 +68,7 @@ def save_all_stocks_his_data(start=None, end=None):
     # pool.wait()
     save_his_data_thread = threading.Thread(name='save_his_data', target=dsvc.save_his_data)
     save_his_data_thread.start()
-    threading.Timer(1, check_thread_alive, args=(save_his_data_thread)).start()
+    threading.Timer(1, check_thread_alive, args=(save_his_data_thread,)).start()
 
     # threading.Thread(name='save_his_data_scd', target=dsvc.save_his_data_scd).start()
 
