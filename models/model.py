@@ -15,7 +15,9 @@ class BaseModel(Model):
         database = database
 
 
+# #####################################################
 # 股票分类数据
+# #####################################################
 class IndustryClassified(BaseModel):
     class Meta:
         db_table = 'industry_classified'
@@ -124,8 +126,9 @@ class Suspend(BaseModel):
     t_date = CharField()    
     insert_date = CharField()    
 
-
+# #####################################################
 # 基本面数据
+# #####################################################
 class StockBasic(BaseModel):
     """股票列表"""
     class Meta:
@@ -157,7 +160,10 @@ class StockBasic(BaseModel):
     insert_date = DateField('%Y%m%d')
 
 
-# 交易数据: 天
+# #####################################################
+# 交易数据
+# #####################################################
+# 历史交易数据: 天
 class HistoryDataD(BaseModel):
     """历史行情: D"""
     class Meta:
@@ -181,7 +187,7 @@ class HistoryDataD(BaseModel):
     turnover = DecimalField(max_digits=10, decimal_places=2)
 
 
-# 交易数据: 周
+# 历史交易数据: 周
 class HistoryDataW(BaseModel):
     """历史行情:  W"""
     class Meta:
@@ -205,7 +211,7 @@ class HistoryDataW(BaseModel):
     turnover = DecimalField(max_digits=10, decimal_places=2)
 
 
-# 交易数据: 月
+# 历史交易数据: 月
 class HistoryDataM(BaseModel):
     """历史行情:  M"""
     class Meta:
@@ -256,11 +262,12 @@ class HistoryDataScd(BaseModel):
 
 class RevoteHistoryData(BaseModel):
     """复权数据"""
+    # get_h_data
     class Meta:
         db_table = 'revote_history_data'
 
     code = CharField()
-    autype = CharField(5)
+    autype = CharField(5)  # 复权类型: qfq-前复权 hfq-后复权 None-不复权，默认为qfq
     date = DateField('%Y-%m-%d')
     open = DecimalField(max_digits=8, decimal_places=2)
     hign = DecimalField(max_digits=8, decimal_places=2)
@@ -288,6 +295,7 @@ class TodayAllData(BaseModel):
     turnoverratio = DecimalField(max_digits=8, decimal_places=5)
     amount = DecimalField(max_digits=15, decimal_places=2)
     per = DecimalField(max_digits=10, decimal_places=4)
+    pb = DecimalField(max_digits=10, decimal_places=4)
     mktcap = DecimalField(max_digits=15, decimal_places=2)
     nmc = DecimalField(max_digits=15, decimal_places=2)
 

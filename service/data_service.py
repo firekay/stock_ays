@@ -26,25 +26,12 @@ his_data_scd_queue = Queue()
 def save_his_data(last_stock_code=None):
     """保存个股历史交易数据到mysql, 周线"""
     logger.info('begin save his data thread.')
-
-    # @conn
-    # def d_insert():
-    #     HistoryDataD.insert_many(data_dicts).execute()
-    #
-    # @conn
-    # def w_insert():
-    #     HistoryDataW.insert_many(data_dicts).execute()
-    #
-    # @conn
-    # def m_insert():
-    #     HistoryDataD.insert_many(data_dicts).execute()
-    logger.info("Last stock code is: %s" % last_stock_code)
     if last_stock_code:
-        max_stock_code = last_stock_code
+        last_stock = last_stock_code
     else:
-        max_stock_code = get_max_stock()
+        last_stock = get_max_stock()
 
-    logger.info("Max stock code is: %s" % max_stock_code)
+    logger.info("Max stock code is: %s" % last_stock)
 
     while True:
         if his_data_queue.empty():
@@ -76,7 +63,7 @@ def save_his_data(last_stock_code=None):
                 logger.exception('Save data error. Code is %s, ktype is %s' % (code, ktype))
                 logger.error(data)
 
-            if code == max_stock_code:
+            if code == last_stock:
                 break
 
 
@@ -117,7 +104,8 @@ def get_max_stock():
 
 def get_stocks():
     """获取股票列表"""
-    return StockBasic.select(StockBasic.code).order_by(StockBasic.code)
+    # 过滤没有上市的股票
+    return StockBasic.select(StockBasic.code).where(StockBasic.timeToMarket != 0).order_by(StockBasic.code)
 
 
 def get_his_data(code, start=None, end=None, ktype=None, retry_count=10, pause=0.001):
@@ -160,7 +148,6 @@ def get_his_data_scd(code, start=None, end=None,
 
     def _deal_data(code, start, end, ktype, retry_count, pause):
         logger.info('Begin get data: %s,%s,%s' % (code, start, ktype))
-        print('Begin get data: %s,%s,%s' % (code, start, ktype))
         try:
             data_df = ts.get_hist_data(code, start, end, ktype, retry_count, pause)
             if data_df is not None and not data_df.empty:
@@ -173,9 +160,6 @@ def get_his_data_scd(code, start=None, end=None,
                 logger.info('Empty get data: %s,%s,%s,%s' % (code, start, end, ktype))
         except Exception as e:
             logger.exception('Get data error:%s,%s,%s' % (code, start, ktype))
-            logger.error(traceback.format_exc())
-            print('Get data error:%s,%s,%s' % (code, start, ktype))
-            print(traceback.format_exc())
 
     if ktype is None:
         for ktype in ktypes:
@@ -185,79 +169,6 @@ def get_his_data_scd(code, start=None, end=None,
         #threading.Thread(target=_deal_data, args=(code, start, end, ktype, retry_count, pause)).start()
         _deal_data(code, start, end, ktype, retry_count, pause)
 
-# @conn
-# def save_his_data(code, start=None, end=None,
-#                   ktype=None, retry_count=10,
-#                   pause=0.001):
-#     """获取个股历史交易数据（包括均线数据），可以通过参数设置获取日k线、周k线、月k线数据。
-#     本接口只能获取近3年的日线数据，
-#     适合搭配均线数据进行选股和分析，如果需要全部历史数据，请调用下一个接口get_h_data()。"""
-#     ktypes = list(['D','W', 'M'])
-#     def _deal_data(code, start, end, ktype, retry_count, pause):
-#         logger.info('Begin: %s,%s,%s' % (code, start, ktype))
-#         print('Begin: %s,%s,%s' % (code, start, ktype))
-#         try:
-#             data_df = ts.get_hist_data(code, start, end, ktype, retry_count, pause)
-#             data_df['date'] = pd.Series(data_df.axes[0], index=data_df.index)
-#             data = data_df.values
-#             data_dicts = [{'code': code, 'ktype': ktype, 'date': row[14],
-#                             'open': row[0], 'hign': row[1], 'close': row[2], 
-#                             'low': row[3], 'volume': row[4], 
-#                             'price_change': row[5], 'p_change':row[6], 
-#                             'ma5':row[7], 'ma10': row[8], 'ma20': row[9],
-#                             'v_ma5': row[10], 'v_ma10': row[11], 
-#                             'v_ma20': row[12], 'turnover': row[13]} 
-#                            for row in data]
-#             HistoryData.insert_many(data_dicts).execute()
-#         except Exception as e:
-#             logger.error('%s,%s,%s' % (code, start, ktype))
-#             logger.error(traceback.format_exc())
-#             print('%s,%s,%s' % (code, start, ktype))
-#             print(traceback.format_exc())
-#         logger.info('End: %s,%s,%s' % (code, start, ktype))
-#         print('End: %s,%s,%s' % (code, start, ktype))
-
-#     if ktype is None:
-#         for ktype in ktypes:
-#             threading.Thread(target=_deal_data, args=(code, start, end, ktype, retry_count, pause)).start()
-#             #_deal_data(code, start, end, ktype, retry_count, pause)
-#     else:
-#         threading.Thread(target=_deal_data, args=(code, start, end, ktype, retry_count, pause)).start()
-#         #_deal_data(code, start, end, ktype, retry_count, pause)
-
-
-# @conn
-# def save_his_data_scd(code, start=None, end=None,
-#                   ktype=None, retry_count=10,
-#                   pause=0.001):
-#     """获取个股历史交易数据（包括均线数据），可以通过参数设置获取5分钟、15分钟、30分钟和60分钟k线数据。
-#     本接口只能获取近3年的日线数据，
-#     适合搭配均线数据进行选股和分析，如果需要全部历史数据，请调用下一个接口get_h_data()。"""
-#     ktypes = list(['5', '15', '30', '60'])
-#     def deal_data(code, start, end, ktype, retry_count, pause):
-#         logger.info('Begin: %s,%s,%s' % (code, start, ktype))
-#         print('Begin: %s,%s,%s' % (code, start, ktype))
-#         try:
-#             data_df = ts.get_hist_data(code, start, end, ktype, retry_count, pause)
-#             data_df['date'] = pd.Series(data_df.index.map(lambda s: s.split(' ')[0]), index=data_df.index)
-#             data_df['time'] = pd.Series(data_df.index.map(lambda s: s.split(' ')[1]), index=data_df.index)
-#             data = data_df.values
-#             data_dicts = [{'code': code, 'ktype': ktype, 'date': row[14], 'time': row[15], 'open': row[0], 'hign': row[1], 'close': row[2], 'low': row[3], 'volume': row[4], 'price_change': row[5], 'p_change':row[6], 'ma5':row[7], 'ma10': row[8], 'ma20': row[9], 'v_ma5': row[10], 'v_ma10': row[11], 'v_ma20': row[12], 'turnover': row[13]} for row in data]
-#             HistoryDataScd.insert_many(data_dicts).execute()
-#         except Exception as e:
-#             logger.error('%s,%s,%s' % (code, start, ktype))
-#             logger.error(traceback.format_exc())
-#             print('%s,%s,%s' % (code, start, ktype))
-#             print(traceback.format_exc())
-#         logger.info('End: %s,%s,%s' % (code, start, ktype))
-#         print('End: %s,%s,%s' % (code, start, ktype))
-
-#     if ktype is None:
-#         for ktype in ktypes:
-#             deal_data(code, start, end, ktype, retry_count, pause)
-#     else:
-#         deal_data(code, start, end, ktype, retry_count, pause)
-
 
 def save_revote_his_data(code, start=None, end=None, autype='qfq',
                index=True, retry_count=10, pause=0.001, drop_factor=True):
@@ -265,7 +176,6 @@ def save_revote_his_data(code, start=None, end=None, autype='qfq',
 
     本接口还提供大盘指数的全部历史数据，调用时，请务必设定index参数为True,由于大盘指数不存在复权的问题，故可以忽略autype参数。"""
     logger.info('Begin: %s,%s,%s' % (code, start, autype))
-    print('Begin: %s,%s,%s' % (code, start, autype))
     try:
         data_df = ts.get_h_data(code, start, end, autype,
                index, retry_count, pause, drop_factor)
@@ -274,31 +184,21 @@ def save_revote_his_data(code, start=None, end=None, autype='qfq',
         data_dicts = [{'code': code, 'autype': autype, 'date': row[6], 'open': row[0], 'hign': row[1], 'close': row[2], 'low': row[3], 'volume': row[4], 'amount': row[5]} for row in data]
         RevoteHistoryData.insert_many(data_dicts).execute()
     except Exception as e:
-        logger.error('%s,%s' % (code, start))
-        logger.error(traceback.format_exc())
-        print('%s,%s' % (code, start))
-        print(traceback.format_exc())
+        logger.exception('%s,%s' % (code, start))
     logger.info('End: %s,%s' % (code, start))
-    print('End: %s,%s' % (code, start))
 
 
 def save_today_all_data():
     """一次性获取当前交易所有股票的行情数据（如果是节假日，即为上一交易日，结果显示速度取决于网速）"""
-    today = get_today_line()
-    logger.info('Begin get %s\'s all stock data.' % (today))
-    print('Begin get %s\'s all stock data.' % (today))
+    logger.info('Begin get %s\'s all stock data.' % today)
     try:
         data_df = ts.get_today_all()
         data = data_df.values
-        data_dicts = [{'code': row[0], 'name': row[1], 'date': today, 'changepercent': row[2], 'trade': row[3], 'open': row[4], 'hign': row[5], 'low': row[6], 'settlement': row[7], 'volume': row[8], 'turnoverratio': row[9], 'amount': row[10], 'per': row[11], 'mktcap': row[12], 'nmc': row[13]} for row in data]
+        data_dicts = [{'code': row[0], 'name': row[1], 'date': today, 'changepercent': row[2], 'trade': row[3], 'open': row[4], 'hign': row[5], 'low': row[6], 'settlement': row[7], 'volume': row[8], 'turnoverratio': row[9], 'amount': row[10], 'per': row[11], 'pb': row[12], 'mktcap': row[13], 'nmc': row[14]} for row in data]
         TodayAllData.insert_many(data_dicts).execute()
     except Exception as e:
-        logger.error('Get %s\'s all stock data.' % (today))
-        logger.error(traceback.format_exc())
-        print('Get %s\'s all stock data.' % (today))
-        print(traceback.format_exc())
-    logger.info('End get %s\'s all stock data.' % (today))
-    print('End get %s\'s all stock data.' % (today))
+        logger.exception('Get %s\'s all stock data.' % today)
+    logger.info('End get %s\'s all stock data.' % today)
 
 
 def save_tick_data(code=None, date=None, retry_count=10):
@@ -315,28 +215,21 @@ def save_tick_data(code=None, date=None, retry_count=10):
         data_dicts = [{'code': code, 'date': date, 'time': row[0], 'price': row[1], 'pchange': '', 'change': row[2], 'volume': row[3], 'amount': row[4], 'type': row[5]} for row in data]
         TickData.insert_many(data_dicts).execute()
     except Exception as e:
-        logger.error('Get %s\'s tick data in %s.' % (code, date))
-        logger.error(traceback.format_exc())
-        print(traceback.format_exc())
+        logger.exception('Get %s\'s tick data in %s.' % (code, date))
     logger.info('End get %s\'s tick data in %s.' % (code, date))
-    print('End. %s ' % (today))
 
 
 def save_big_index_data():
     """获取大盘指数实时行情列表，以表格的形式展示大盘指数实时行情。"""
-    logger.info('Begin get %s\'s big index data.' % (today))
+    logger.info('Begin get %s\'s big index data.' % today)
     try:
         data_df = ts.get_index()
         data = data_df.values
         data_dicts = [{'date': today, 'code': row[0], 'name': row[1], 'change': row[2], 'open': row[3], 'preclose': row[4], 'close': row[5], 'high': row[6], 'low': row[7], 'volume': row[8], 'amount': row[9]} for row in data]
         BigIndexData.insert_many(data_dicts).execute()
     except Exception as e:
-        logger.error('Get %s\'s big index data.' % (today))
-        logger.error(traceback.format_exc())
-        print('Get %s\'s big index data.' % (today))
-        print(traceback.format_exc())
+        logger.exception('Get %s\'s big index data.' % (today))
     logger.info('End get %s\'s big index data.' % (today))
-    print('End get %s\'s big index data.' % (today))
 
 
 def save_big_trade_data(code=None, date=None, vol=400, retry_count=10, pause=0.001):
@@ -347,12 +240,8 @@ def save_big_trade_data(code=None, date=None, vol=400, retry_count=10, pause=0.0
         data_dicts = [{'date': date, 'code': row[0], 'name': row[1], 'time': row[2], 'price': row[3], 'volume': row[4], 'preprice': row[5], 'type': row[6]} for row in data]
         BigTradeData.insert_many(data_dicts).execute()
     except Exception as e:
-        logger.error('Get %s\'s big trade data in %s.' % (code, date))
-        logger.error(traceback.format_exc())
-        print('Get %s\'s big trade data in %s.' % (code, date))
-        print(traceback.format_exc())
+        logger.exception('Get %s\'s big trade data in %s.' % (code, date))
     logger.info('End get %s\'s big trade data in %s.' % (code, date))
-    print('End get %s\'s big trade data in %s.' % (code, date))
 
 
 def save_industry_classified():
@@ -364,8 +253,7 @@ def save_industry_classified():
         data_dicts = [{'code': row[0], 'name': row[1], 'c_name': row[2]} for row in data]
         IndustryClassified.insert_many(data_dicts).execute()
     except Exception as e:
-        logger.error('Get industry classified行业信息.')
-        logger.error(traceback.format_exc())
+        logger.exception('Get industry classified行业信息.')
     logger.info('End get industry classified行业信息.')
 
 
@@ -379,8 +267,7 @@ def save_concept_classified():
         data_dicts = [{'code': row[0], 'name': row[1], 'c_name': row[2]} for row in data]
         ConceptClassified.insert_many(data_dicts).execute()
     except Exception as e:
-        logger.error('Get concept clssified股票概念的分类数据.')
-        logger.error(traceback.format_exc())
+        logger.exception('Get concept clssified股票概念的分类数据.')
     logger.info('End get concept clssified股票概念的分类数据.')
 
 
@@ -393,8 +280,7 @@ def save_area_classified():
         data_dicts = [{'code': row[0], 'name': row[1], 'area': row[2]} for row in data]
         AreaClassified.insert_many(data_dicts).execute()
     except Exception as e:
-        logger.error('Get area clssified.')
-        logger.error(traceback.format_exc())
+        logger.exception('Get area clssified.')
     logger.info('End get area clssified.')
     
 
@@ -407,8 +293,7 @@ def save_sme_classified():
         data_dicts = [{'code': row[0], 'name': row[1]} for row in data]
         SmeClassified.insert_many(data_dicts).execute()
     except Exception as e:
-        logger.error('Get sme中小板 classified.')
-        logger.error(traceback.format_exc())
+        logger.exception('Get sme中小板 classified.')
     logger.info('End get sme中小板 classified.')
 
 
@@ -421,8 +306,7 @@ def save_gem_classified():
         data_dicts = [{'code': row[0], 'name': row[1]} for row in data]
         GemClassified.insert_many(data_dicts).execute()
     except Exception as e:
-        logger.error('Get gem 创业板股票数据classified.')
-        logger.error(traceback.format_exc())
+        logger.exception('Get gem 创业板股票数据classified.')
     logger.info('End get gem 创业板股票数据classified.')
 
 
@@ -435,8 +319,7 @@ def save_st_classified():
         data_dicts = [{'code': row[0], 'name': row[1]} for row in data]
         StClassified.insert_many(data_dicts).execute()
     except Exception as e:
-        logger.error('Get st classified.')
-        logger.error(traceback.format_exc())
+        logger.exception('Get st classified.')
     logger.info('End get st classified.')
 
 
@@ -449,8 +332,7 @@ def save_hs300s():
         data_dicts = [{'code': row[0], 'name': row[1], 'date': row[2], 'weight': row[3]} for row in data]
         Hs300.insert_many(data_dicts).execute()
     except Exception as e:
-        logger.error('Get hs300 classified.')
-        logger.error(traceback.format_exc())
+        logger.exception('Get hs300 classified.')
     logger.info('End get hs300 classified.')
 
 
@@ -463,8 +345,7 @@ def save_sz50s():
         data_dicts = [{'code': row[0], 'name': row[1]} for row in data]
         Sz50.insert_many(data_dicts).execute()
     except Exception as e:
-        logger.error('Get sz50 classified.')
-        logger.error(traceback.format_exc())
+        logger.exception('Get sz50 classified.')
     logger.info('End get sz50 classified.')
 
 
@@ -477,8 +358,7 @@ def save_zz500s():
         data_dicts = [{'code': row[0], 'name': row[1]} for row in data]
         Zz500.insert_many(data_dicts).execute()
     except Exception as e:
-        logger.error('Get zz500 classified.')
-        logger.error(traceback.format_exc())
+        logger.exception('Get zz500 classified.')
     logger.info('End get zz500 classified.')
 
 
@@ -492,8 +372,7 @@ def save_terminated():
         data_dicts = [{'code': row[0], 'name': row[1], 'o_date': row[2], 't_date': row[3], 'insert_date': today} for row in data]
         Terminated.insert_many(data_dicts).execute()
     except Exception as e:
-        logger.error('Get terminated classified.')
-        logger.error(traceback.format_exc())
+        logger.exception('Get terminated classified.')
     logger.info('End get terminated classified.')
 
 
@@ -507,8 +386,7 @@ def save_suspend():
         data_dicts = [{'code': row[0], 'name': row[1], 'o_date': row[2], 't_date': row[3], 'insert_date': today} for row in data]
         Suspend.insert_many(data_dicts).execute()
     except Exception as e:
-        logger.error('Get suspend classified.')
-        logger.error(traceback.format_exc())
+        logger.exception('Get suspend classified.')
     logger.info('End get suspend classified.')
 
 
@@ -519,12 +397,9 @@ def save_stock_basic():
         data_df['code'] = pd.Series(data_df.axes[0], index=data_df.index)
         data = data_df.values
         data_dicts = [{'code': row[15], 'name': row[0], 'industry': row[1], 'area': row[2], 'pe': row[3], 'outstanding': row[4], 'totals': row[5], 'totalAssets':row[6], 'liquidAssets':row[7], 'fixedAssets': row[8], 'reserved': row[9], 'reservedPerShare': row[10], 'eps': row[11], 'bvps': row[12], 'pb': row[13], 'timeToMarket': row[14], 'insert_date': today} for row in data]
-        # connect()
         StockBasic.insert_many(data_dicts).execute()
     except Exception as e:
-        logger.info('Get stock basic.')
-        logger.error('Get suspend classified.')
-        logger.error(traceback.format_exc())
+        logger.exception('Get stock basic.')
     logger.info('End get stock basic.')
 
     
@@ -537,13 +412,12 @@ def get_news(top=None, show_content=True):
         now = str(get_time())
         logger.info('End get latest news.')
     except Exception as e:
-        logger.info('Error get latest news.')
-        logger.info(traceback.format_exc())
+        logger.exception('Error get latest news.')
     finally:
         return data_df
-    
+
+
 def get_news_time_and_url_in_mongo():
-    
     db = mongo_utils.get_db()
     db_time_urls = db.news.find({}, {'time':1, 'url':1})
     time_urls = [(time_url['time'], time_url['url']) for time_url in db_time_urls]
@@ -558,11 +432,8 @@ def save_news2mongo(df):
     mongo_utils.close()
     
     
-
 # if __name__ == '__main__':
     # import sys
     # print(sys.path())
     # sys.path.append('/home/kay/WorkspacePython/stock_analysis')
     # print(get_max_stock())
-
-    
