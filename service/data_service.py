@@ -1,5 +1,5 @@
 # encoding: UTF-8
-"""调用接口的到数据，以及存入mysql， mongodb"""
+"""调用接口得到数据，以及存入mysql， mongodb"""
 import sys
 import traceback
 import logging

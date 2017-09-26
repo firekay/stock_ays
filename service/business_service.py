@@ -27,10 +27,14 @@ def check_thread_alive(thread):
         logger.warn('Thread %s not alive.' % thread.getName())
 
 
-def save_select_stocks_his_data(stocks, start=None, end=None, ktype=None, retry_count=10, pause=0.00):
+def save_select_stocks_hist_data(stocks, start=None, end=None, ktype=None, retry_count=10, pause=0.00):
     """获取个股历史交易数据（包括均线数据），可以通过参数设置获取日k线、周k线、月k线数据。
     本接口只能获取近3年的日线数据
     """
+    if start is None or end is None:
+        logger.info('End save select stocks history data, start date is: %s, end date is: %s.' % (start, end))
+    else:
+        logger.info('End save select stocks history data.')
     ktypes = list(['D', 'W', 'M'])
     last_stock_code = stocks[-1]
     logger.info(last_stock_code)
@@ -58,10 +62,18 @@ def save_select_stocks_his_data(stocks, start=None, end=None, ktype=None, retry_
         else:
             _deal_data(stock, start, end, ktype, retry_count, pause)
 
+    if start is None or end is None:
+        logger.info('End save select stocks history data, start date is: %s, end date is: %s.' % (start, end))
+    else:
+        logger.info('End save select stocks history data.')
 
-def save_all_stocks_his_data(start=None, end=None):
+
+def save_all_stocks_hist_data(start=None, end=None):
     """下载并保持所有的股票的数据：D, W, M, 5, 15, 30, 60"""
-
+    if start is None or end is None:
+        logger.info('Begin save all stocks history data, start date is: %s, end date is: %s.' % (start, end))
+    else:
+        logger.info('Begin save all stocks history data.')
     # pool = threadpool.ThreadPool(128)
     # requests = threadpool.makeRequests(dsvc.save_his_data)
     # [pool.putRequest(req) for req in requests]
@@ -75,16 +87,20 @@ def save_all_stocks_his_data(start=None, end=None):
     stocks = dsvc.get_stocks()
     for stock in stocks:
         dsvc.get_his_data(stock.code, start, end)
+    if start is None or end is None:
+        logger.info('End save all stocks history data, start date is: %s, end date is: %s.' % (start, end))
+    else:
+        logger.info('End save all stocks history data.')
 
 
-def save_yestoday_all_stocks_his_data():
+def save_yestoday_all_stocks_hist_data():
     """下载并保存昨天数据"""
-    save_all_stocks_his_data(yestoday_line, today_line)
+    save_all_stocks_hist_data(yestoday_line, today_line)
 
 
-def save_today_all_stocks_his_data():
+def save_today_all_stocks_hist_data():
     """下载并保存当天数据"""
-    save_all_stocks_his_data(today_line, tomorrow_line)
+    save_all_stocks_hist_data(today_line, tomorrow_line)
 
     
 def save_realtime_quetes2file(codes):

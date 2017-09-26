@@ -39,6 +39,7 @@ def drop_tables(classes):
 
 
 def create_all_tables():
+    logger.info('Begin create all tables.')
     cls_models = [IndustryClassified, ConceptClassified, SmeClassified,
                   AreaClassified, GemClassified, StClassified,
                   Hs300, Sz50, Zz500, Terminated, Suspend,
@@ -46,9 +47,11 @@ def create_all_tables():
                   RevoteHistoryData, TodayAllData, TickData,
                   BigIndexData, BigTradeData]
     create_tables(cls_models)
+    logger.info('Begin end all tables.')
 
 
 def drop_all_tables():
+    logger.info('Begin drop all tables.')
     cls_models = [IndustryClassified, ConceptClassified, SmeClassified,
                   AreaClassified, GemClassified, StClassified,
                   Hs300, Sz50, Zz500, Terminated, Suspend,
@@ -56,3 +59,4 @@ def drop_all_tables():
                   RevoteHistoryData, TodayAllData, TickData,
                   BigIndexData, BigTradeData]
     drop_tables(cls_models)
+    logger.info('End drop all tables.')

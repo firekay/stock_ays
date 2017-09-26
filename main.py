@@ -2,6 +2,7 @@
 import os
 import yaml
 import sys
+import argparse
 from configparser import ConfigParser
 import tushare as ts
 from peewee import *
@@ -123,40 +124,21 @@ def stock_classified():
 #     rrr.save_data(date='2010-11-29')
 
 
-def drop_tables():
-    logger.info('Begin drop tables.')
-    table_service.drop_all_tables()
-    logger.info('End drop tables.')
-
-
-def create_tables():
-    logger.info("Create tables begin.")
-    table_service.create_all_tables()
-    logger.info("Create tables end.")
-
-
-def save_select_stock_code_data():
-    stock_codes = ['600623', '600622', '603999', '600619', '600629', '600617', '600602', '600620', '600618', '600621']
-    logger.info('Begin save select stocks history data')
-    bser.save_select_stocks_his_data(stocks=stock_codes, ktype='W')
-    logger.info('End save select stocks history data')
-
-
-def save_data():
-    """下载并保持交易数据"""
+def save_all_transaction_data():
+    """下载并保存所有交易数据"""
     
-    logger.info('Begin save all stocks history data')
-    bser.save_all_stocks_his_data()
-    logger.info('End save all stocks history data')
+    # logger.info('Begin save all stocks history data')
+    # bser.save_all_days_all_stocks_hist_data()
+    # logger.info('End save all stocks history data')
 
     # logger.info('Begin save today all stocks history data')
-    # bser.save_yestoday_all_stocks_his_data()
+    bser.save_yestoday_all_stocks_his_data()
     # bser.save_today_all_stocks_his_data()
     # bser.save_all_stocks_his_data(start=util.get_ndays_before_line(6), end=yestoday_line)
     # logger.info('End save today all stocks history data')
     #
     # logger.info('Begin save today all data')
-    # bser.save_today_all_data()
+    bser.save_today_all_data()
     # logger.info('End save today all data')
     # print('End save today all data')
     #
@@ -170,12 +152,64 @@ def strategy():
     cstg.macd_service()
 
 
+def save_select_stocks_hist_data(start=None, end=None):
+    stock_codes = ['600622']
+    logger.info('Begin save select stocks history data')
+    bser.save_all_days_select_stocks_hist_data(stocks=stock_codes, start=start, end=end, ktype='W')
+    logger.info('End save select stocks history data')
+
+
 def main():
-    # drop_tables()
+    parser = argparse.ArgumentParser(description='Get stock data with tushare')
+
+    def args_parse():
+        """参数解析"""
+
+        table = parser.add_argument_group('table service')
+        table.add_argument('-d', action='store_true', dest='drop_table', help='drop all tables')
+        table.add_argument('-c', action='store_true', dest='create_table', help='create all tables')
+
+        transaction = parser.add_argument_group('transaction')
+
+        transaction.add_argument('-t-a-a-h-d', action='store_true', dest='save_all_days_all_stocks_hist_data', help='save all days all stocks history data')
+        transaction.add_argument('-t-a-s-h-d', action='store_true', dest='save_all_days_select_stocks_hist_data', help='save all days selected all stocks history data')
+
+        transaction.add_argument('-t-t-a-h-d', action='store_true', dest='save_today_all_stocks_hist_data', help='save today all stocks history data')
+        transaction.add_argument('-t-t-s-h-d', action='store_true', dest='save_today_select_stocks_hist_data', help='save today selected stocks history data')
+
+        transaction.add_argument('-t-y-a-h-d', action='store_true', dest='save_yestoday_all_stocks_hist_data', help='save yestoday all stocks history data')
+        transaction.add_argument('-t-y-s-h-d', action='store_true', dest='save_yestoday_select_stocks_hist_data', help='save yestoday selected stocks history data')
+
+        # subparsers = parser.add_subparsers()
+        # transaction_selected = subparsers.add_parser('-t-a-s-h-d', help='save all selected stocks history data')
+        # transaction_selected.add_argument('--stocks', nargs='+', dest='stocks_selected', help='save all selected stocks history data')
+        # transaction_selected.add_argument('-ktype', choices=['D', 'W', 'M'], help='save the sotck type, D is day, W is week, M is month')
+
+        _args = parser.parse_args()
+        logger.debug(_args)
+        return _args
+    args = args_parse()
+    if args.save_all_days_all_stocks_hist_data:
+        bser.save_all_days_all_stocks_hist_data()
+    if args.save_all_days_select_stocks_hist_data:
+        save_select_stocks_hist_data()
+    if args.save_today_all_stocks_hist_data:
+        bser.save_today_all_stocks_hist_data()
+    if args.save_today_select_stocks_hist_data:
+        save_select_stocks_hist_data(today_line, tomorrow_line)
+    if args.save_yestoday_all_stocks_hist_data:
+        bser.save_yestoday_all_stocks_hist_data()
+    if args.save_yestoday_select_stocks_hist_data:
+        save_select_stocks_hist_data(yestoday_line, today_line)
+    if args.drop_table:
+        table_service.drop_all_tables()
+    if args.create_table:
+        table_service.create_all_tables()
+
     # create_tables()
     # base_service.save_stocks_basic_data()
     # save_data()
-    save_select_stock_code_data()
+    # save_all_days_select_stocks_hist_data()
     # dser.save_his_data_scd('600848',start = '2016-10-13', end = '2016-10-14')
     # stock_classified()
     # table_service.create_tables()
