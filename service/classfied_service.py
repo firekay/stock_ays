@@ -8,8 +8,8 @@ import time
 today = util.get_today()
 today_line = util.get_today_line()
 
-yestoday = util.get_yestoday()
-yestoday_line = util.get_yestoday_line()
+yesterday = util.get_yesterday()
+yesterday_line = util.get_yesterday_line()
 
 tomorrow = util.get_tomorrow()
 tomorrow_line = util.get_tomorrow_line()
