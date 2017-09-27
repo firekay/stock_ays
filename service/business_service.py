@@ -93,6 +93,72 @@ def save_all_stocks_hist_data(start=None, end=None):
         logger.info('End save all stocks history data.')
 
 
+def save_stock_h_data_revote(code, start=None, end=None, autype='qfp', index=False, retry_count=retry_count, pause=0):
+    """获取历史复权数据
+    
+    Args:
+        code:string,股票代码 e.g. 600848
+        start:string,开始日期 format：YYYY-MM-DD 为空时取当前日期
+        end:string,结束日期 format：YYYY-MM-DD 为空时取去年今日
+        autype:string,复权类型，qfq-前复权 hfq-后复权 None-不复权，默认为qfq
+        index:Boolean，是否是大盘指数，默认为False
+        retry_count : int, 默认3,如遇网络等问题重复执行的次数
+        pause : int, 默认 0,重复请求数据过程中暂停的秒数，防止请求间隔时间太短出现的问题
+    """
+    dsvc.get_h_revote_data(code, start, end, autype, index, retry_count, pause)
+
+
+def save_all_stock_h_data_revote(start=None, end=None, autype='qfp', index=False, retry_count=retry_count, pause=0):
+    """获取B{所有}历史复权数据
+    
+    Args:
+        start:string,开始日期 format：YYYY-MM-DD 为空时取当前日期
+        end:string,结束日期 format：YYYY-MM-DD 为空时取去年今日
+        autype:string,复权类型，qfq-前复权 hfq-后复权 None-不复权，默认为qfq
+        index:Boolean，是否是大盘指数，默认为False
+        retry_count : int, 默认3,如遇网络等问题重复执行的次数
+        pause : int, 默认 0,重复请求数据过程中暂停的秒数，防止请求间隔时间太短出现的问题
+    """
+    save_h_revote_data_thread = threading.Thread(name='save_h_revote_data', target=dsvc.save_h_revote_data)
+    save_h_revote_data_thread.start()
+    threading.Timer(1, check_thread_alive, args=(save_h_revote_data_thread,)).start()
+    stocks = dsvc.get_stocks()
+    for stock in stocks:
+        save_stock_h_data_revote(stock, start, end, autype, index, retry_count, pause)
+
+
+def save_select_stocks_h_data_revote(stocks, start=None, end=None, autype='qfp', index=False,
+                                    retry_count=retry_count, pause=0):
+    """获取B{选择的}历史复权数据
+    
+    Args:
+        stocks:list, e.g. ['000001', '000002']
+        start:string,开始日期 format：YYYY-MM-DD 为空时取当前日期
+        end:string,结束日期 format：YYYY-MM-DD 为空时取去年今日
+        autype:string,复权类型，qfq-前复权 hfq-后复权 None-不复权，默认为qfq
+        index:Boolean，是否是大盘指数，默认为False
+        retry_count : int, 默认3,如遇网络等问题重复执行的次数
+        pause : int, 默认 0,重复请求数据过程中暂停的秒数，防止请求间隔时间太短出现的问题
+    """
+    if start is None or end is None:
+        logger.info('Begin save all days select stocks h revote data, start date is: %s, end date is: %s.'
+                    % (start, end))
+    else:
+        logger.info('Begin save select stocks h revote data.')
+    last_stock_code = stocks[-1]
+    save_h_revote_data_thread = threading.Thread(name='save_h_revote_data', target=dsvc.save_h_revote_data,
+                                                 args=(last_stock_code,))
+    save_h_revote_data_thread.start()
+    threading.Timer(1, check_thread_alive, args=(save_h_revote_data_thread,)).start()
+    for stock in stocks:
+        save_stock_h_data_revote(stock, start, end, autype, index, retry_count, pause)
+    if start is None or end is None:
+        logger.info('End save all days select stocks h revote data, start date is: %s, end date is: %s.'
+                    % (start, end))
+    else:
+        logger.info('End save select stocks h revote data.')
+
+
 def save_yesterday_all_stocks_hist_data():
     """下载并保存昨天数据"""
     save_all_stocks_hist_data(yesterday_line, yesterday_line)

@@ -21,6 +21,64 @@ today = get_today_line()
 
 his_data_queue = Queue()
 his_data_scd_queue = Queue()
+h_revote_data_queue = Queue()
+
+
+def save_h_revote_data(last_stock_code=None):
+    logger.info('Begin save h revote data thread.')
+    if last_stock_code:
+        last_stock = last_stock_code
+    else:
+        last_stock = get_max_stock()
+    logger.info("Max stock code is: %s" % last_stock)
+    while True:
+        if h_revote_data_queue.empty():
+            time.sleep(0.01)
+        else:
+            try:
+                logger.info('h_revote_data_queue\'s size is: %s' % (his_data_queue.qsize()))
+                h_revote_data = h_revote_data_queue.get()
+                code = h_revote_data[0]
+                autype = h_revote_data[1]
+                data = h_revote_data[2]
+                logger.info('Get h revode data from h_revote_data_queue, stock code is: %s' % code)
+                data_dicts = [{'code': code, 'autype': autype, 'date': row[6], 'open': row[0], 'hign': row[1], 'close': row[2], 'low': row[3], 'volume': row[4], 'amount': row[5]} for row in data]
+                RevoteHistoryData.insert_many(data_dicts).execute()
+            except Exception as e:
+                logger.exception('Save data error. Code is %s, ktype is %s' % (code, ktype))
+                logger.error(data)
+
+            if code == last_stock:
+                break
+
+
+def get_h_revote_data(code, start=None, end=None, autype='qfp', index=False, retry_count=10, pause=0):
+    if start is None or end is None:
+        logger.info('Begin get sotck %s h revote data, start date is: %s, end date is: %s.' % (code, start, end))
+    else:
+        logger.info('Begin get stock %s h revote data, all date.' % code)
+
+    try:
+        data_df = ts.get_h_data(code, start, end, autype,
+               index, retry_count, pause, drop_factor)
+        if data_df is not None and not data_df.empty:
+            data_df['date'] = pd.Series(data_df.index, index=data_df.index)
+            data = data_df.values
+            h_revote_data_queue.put((code, autype, data))
+            if start is None or end is None:
+                logger.info('End get sotck %s h revote data, start date is: %s, end date is: %s.' % (code, start, end))
+            else:
+                logger.info('End get stock %s h revote data, all date.' % code)
+        else:
+            if start is None or end is None:
+                logger.info('Empty get sotck %s h revote data, start date is: %s, end date is: %s.' % (code, start, end))
+            else:
+                logger.info('Empty get stock %s h revote data, all date.' % code)
+    except Exception as e:
+        if start is None or end is None:
+            logger.exception('Error get sotck %s h revote data, start date is: %s, end date is: %s.' % (code, start, end))
+        else:
+            logger.exception('Error get stock %s h revote data, all date.' % code)
 
 
 def save_his_data(last_stock_code=None):
