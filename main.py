@@ -174,7 +174,7 @@ def main():
         transaction = parser.add_argument_group('transaction')
         transaction.add_argument('-t-a-h-d', action='store_true',
                                  dest='save_all_stocks_hist_data',
-                                 help='save all stocks history data, may use with [--start] [--end]')
+                                 help='save all stocks history data, may use with [--start] [--end] [--ktype]')
         transaction.add_argument('-t-a-s-h-d', action='store_true',
                                  dest='save_select_stocks_hist_data',
                                  help='save selected all stocks history data, may use with [--start] [--end] [--ktype]')
@@ -220,13 +220,13 @@ def main():
     if args.save_select_stocks_hist_data:
         save_select_stocks_hist_data(args.start_date, args.end_date, ktype=args.ktype)
     if args.save_today_all_stocks_hist_data:
-        bser.save_today_all_stocks_hist_data()
+        bser.save_today_all_stocks_hist_data(ktype=args.ktype)
     if args.save_today_select_stocks_hist_data:
-        save_select_stocks_hist_data(today_line, tomorrow)
+        save_select_stocks_hist_data(today_line, tomorrow, ktype=args.ktype)
     if args.save_yesterday_all_stocks_hist_data:
-        bser.save_yesterday_all_stocks_hist_data()
+        bser.save_yesterday_all_stocks_hist_data(ktype=args.ktype)
     if args.save_yesterday_select_stocks_hist_data:
-        save_select_stocks_hist_data(yesterday_line, yesterday_line)
+        save_select_stocks_hist_data(yesterday_line, yesterday_line, ktype=args.ktype)
 
     # table
     if args.drop_table:

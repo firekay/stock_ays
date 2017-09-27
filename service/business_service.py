@@ -160,14 +160,14 @@ def save_select_stocks_h_data_revote(stocks, start=None, end=None, autype='qfp',
         logger.info('End save select stocks h revote data.')
 
 
-def save_yesterday_all_stocks_hist_data():
+def save_yesterday_all_stocks_hist_data(ktype=None):
     """下载并保存昨天数据"""
-    save_all_stocks_hist_data(yesterday_line, yesterday_line)
+    save_all_stocks_hist_data(yesterday_line, yesterday_line, ktype=ktype)
 
 
-def save_today_all_stocks_hist_data():
+def save_today_all_stocks_hist_data(ktype=None):
     """下载并保存当天数据"""
-    save_all_stocks_hist_data(today_line, today_line)
+    save_all_stocks_hist_data(today_line, today_line, ktype=ktype)
 
     
 def save_realtime_quetes2file(codes):
