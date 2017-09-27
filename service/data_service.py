@@ -35,24 +35,24 @@ def save_h_revote_data(last_stock_code=None):
         if h_revote_data_queue.empty():
             time.sleep(0.01)
         else:
+            logger.info('h_revote_data_queue\'s size is: %s' % (his_data_queue.qsize()))
+            h_revote_data = h_revote_data_queue.get()
+            code = h_revote_data[0]
+            autype = h_revote_data[1]
+            data = h_revote_data[2]
+            logger.info('Get h revode data from h_revote_data_queue, stock code is: %s.' % code)
             try:
-                logger.info('h_revote_data_queue\'s size is: %s' % (his_data_queue.qsize()))
-                h_revote_data = h_revote_data_queue.get()
-                code = h_revote_data[0]
-                autype = h_revote_data[1]
-                data = h_revote_data[2]
-                logger.info('Get h revode data from h_revote_data_queue, stock code is: %s' % code)
                 data_dicts = [{'code': code, 'autype': autype, 'date': row[6], 'open': row[0], 'hign': row[1], 'close': row[2], 'low': row[3], 'volume': row[4], 'amount': row[5]} for row in data]
                 RevoteHistoryData.insert_many(data_dicts).execute()
             except Exception as e:
-                logger.exception('Save data error. Code is %s, ktype is %s' % (code, ktype))
+                logger.exception('Save data error. Code is %s.' % code)
                 logger.error(data)
 
             if code == last_stock:
                 break
 
 
-def get_h_revote_data(code, start=None, end=None, autype='qfp', index=False, retry_count=10, pause=0):
+def get_h_revote_data(code, start=None, end=None, autype='qfp', index=False, retry_count=10, pause=0, drop_factor=True):
     if start is None or end is None:
         logger.info('Begin get sotck %s h revote data, start date is: %s, end date is: %s.' % (code, start, end))
     else:
@@ -99,22 +99,23 @@ def save_his_data(last_stock_code=None):
         if his_data_queue.empty():
             time.sleep(0.01)
         else:
+            logger.info('his_data_queue\'s size is: %s' % (his_data_queue.qsize()))
+            his_data = his_data_queue.get()
+            code = his_data[0]
+            ktype = his_data[1]
+            data = his_data[2]
+            logger.info('Get code: %s, ktype: %s from his_data_queue' % (code, ktype))
+            data_dicts = [{'code': code, 'date': row[14],
+                           'open': row[0], 'hign': row[1], 'close': row[2],
+                           'low': row[3], 'volume': row[4],
+                           'price_change': row[5], 'p_change':row[6],
+                           'ma5':row[7], 'ma10': row[8], 'ma20': row[9],
+                           'v_ma5': row[10], 'v_ma10': row[11],
+                           'v_ma20': row[12], 'turnover': row[13]}
+                          for row in data]
             try:
-                logger.info('his_data_queue\'s size is: %s' % (his_data_queue.qsize()))
-                his_data = his_data_queue.get()
-                code = his_data[0]
-                ktype = his_data[1]
-                data = his_data[2]
-                logger.info('Get code: %s, ktype: %s from his_data_queue' % (code, ktype))
-                data_dicts = [{'code': code, 'date': row[14],
-                    'open': row[0], 'hign': row[1], 'close': row[2],
-                    'low': row[3], 'volume': row[4],
-                    'price_change': row[5], 'p_change':row[6],
-                    'ma5':row[7], 'ma10': row[8], 'ma20': row[9],
-                    'v_ma5': row[10], 'v_ma10': row[11],
-                    'v_ma20': row[12], 'turnover': row[13]}
-                    for row in data]
                 # logger.info(data_dicts)
+                # TODO: 添加5分钟, 15分钟.. 代码
                 if ktype.upper() == 'D':
                     HistoryDataD.insert_many(data_dicts).execute()
                 if ktype.upper() == 'W':
