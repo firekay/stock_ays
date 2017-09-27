@@ -82,8 +82,12 @@ def get_h_revote_data(code, start=None, end=None, autype='qfp', index=False, ret
 
 
 def save_his_data(last_stock_code=None):
-    """保存个股历史交易数据到mysql, 周线"""
-    logger.info('begin save his data thread.')
+    """保存个股历史交易数据到mysql, 周线
+
+    Args:
+        last_stock_code: 最后一个股票的代码, 用来结束线程
+    """
+    logger.info('Begin save his data thread.')
     if last_stock_code:
         last_stock = last_stock_code
     else:
@@ -127,7 +131,7 @@ def save_his_data(last_stock_code=None):
 
 def save_his_data_scd():
     """保存个股历史交易数据到mysql, 分钟线"""
-    logger.info('begin save his data_scd thread.')
+    logger.info('begin save his data scd thread.')
     while(1):
         if his_data_queue.empty():
             time.sleep(0.01)
@@ -180,12 +184,12 @@ def get_his_data(code, start=None, end=None, ktype=None, retry_count=10, pause=0
                 data_df['date'] = pd.Series(data_df.axes[0], index=data_df.index)
                 data = data_df.values
                 his_data_queue.put((code, ktype, data))
-                logger.info('End get data: %s,%s,%s,%s' % (code, start, end, ktype))
+                logger.info('End get hist data: %s,%s,%s,%s' % (code, start, end, ktype))
             else:
-                logger.info('Empty get data: %s,%s,%s,%s' % (code, start, end, ktype))
+                logger.info('Empty get hist data: %s,%s,%s,%s' % (code, start, end, ktype))
 
         except Exception as e:
-            logger.exception('Get data error: %s,%s,%s,%s' % (code, start, end, ktype))
+            logger.exception('Get hist data error: %s,%s,%s,%s' % (code, start, end, ktype))
 
     if ktype is None:
         for ktype in ktypes:
@@ -205,7 +209,7 @@ def get_his_data_scd(code, start=None, end=None,
     ktypes = list(['5', '15', '30', '60'])
 
     def _deal_data(code, start, end, ktype, retry_count, pause):
-        logger.info('Begin get data: %s,%s,%s' % (code, start, ktype))
+        logger.info('Begin get hist data: %s,%s,%s' % (code, start, ktype))
         try:
             data_df = ts.get_hist_data(code, start, end, ktype, retry_count, pause)
             if data_df is not None and not data_df.empty:
@@ -213,11 +217,11 @@ def get_his_data_scd(code, start=None, end=None,
                 data_df['time'] = pd.Series(data_df.index.map(lambda s: s.split(' ')[1]), index=data_df.index)
                 data = data_df.values
                 his_data_scd_queue.put((code, ktype, data))
-                logger.info('End get data: %s,%s,%s' % (code, start, ktype))
+                logger.info('End get hist scd data: %s,%s,%s' % (code, start, ktype))
             else:
-                logger.info('Empty get data: %s,%s,%s,%s' % (code, start, end, ktype))
+                logger.info('Empty get hist scd data: %s,%s,%s,%s' % (code, start, end, ktype))
         except Exception as e:
-            logger.exception('Get data error:%s,%s,%s' % (code, start, ktype))
+            logger.exception('Get data hist scd error:%s,%s,%s' % (code, start, ktype))
 
     if ktype is None:
         for ktype in ktypes:
