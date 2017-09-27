@@ -12,6 +12,7 @@ def truncate_table(cls):
     
     参数为model中的类名。
     """
+    logger.info('Truncate table %s' % cls)
     cls.truncate_table()
 
 
@@ -20,6 +21,7 @@ def create_table(cls):
 
     参数为model中的类名
     """
+    logger.info('Create table %s.' % cls)
     cls.create_table()
 
 
@@ -30,6 +32,7 @@ def create_tables(classes):
 
 def drop_table(cls):
     """删除单个表, 参数为model中的类名"""
+    logger.info('Drop talbe %s.' % cls)
     cls.drop_table(fail_silently=True)
 
 

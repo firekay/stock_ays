@@ -115,19 +115,19 @@ def get_his_data(code, start=None, end=None, ktype=None, retry_count=10, pause=0
     ktypes = list(['D', 'W', 'M'])
 
     def _deal_data(code, start, end, ktype, retry_count, pause):
-        logger.info('Begin get data: %s,%s,%s' % (code, start, ktype))
+        logger.info('Begin get data, code is: %s, start is: %s, end is: %s,ktype is: %s' % (code, start, end, ktype))
         try:
             data_df = ts.get_hist_data(code, start, end, ktype, retry_count, pause)
             if data_df is not None and not data_df.empty:
                 data_df['date'] = pd.Series(data_df.axes[0], index=data_df.index)
                 data = data_df.values
                 his_data_queue.put((code, ktype, data))
-                logger.info('End get data: %s,%s,%s' % (code, start, ktype))
+                logger.info('End get data: %s,%s,%s,%s' % (code, start, end, ktype))
             else:
                 logger.info('Empty get data: %s,%s,%s,%s' % (code, start, end, ktype))
 
         except Exception as e:
-            logger.exception('Get data error: %s,%s,%s' % (code, start, ktype))
+            logger.exception('Get data error: %s,%s,%s,%s' % (code, start, end, ktype))
 
     if ktype is None:
         for ktype in ktypes:
@@ -391,7 +391,7 @@ def save_suspend():
 
 
 def save_stock_basic():
-    logger.info('Begin get stock basic.')
+    logger.info('Begin save stock basic.')
     try:
         data_df = ts.get_stock_basics()
         data_df['code'] = pd.Series(data_df.axes[0], index=data_df.index)
@@ -400,7 +400,7 @@ def save_stock_basic():
         StockBasic.insert_many(data_dicts).execute()
     except Exception as e:
         logger.exception('Get stock basic.')
-    logger.info('End get stock basic.')
+    logger.info('End save stock basic.')
 
     
 def get_news(top=None, show_content=True):

@@ -93,14 +93,14 @@ def save_all_stocks_hist_data(start=None, end=None):
         logger.info('End save all stocks history data.')
 
 
-def save_yestoday_all_stocks_hist_data():
+def save_yesterday_all_stocks_hist_data():
     """下载并保存昨天数据"""
-    save_all_stocks_hist_data(yestoday_line, today_line)
+    save_all_stocks_hist_data(yesterday_line, yesterday_line)
 
 
 def save_today_all_stocks_hist_data():
     """下载并保存当天数据"""
-    save_all_stocks_hist_data(today_line, tomorrow_line)
+    save_all_stocks_hist_data(today_line, today_line)
 
     
 def save_realtime_quetes2file(codes):
@@ -268,5 +268,3 @@ def save_news():
             if(not news_df.empty):
                 dsvc.save_news2mongo(news_df)
         time.sleep(60)
-        
-                
