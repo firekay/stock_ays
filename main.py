@@ -132,9 +132,9 @@ def save_all_transaction_data():
     # logger.info('End save all stocks history data')
 
     # logger.info('Begin save today all stocks history data')
-    bser.save_yestoday_all_stocks_his_data()
+    # bser.save_yesterday_all_stocks_his_data()
     # bser.save_today_all_stocks_his_data()
-    # bser.save_all_stocks_his_data(start=util.get_ndays_before_line(6), end=yestoday_line)
+    # bser.save_all_stocks_his_data(start=util.get_ndays_before_line(6), end=yesterday_line)
     # logger.info('End save today all stocks history data')
     #
     # logger.info('Begin save today all data')
@@ -152,10 +152,12 @@ def strategy():
     cstg.macd_service()
 
 
-def save_select_stocks_hist_data(start=None, end=None):
+def save_select_stocks_hist_data(start=None, end=None, ktype=None):
+    """保存选择股票的交易数据"""
+    
     stock_codes = ['600622']
     logger.info('Begin save select stocks history data')
-    bser.save_all_days_select_stocks_hist_data(stocks=stock_codes, start=start, end=end, ktype='W')
+    bser.save_select_stocks_hist_data(stocks=stock_codes, start=start, end=end, ktype=ktype)
     logger.info('End save select stocks history data')
 
 
@@ -170,16 +172,35 @@ def main():
         table.add_argument('-c', action='store_true', dest='create_table', help='create all tables')
 
         transaction = parser.add_argument_group('transaction')
+        transaction.add_argument('-t-a-h-d', action='store_true',
+                                 dest='save_all_stocks_hist_data',
+                                 help='save all stocks history data, may use with [--start] [--end]')
+        transaction.add_argument('-t-a-s-h-d', action='store_true',
+                                 dest='save_select_stocks_hist_data',
+                                 help='save selected all stocks history data, may use with [--start] [--end] [--ktype]')
+        transaction.add_argument('-t-t-a-h-d', action='store_true',
+                                 dest='save_today_all_stocks_hist_data', help='save today all stocks history data')
+        transaction.add_argument('-t-t-s-h-d', action='store_true',
+                                 dest='save_today_select_stocks_hist_data',
+                                 help='save today selected stocks history data')
+        transaction.add_argument('-t-y-a-h-d', action='store_true', dest='save_yesterday_all_stocks_hist_data',
+                                 help='save yesterday all stocks history data')
+        transaction.add_argument('-t-y-s-h-d', action='store_true', dest='save_yesterday_select_stocks_hist_data',
+                                 help='save yesterday selected stocks history data')
+        transaction.add_argument('-t-a-a-h-r-d', action='store_true',
+                                 dest='save_all_days_all_stocks_revote_h_data',
+                                 help='save all days all stocks revote history data')
+        transaction.add_argument('-t-a-s-h-r-d', action='store_true',
+                                 dest='save_all_days_select_stocks_revote_h_data',
+                                 help='save all days selected all stocks revote history data')
+        transaction.add_argument('--start', dest='start_date', help='start date')
+        transaction.add_argument('--end', dest='end_date', help='end date')
+        transaction.add_argument('--ktype', dest='ktype', help='数据类型: D=日k线 W=周 M=月 5=5分钟 15=15分钟 30=30分钟 60=60分钟',
+                                 choices=['D', 'W', 'M', '5', '15', '30', '60'])
 
-        transaction.add_argument('-t-a-a-h-d', action='store_true', dest='save_all_days_all_stocks_hist_data', help='save all days all stocks history data')
-        transaction.add_argument('-t-a-s-h-d', action='store_true', dest='save_all_days_select_stocks_hist_data', help='save all days selected all stocks history data')
-
-        transaction.add_argument('-t-t-a-h-d', action='store_true', dest='save_today_all_stocks_hist_data', help='save today all stocks history data')
-        transaction.add_argument('-t-t-s-h-d', action='store_true', dest='save_today_select_stocks_hist_data', help='save today selected stocks history data')
-
-        transaction.add_argument('-t-y-a-h-d', action='store_true', dest='save_yestoday_all_stocks_hist_data', help='save yestoday all stocks history data')
-        transaction.add_argument('-t-y-s-h-d', action='store_true', dest='save_yestoday_select_stocks_hist_data', help='save yestoday selected stocks history data')
-
+        fundamentals = parser.add_argument_group('fundamentals')
+        fundamentals.add_argument('-f-s-b', action='store_true', dest='save_stocks_basic_data',
+                                  help='save stocks basic data')
         # subparsers = parser.add_subparsers()
         # transaction_selected = subparsers.add_parser('-t-a-s-h-d', help='save all selected stocks history data')
         # transaction_selected.add_argument('--stocks', nargs='+', dest='stocks_selected', help='save all selected stocks history data')
@@ -189,25 +210,34 @@ def main():
         logger.debug(_args)
         return _args
     args = args_parse()
-    if args.save_all_days_all_stocks_hist_data:
-        bser.save_all_days_all_stocks_hist_data()
-    if args.save_all_days_select_stocks_hist_data:
-        save_select_stocks_hist_data()
+    # fundamentals
+    if args.save_stocks_basic_data:
+        base_service.save_stocks_basic_data()
+
+    # transaction
+    if args.save_all_stocks_hist_data:
+        bser.save_all_stocks_hist_data(args.start_date, args.end_date, ktype=args.ktype)
+    if args.save_select_stocks_hist_data:
+        save_select_stocks_hist_data(args.start_date, args.end_date, ktype=args.ktype)
     if args.save_today_all_stocks_hist_data:
         bser.save_today_all_stocks_hist_data()
     if args.save_today_select_stocks_hist_data:
-        save_select_stocks_hist_data(today_line, tomorrow_line)
-    if args.save_yestoday_all_stocks_hist_data:
-        bser.save_yestoday_all_stocks_hist_data()
-    if args.save_yestoday_select_stocks_hist_data:
-        save_select_stocks_hist_data(yestoday_line, today_line)
+        save_select_stocks_hist_data(today_line, tomorrow)
+    if args.save_yesterday_all_stocks_hist_data:
+        bser.save_yesterday_all_stocks_hist_data()
+    if args.save_yesterday_select_stocks_hist_data:
+        save_select_stocks_hist_data(yesterday_line, yesterday_line)
+
+    # table
     if args.drop_table:
         table_service.drop_all_tables()
     if args.create_table:
         table_service.create_all_tables()
 
+
+
+
     # create_tables()
-    # base_service.save_stocks_basic_data()
     # save_data()
     # save_all_days_select_stocks_hist_data()
     # dser.save_his_data_scd('600848',start = '2016-10-13', end = '2016-10-14')
