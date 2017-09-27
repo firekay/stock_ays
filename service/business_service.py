@@ -19,6 +19,7 @@ tomorrow = util.get_tomorrow()
 tomorrow_line = util.get_tomorrow_line()
 
 logger = logging.getLogger(__name__)
+retry_count = 5
 
 
 def check_thread_alive(thread):
@@ -27,7 +28,7 @@ def check_thread_alive(thread):
         logger.warn('Thread %s not alive.' % thread.getName())
 
 
-def save_select_stocks_hist_data(stocks, start=None, end=None, ktype=None, retry_count=10, pause=0.00):
+def save_select_stocks_hist_data(stocks, start=None, end=None, ktype=None, retry_count=retry_count, pause=0.00):
     """获取个股历史交易数据（包括均线数据），可以通过参数设置获取日k线、周k线、月k线数据。
     本接口只能获取近3年的日线数据
     """
@@ -68,8 +69,8 @@ def save_select_stocks_hist_data(stocks, start=None, end=None, ktype=None, retry
         logger.info('End save select stocks history data.')
 
 
-def save_all_stocks_hist_data(start=None, end=None):
-    """下载并保持所有的股票的数据：D, W, M, 5, 15, 30, 60"""
+def save_all_stocks_hist_data(start=None, end=None, ktype=None):
+    """下载并保持所有的股票的数据：D, W, M"""
     if start is None or end is None:
         logger.info('Begin save all stocks history data, start date is: %s, end date is: %s.' % (start, end))
     else:
@@ -86,7 +87,7 @@ def save_all_stocks_hist_data(start=None, end=None):
 
     stocks = dsvc.get_stocks()
     for stock in stocks:
-        dsvc.get_his_data(stock.code, start, end)
+        dsvc.get_his_data(stock.code, start, end, ktype)
     if start is None or end is None:
         logger.info('End save all stocks history data, start date is: %s, end date is: %s.' % (start, end))
     else:
