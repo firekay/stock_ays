@@ -23,6 +23,8 @@ his_data_queue = Queue()
 his_data_scd_queue = Queue()
 h_revote_data_queue = Queue()
 
+retry_count = 5
+
 
 def save_h_revote_data(last_stock_code=None):
     logger.info('Begin save h revote data thread.')
@@ -42,7 +44,8 @@ def save_h_revote_data(last_stock_code=None):
             data = h_revote_data[2]
             logger.info('Get h revode data from h_revote_data_queue, stock code is: %s.' % code)
             try:
-                data_dicts = [{'code': code, 'autype': autype, 'date': row[6], 'open': row[0], 'hign': row[1], 'close': row[2], 'low': row[3], 'volume': row[4], 'amount': row[5]} for row in data]
+                data_dicts = [{'code': code, 'autype': autype, 'date': row[6], 'open': row[0], 'hign': row[1],
+                               'close': row[2], 'low': row[3], 'volume': row[4], 'amount': row[5]} for row in data]
                 RevoteHistoryData.insert_many(data_dicts).execute()
             except Exception as e:
                 logger.exception('Save data error. Code is %s.' % code)
@@ -52,7 +55,7 @@ def save_h_revote_data(last_stock_code=None):
                 break
 
 
-def get_h_revote_data(code, start=None, end=None, autype='qfp', index=False, retry_count=10, pause=0, drop_factor=True):
+def get_h_revote_data(code, start=None, end=None, autype='qfp', index=False, retry_count=retry_count, pause=0, drop_factor=True):
     if start is None or end is None:
         logger.info('Begin get sotck %s h revote data, start date is: %s, end date is: %s.' % (code, start, end))
     else:
@@ -71,12 +74,14 @@ def get_h_revote_data(code, start=None, end=None, autype='qfp', index=False, ret
                 logger.info('End get stock %s h revote data, all date.' % code)
         else:
             if start is None or end is None:
-                logger.info('Empty get sotck %s h revote data, start date is: %s, end date is: %s.' % (code, start, end))
+                logger.info('Empty get sotck %s h revote data, start date is: %s, end date is: %s.'
+                            % (code, start, end))
             else:
                 logger.info('Empty get stock %s h revote data, all date.' % code)
     except Exception as e:
         if start is None or end is None:
-            logger.exception('Error get sotck %s h revote data, start date is: %s, end date is: %s.' % (code, start, end))
+            logger.exception('Error get sotck %s h revote data, start date is: %s, end date is: %s.'
+                             % (code, start, end))
         else:
             logger.exception('Error get stock %s h revote data, all date.' % code)
 
@@ -171,7 +176,7 @@ def get_stocks():
     return StockBasic.select(StockBasic.code).where(StockBasic.timeToMarket != 0).order_by(StockBasic.code)
 
 
-def get_his_data(code, start=None, end=None, ktype=None, retry_count=10, pause=0.001):
+def get_his_data(code, start=None, end=None, ktype=None, retry_count=retry_count, pause=0.001):
     """获取个股历史交易数据（包括均线数据），可以通过参数设置获取日k线、周k线、月k线数据。
     本接口只能获取近3年的日线数据，
     适合搭配均线数据进行选股和分析，如果需要全部历史数据，请调用下一个接口get_h_data()。"""
@@ -202,7 +207,7 @@ def get_his_data(code, start=None, end=None, ktype=None, retry_count=10, pause=0
 
 
 def get_his_data_scd(code, start=None, end=None,
-                  ktype=None, retry_count=10,
+                  ktype=None, retry_count=retry_count,
                   pause=0.001):
     """获取个股历史交易数据（包括均线数据），可以通过参数设置获取5分钟、15分钟、30分钟和60分钟k线数据。
     本接口只能获取近3年的日线数据，
@@ -234,7 +239,7 @@ def get_his_data_scd(code, start=None, end=None,
 
 
 def save_revote_his_data(code, start=None, end=None, autype='qfq',
-               index=True, retry_count=10, pause=0.001, drop_factor=True):
+               index=True, retry_count=retry_count, pause=0.001, drop_factor=True):
     """获取历史复权数据，分为前复权和后复权数据，接口提供股票上市以来所有历史数据，默认为前复权。如果不设定开始和结束日期，则返回近一年的复权数据，从性能上考虑，推荐设定开始日期和结束日期，而且最好不要超过三年以上，获取全部历史数据，请分年段分步获取，取到数据后，请及时在本地存储。
 
     本接口还提供大盘指数的全部历史数据，调用时，请务必设定index参数为True,由于大盘指数不存在复权的问题，故可以忽略autype参数。"""
@@ -244,7 +249,8 @@ def save_revote_his_data(code, start=None, end=None, autype='qfq',
                index, retry_count, pause, drop_factor)
         data_df['date'] = pd.Series(data_df.index, index=data_df.index)
         data = data_df.values
-        data_dicts = [{'code': code, 'autype': autype, 'date': row[6], 'open': row[0], 'hign': row[1], 'close': row[2], 'low': row[3], 'volume': row[4], 'amount': row[5]} for row in data]
+        data_dicts = [{'code': code, 'autype': autype, 'date': row[6], 'open': row[0], 'hign': row[1],
+                       'close': row[2], 'low': row[3], 'volume': row[4], 'amount': row[5]} for row in data]
         RevoteHistoryData.insert_many(data_dicts).execute()
     except Exception as e:
         logger.exception('%s,%s' % (code, start))
@@ -257,14 +263,17 @@ def save_today_all_data():
     try:
         data_df = ts.get_today_all()
         data = data_df.values
-        data_dicts = [{'code': row[0], 'name': row[1], 'date': today, 'changepercent': row[2], 'trade': row[3], 'open': row[4], 'hign': row[5], 'low': row[6], 'settlement': row[7], 'volume': row[8], 'turnoverratio': row[9], 'amount': row[10], 'per': row[11], 'pb': row[12], 'mktcap': row[13], 'nmc': row[14]} for row in data]
+        data_dicts = [{'code': row[0], 'name': row[1], 'date': today, 'changepercent': row[2], 'trade': row[3],
+                       'open': row[4], 'hign': row[5], 'low': row[6], 'settlement': row[7], 'volume': row[8],
+                       'turnoverratio': row[9], 'amount': row[10], 'per': row[11], 'pb': row[12],
+                       'mktcap': row[13], 'nmc': row[14]} for row in data]
         TodayAllData.insert_many(data_dicts).execute()
     except Exception as e:
         logger.exception('Get %s\'s all stock data.' % today)
     logger.info('End get %s\'s all stock data.' % today)
 
 
-def save_tick_data(code=None, date=None, retry_count=10):
+def save_tick_data(code=None, date=None, retry_count=retry_count):
     """获取个股以往交易历史的分笔数据明细，通过分析分笔数据，可以大致判断资金的进出情况。在使用过程中，对于获取股票某一阶段的历史分笔数据，需要通过参入交易日参数并append到一个DataFrame或者直接append到本地同一个文件里。历史分笔接口只能获取当前交易日之前的数据，当日分笔历史数据请调用get_today_ticks()接口或者在当日18点后通过本接口获取.
 
     当code为None,或者code长度不为6,或者date为None时直接返回None"""
@@ -275,7 +284,8 @@ def save_tick_data(code=None, date=None, retry_count=10):
     try:
         data_df = ts.get_tick_data(code, date,retry_count)
         data = data_df.values
-        data_dicts = [{'code': code, 'date': date, 'time': row[0], 'price': row[1], 'pchange': '', 'change': row[2], 'volume': row[3], 'amount': row[4], 'type': row[5]} for row in data]
+        data_dicts = [{'code': code, 'date': date, 'time': row[0], 'price': row[1], 'pchange': '',
+                       'change': row[2], 'volume': row[3], 'amount': row[4], 'type': row[5]} for row in data]
         TickData.insert_many(data_dicts).execute()
     except Exception as e:
         logger.exception('Get %s\'s tick data in %s.' % (code, date))
@@ -288,19 +298,22 @@ def save_big_index_data():
     try:
         data_df = ts.get_index()
         data = data_df.values
-        data_dicts = [{'date': today, 'code': row[0], 'name': row[1], 'change': row[2], 'open': row[3], 'preclose': row[4], 'close': row[5], 'high': row[6], 'low': row[7], 'volume': row[8], 'amount': row[9]} for row in data]
+        data_dicts = [{'date': today, 'code': row[0], 'name': row[1], 'change': row[2], 'open': row[3],
+                       'preclose': row[4], 'close': row[5], 'high': row[6], 'low': row[7],
+                       'volume': row[8], 'amount': row[9]} for row in data]
         BigIndexData.insert_many(data_dicts).execute()
     except Exception as e:
         logger.exception('Get %s\'s big index data.' % (today))
     logger.info('End get %s\'s big index data.' % (today))
 
 
-def save_big_trade_data(code=None, date=None, vol=400, retry_count=10, pause=0.001):
+def save_big_trade_data(code=None, date=None, vol=400, retry_count=retry_count, pause=0.001):
     logger.info('Begin get %s\'s big trade data in %s.' % (code, date))
     try:
         data_df = ts.get_sina_dd(code, date, vol, retry_count, pause)
         data = data_df.values
-        data_dicts = [{'date': date, 'code': row[0], 'name': row[1], 'time': row[2], 'price': row[3], 'volume': row[4], 'preprice': row[5], 'type': row[6]} for row in data]
+        data_dicts = [{'date': date, 'code': row[0], 'name': row[1], 'time': row[2], 'price': row[3],
+                       'volume': row[4], 'preprice': row[5], 'type': row[6]} for row in data]
         BigTradeData.insert_many(data_dicts).execute()
     except Exception as e:
         logger.exception('Get %s\'s big trade data in %s.' % (code, date))
@@ -432,7 +445,8 @@ def save_terminated():
         today = str(get_today())
         data_df = ts.get_terminated()
         data = data_df.values
-        data_dicts = [{'code': row[0], 'name': row[1], 'o_date': row[2], 't_date': row[3], 'insert_date': today} for row in data]
+        data_dicts = [{'code': row[0], 'name': row[1], 'o_date': row[2], 't_date': row[3],
+                       'insert_date': today} for row in data]
         Terminated.insert_many(data_dicts).execute()
     except Exception as e:
         logger.exception('Get terminated classified.')
@@ -446,7 +460,8 @@ def save_suspend():
         today = str(get_today())
         data_df = ts.get_terminated()
         data = data_df.values
-        data_dicts = [{'code': row[0], 'name': row[1], 'o_date': row[2], 't_date': row[3], 'insert_date': today} for row in data]
+        data_dicts = [{'code': row[0], 'name': row[1], 'o_date': row[2], 't_date': row[3],
+                       'insert_date': today} for row in data]
         Suspend.insert_many(data_dicts).execute()
     except Exception as e:
         logger.exception('Get suspend classified.')
@@ -459,7 +474,11 @@ def save_stock_basic():
         data_df = ts.get_stock_basics()
         data_df['code'] = pd.Series(data_df.axes[0], index=data_df.index)
         data = data_df.values
-        data_dicts = [{'code': row[15], 'name': row[0], 'industry': row[1], 'area': row[2], 'pe': row[3], 'outstanding': row[4], 'totals': row[5], 'totalAssets':row[6], 'liquidAssets':row[7], 'fixedAssets': row[8], 'reserved': row[9], 'reservedPerShare': row[10], 'eps': row[11], 'bvps': row[12], 'pb': row[13], 'timeToMarket': row[14], 'insert_date': today} for row in data]
+        data_dicts = [{'code': row[15], 'name': row[0], 'industry': row[1], 'area': row[2], 'pe': row[3],
+                       'outstanding': row[4], 'totals': row[5], 'totalAssets':row[6], 'liquidAssets':row[7],
+                       'fixedAssets': row[8], 'reserved': row[9], 'reservedPerShare': row[10], 'eps': row[11],
+                       'bvps': row[12], 'pb': row[13], 'timeToMarket': row[14], 'insert_date': today}
+                      for row in data]
         StockBasic.insert_many(data_dicts).execute()
     except Exception as e:
         logger.exception('Get stock basic.')
