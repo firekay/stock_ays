@@ -164,6 +164,51 @@ class StockBasic(BaseModel):
 # 交易数据
 # #####################################################
 # 历史交易数据: 天
+class HistoryKDataD(BaseModel):
+    """历史行情: D"""
+    class Meta:
+        db_table = 'history_k_data_d'
+
+    code = CharField(8)
+    date = DateField('%Y-%m-%d')
+    autype = CharField(5)  # 复权类型: qfq-前复权 hfq-后复权 None-不复权，默认为qfq
+    open = DecimalField(max_digits=8, decimal_places=2)
+    close = DecimalField(max_digits=8, decimal_places=2)
+    hign = DecimalField(max_digits=8, decimal_places=2)
+    low = DecimalField(max_digits=8, decimal_places=2)
+    volume = DecimalField(max_digits=12, decimal_places=2)
+
+
+class HistoryKDataW(BaseModel):
+    """历史行情: 周"""
+    class Meta:
+        db_table = 'history_k_data_d'
+
+    code = CharField(8)
+    date = DateField('%Y-%m-%d')
+    autype = CharField(5)  # 复权类型: qfq-前复权 hfq-后复权 None-不复权，默认为qfq
+    open = DecimalField(max_digits=8, decimal_places=2)
+    close = DecimalField(max_digits=8, decimal_places=2)
+    hign = DecimalField(max_digits=8, decimal_places=2)
+    low = DecimalField(max_digits=8, decimal_places=2)
+    volume = DecimalField(max_digits=12, decimal_places=2)
+
+
+class HistoryKDataM(BaseModel):
+    """历史行情: 月"""
+    class Meta:
+        db_table = 'history_k_data_d'
+
+    code = CharField(8)
+    date = DateField('%Y-%m-%d')
+    autype = CharField(5)  # 复权类型: qfq-前复权 hfq-后复权 None-不复权，默认为qfq
+    open = DecimalField(max_digits=8, decimal_places=2)
+    close = DecimalField(max_digits=8, decimal_places=2)
+    hign = DecimalField(max_digits=8, decimal_places=2)
+    low = DecimalField(max_digits=8, decimal_places=2)
+    volume = DecimalField(max_digits=12, decimal_places=2)
+
+
 class HistoryDataD(BaseModel):
     """历史行情: D"""
     class Meta:
@@ -181,7 +226,7 @@ class HistoryDataD(BaseModel):
     ma5 = DecimalField(max_digits=10, decimal_places=3)
     ma10 = DecimalField(max_digits=10, decimal_places=4)
     ma20 = DecimalField(max_digits=10, decimal_places=4)
-    v_ma5 =  DecimalField(max_digits=12, decimal_places=2)
+    v_ma5 = DecimalField(max_digits=12, decimal_places=2)
     v_ma10 = DecimalField(max_digits=12, decimal_places=2)
     v_ma20 = DecimalField(max_digits=12, decimal_places=2)
     turnover = DecimalField(max_digits=10, decimal_places=2)
