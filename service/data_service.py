@@ -22,8 +22,75 @@ today = get_today_line()
 his_data_queue = Queue()
 his_data_scd_queue = Queue()
 h_revote_data_queue = Queue()
+stock_k_data_queue = Queue()
 
 retry_count = 5
+
+
+def get_stock_k_data(code, start=None, end=None, autype='qfq', index=False,
+                   ktype=None, retry_count=retry_count, pause=0.):
+    """从tushare得到k线数据"""
+    if start is None or end is None:
+        logger.info('Begin get sotck %s history k data, start date is: %s, end date is: %s.' % (code, start, end))
+    else:
+        logger.info('Begin get stock %s history k data, all date.' % code)
+    try:
+        data_df = ts.get_k_data(code, start=start, end=end, ktype=ktype,
+                                retry_count=retry_count, pause=pause)
+        if data_df is not None and not data_df.empty:
+            data_df['date'] = pd.Series(data_df.axes[0], index=data_df.index)
+            data = data_df.values
+            his_data_queue.put((code, ktype, autype, data))
+            if start is None or end is None:
+                logger.info('End get sotck %s history k data, start date is: %s, end date is: %s.' % (code, start, end))
+            else:
+                logger.info('End get stock %s history k data, all date.' % code)
+        else:
+            if start is None or end is None:
+                logger.info('Empty get sotck %s history k data, start date is: %s, end date is: %s.' % (code, start, end))
+            else:
+                logger.info('Empty get stock %s history k data, all date.' % code)
+    except Exception as e:
+        if start is None or end is None:
+            logger.info('Error get sotck %s history k data, start date is: %s, end date is: %s.' % (code, start, end))
+        else:
+            logger.info('Error get stock %s history k data, all date.' % code)
+
+
+def save_stock_k_data(last_stock_code=None):
+    logger.info('Begin save stock k data thread.')
+    if last_stock_code:
+        last_stock = last_stock_code
+    else:
+        last_stock = get_max_stock()
+    logger.info("Max stock code is: %s" % last_stock)
+    while True:
+        if h_revote_data_queue.empty():
+            time.sleep(0.01)
+        else:
+            logger.info('stock_k_data_queue\'s size is: %s' % (stock_k_data_queue.qsize()))
+            stock_k_data = stock_k_data_queue.get()
+            code = stock_k_data[0]
+            ktype = stock_k_data[1]
+            autype = stock_k_data[2]
+            data = stock_k_data[3]
+            logger.info('Get stock k data from stock_k_data_queue, stock code is: %s, ktype is: %s.' %
+                        (code, ktype))
+            data_dicts = [{'code': code, 'autype': autype, 'date': row[0], 'open':row[1],
+                           'close': row[2], 'high': row[3], 'low': row[4], 'volume': row[5]} for row in data]
+
+            try:
+                # TODO: 添加5分钟, 15分钟.. 代码
+                if ktype.upper() == 'D':
+                    HistoryKDataD.insert_many(data_dicts).execute()
+                if ktype.upper() == 'W':
+                    HistoryKDataW.insert_many(data_dicts).execute()
+                if ktype.upper() == 'M':
+                    HistoryKDataM.insert_many(data_dicts).execute()
+            except Exception as e:
+                logger.exception('Save stock k data error. Code is: %s, ktype is: %s.' % (code, ktype))
+                logger.error('Error data is: ' + data)
+
 
 
 def save_h_revote_data(last_stock_code=None):
