@@ -23,12 +23,14 @@ his_data_queue = Queue()
 his_data_scd_queue = Queue()
 h_revote_data_queue = Queue()
 stock_k_data_queue = Queue()
-
-retry_count = 5
+tick_data_queue = Queue()
+big_trade_data_queue = Queue()
+RETRY_COUNT = 5
+PAUSE = 0.001
 
 
 def get_stock_k_data(code, start=None, end=None, autype='qfq', index=False,
-                   ktype=None, retry_count=retry_count, pause=0.):
+                   ktype=None, retry_count=RETRY_COUNT, pause=PAUSE):
     """从tushare得到k线数据"""
     if start is None or end is None:
         logger.info('Begin get sotck %s history k data, start date is: %s, end date is: %s.' % (code, start, end))
@@ -36,7 +38,7 @@ def get_stock_k_data(code, start=None, end=None, autype='qfq', index=False,
         logger.info('Begin get stock %s history k data, all date.' % code)
     try:
         data_df = ts.get_k_data(code, start=start, end=end, ktype=ktype,
-                                retry_count=retry_count, pause=pause)
+                                retry_count=RETRY_COUNT, pause=PAUSE)
         if data_df is not None and not data_df.empty:
             data_df['date'] = pd.Series(data_df.axes[0], index=data_df.index)
             data = data_df.values
@@ -92,7 +94,6 @@ def save_stock_k_data(last_stock_code=None):
                 logger.error('Error data is: ' + data)
 
 
-
 def save_h_revote_data(last_stock_code=None):
     logger.info('Begin save h revote data thread.')
     if last_stock_code:
@@ -122,7 +123,7 @@ def save_h_revote_data(last_stock_code=None):
                 break
 
 
-def get_h_revote_data(code, start=None, end=None, autype='qfp', index=False, retry_count=retry_count, pause=0, drop_factor=True):
+def get_h_revote_data(code, start=None, end=None, autype='qfp', index=False, retry_count=RETRY_COUNT, pause=0, drop_factor=True):
     if start is None or end is None:
         logger.info('Begin get sotck %s h revote data, start date is: %s, end date is: %s.' % (code, start, end))
     else:
@@ -243,7 +244,7 @@ def get_stocks():
     return StockBasic.select(StockBasic.code).where(StockBasic.timeToMarket != 0).order_by(StockBasic.code)
 
 
-def get_his_data(code, start=None, end=None, ktype=None, retry_count=retry_count, pause=0.001):
+def get_his_data(code, start=None, end=None, ktype=None, retry_count=RETRY_COUNT, pause=PAUSE):
     """获取个股历史交易数据（包括均线数据），可以通过参数设置获取日k线、周k线、月k线数据。
     本接口只能获取近3年的日线数据，
     适合搭配均线数据进行选股和分析，如果需要全部历史数据，请调用下一个接口get_h_data()。"""
@@ -274,8 +275,8 @@ def get_his_data(code, start=None, end=None, ktype=None, retry_count=retry_count
 
 
 def get_his_data_scd(code, start=None, end=None,
-                  ktype=None, retry_count=retry_count,
-                  pause=0.001):
+                  ktype=None, retry_count=RETRY_COUNT,
+                  pause=PAUSE):
     """获取个股历史交易数据（包括均线数据），可以通过参数设置获取5分钟、15分钟、30分钟和60分钟k线数据。
     本接口只能获取近3年的日线数据，
     适合搭配均线数据进行选股和分析，如果需要全部历史数据，请调用下一个接口get_h_data()。"""
@@ -306,7 +307,7 @@ def get_his_data_scd(code, start=None, end=None,
 
 
 def save_revote_his_data(code, start=None, end=None, autype='qfq',
-               index=True, retry_count=retry_count, pause=0.001, drop_factor=True):
+               index=True, retry_count=RETRY_COUNT, pause=PAUSE, drop_factor=True):
     """获取历史复权数据，分为前复权和后复权数据，接口提供股票上市以来所有历史数据，默认为前复权。如果不设定开始和结束日期，则返回近一年的复权数据，从性能上考虑，推荐设定开始日期和结束日期，而且最好不要超过三年以上，获取全部历史数据，请分年段分步获取，取到数据后，请及时在本地存储。
 
     本接口还提供大盘指数的全部历史数据，调用时，请务必设定index参数为True,由于大盘指数不存在复权的问题，故可以忽略autype参数。"""
@@ -340,23 +341,48 @@ def save_today_all_data():
     logger.info('End get %s\'s all stock data.' % today)
 
 
-def save_tick_data(code=None, date=None, retry_count=retry_count):
-    """获取个股以往交易历史的分笔数据明细，通过分析分笔数据，可以大致判断资金的进出情况。在使用过程中，对于获取股票某一阶段的历史分笔数据，需要通过参入交易日参数并append到一个DataFrame或者直接append到本地同一个文件里。历史分笔接口只能获取当前交易日之前的数据，当日分笔历史数据请调用get_today_ticks()接口或者在当日18点后通过本接口获取.
+def save_tick_data(code=None, date=None, retry_count=RETRY_COUNT):
+    """获取个股以往交易历史的分笔数据明细，通过分析分笔数据，可以大致判断资金的进出情况。
+    
+    在使用过程中，对于获取股票某一阶段的历史分笔数据，需要通过参入交易日参数并append到一个DataFrame
+      或者直接append到本地同一个文件里。历史分笔接口只能获取当前交易日之前的数据，
+      当日分笔历史数据请调用get_today_ticks()接口或者在当日18点后通过本接口获取.
 
     当code为None,或者code长度不为6,或者date为None时直接返回None"""
     if code is None or date is None:
         logger.error('Get tick data. But code or date is None.')
-        return None
+        return
     logger.info('Begin get %s\'s tick data in %s.' % (code, date))
     try:
         data_df = ts.get_tick_data(code, date,retry_count)
-        data = data_df.values
-        data_dicts = [{'code': code, 'date': date, 'time': row[0], 'price': row[1], 'pchange': '',
-                       'change': row[2], 'volume': row[3], 'amount': row[4], 'type': row[5]} for row in data]
-        TickData.insert_many(data_dicts).execute()
+        if data_df is not None and not data_df.empty:
+            data = data_df.values
+            data_dicts = [{'code': code, 'date': date, 'time': row[0], 'price': row[1], 'pchange': '',
+                           'change': row[2], 'volume': row[3], 'amount': row[4], 'type': row[5]}
+                          for row in data]
+            TickData.insert_many(data_dicts).execute()
+            logger.info('End get %s\'s tick data in %s.' % (code, date))
+        else:
+            logger.info('Empty get %s\'s tick data in %s.' % (code, date))
     except Exception as e:
-        logger.exception('Get %s\'s tick data in %s.' % (code, date))
-    logger.info('End get %s\'s tick data in %s.' % (code, date))
+        logger.exception('Error Get %s\'s tick data in %s.' % (code, date))
+
+
+def get_tick_data(code, date, retry_count=RETRY_COUNT, pause=PAUSE, src='sn'):
+    if code is None or date is None:
+        logger.error('Get tick data. But code or date is None.')
+        return
+    logger.info('Begin get %s\'s tick data in %s.' % (code, date))
+    try:
+        data_df = ts.get_tick_data(code, date, retry_count)
+        if data_df is not None and not data_df.empty:
+            data = data_df.values
+            tick_data_queue.put(code, data)
+            logger.info('End get %s\'s tick data in %s.' % (code, date))
+        else:
+            logger.info('Empty get %s\'s tick data in %s.' % (code, date))
+    except Exception as e:
+        logger.exception('Error Get %s\'s tick data in %s.' % (code, date))
 
 
 def save_big_index_data():
@@ -369,22 +395,36 @@ def save_big_index_data():
                        'preclose': row[4], 'close': row[5], 'high': row[6], 'low': row[7],
                        'volume': row[8], 'amount': row[9]} for row in data]
         BigIndexData.insert_many(data_dicts).execute()
+        logger.info('End get and save %s\'s big index data.' % (today))
     except Exception as e:
-        logger.exception('Get %s\'s big index data.' % (today))
-    logger.info('End get %s\'s big index data.' % (today))
+        logger.exception('Error get and save %s\'s big index data.' % (today))
 
 
-def save_big_trade_data(code=None, date=None, vol=400, retry_count=retry_count, pause=0.001):
-    logger.info('Begin get %s\'s big trade data in %s.' % (code, date))
+def save_big_trade_data(code=None, date=None, vol=400, retry_count=RETRY_COUNT, pause=PAUSE):
+    logger.info('Begin save %s\'s big trade data in %s.' % (code, date))
     try:
         data_df = ts.get_sina_dd(code, date, vol, retry_count, pause)
         data = data_df.values
         data_dicts = [{'date': date, 'code': row[0], 'name': row[1], 'time': row[2], 'price': row[3],
                        'volume': row[4], 'preprice': row[5], 'type': row[6]} for row in data]
         BigTradeData.insert_many(data_dicts).execute()
+        logger.info('End save %s\'s big trade data in %s.' % (code, date))
     except Exception as e:
-        logger.exception('Get %s\'s big trade data in %s.' % (code, date))
-    logger.info('End get %s\'s big trade data in %s.' % (code, date))
+        logger.exception('Error save %s\'s big trade data in %s.' % (code, date))
+
+
+def get_big_trade_data(code, date, vol=400, retry_count=RETRY_COUNT, pause=PAUSE):
+    logger.info('Begin get %s\'s big trade data in %s.' % (code, date))
+    try:
+        data_df = ts.get_sina_dd(code, date, vol, retry_count, pause)
+        if not data_df:
+            logger.info('Empty get %s\'s big trade data in %s.' % (code, date))
+        else:
+            data = data_df.values
+            big_trade_data_queue.put((code, date, data))
+            logger.info('End get %s\'s big trade data in %s.' % (code, date))
+    except Exception as e:
+        logger.exception('Error get %s\'s big trade data in %s.' % (code, date))
 
 
 def save_industry_classified():

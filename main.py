@@ -138,7 +138,7 @@ def save_all_transaction_data():
     # logger.info('End save today all stocks history data')
     #
     # logger.info('Begin save today all data')
-    bser.save_today_all_data()
+    # bser.save_today_all_data()
     # logger.info('End save today all data')
     # print('End save today all data')
     #
@@ -161,80 +161,116 @@ def save_select_stocks_hist_data(start=None, end=None, ktype=None):
     logger.info('End save select stocks history data')
 
 
+def save_select_stocks_h_data_revote(start=None, end=None, autype='qfp', index=False):
+    stock_codes = ['600622']
+    bser.save_select_stocks_h_data_revote(stock_codes, start=start, end=end, autype=autype, index=index)
+
+
+
 def main():
     parser = argparse.ArgumentParser(description='Get stock data with tushare')
 
     def args_parse():
         """参数解析"""
 
-        table = parser.add_argument_group('table service')
-        table.add_argument('-d', action='store_true', dest='drop_table', help='drop all tables')
-        table.add_argument('-c', action='store_true', dest='create_table', help='create all tables')
+        top_sub_parsers = parser.add_subparsers()
 
-        transaction = parser.add_argument_group('transaction')
-        transaction.add_argument('-t-a-h-d', action='store_true',
-                                 dest='save_all_stocks_hist_data',
-                                 help='save all stocks history data, may use with [--start] [--end] [--ktype]')
-        transaction.add_argument('-t-a-s-h-d', action='store_true',
-                                 dest='save_select_stocks_hist_data',
-                                 help='save selected all stocks history data, may use with [--start] [--end] [--ktype]')
-        transaction.add_argument('-t-t-a-h-d', action='store_true',
-                                 dest='save_today_all_stocks_hist_data', help='save today all stocks history data')
-        transaction.add_argument('-t-t-s-h-d', action='store_true',
-                                 dest='save_today_select_stocks_hist_data',
-                                 help='save today selected stocks history data')
-        transaction.add_argument('-t-y-a-h-d', action='store_true', dest='save_yesterday_all_stocks_hist_data',
-                                 help='save yesterday all stocks history data')
-        transaction.add_argument('-t-y-s-h-d', action='store_true', dest='save_yesterday_select_stocks_hist_data',
-                                 help='save yesterday selected stocks history data')
-        transaction.add_argument('-t-a-a-h-r-d', action='store_true',
-                                 dest='save_all_days_all_stocks_revote_h_data',
-                                 help='save all days all stocks revote history data')
-        transaction.add_argument('-t-a-s-h-r-d', action='store_true',
-                                 dest='save_all_days_select_stocks_revote_h_data',
-                                 help='save all days selected all stocks revote history data')
-        transaction.add_argument('--start', dest='start_date', help='start date')
-        transaction.add_argument('--end', dest='end_date', help='end date')
-        transaction.add_argument('--ktype', dest='ktype', help='数据类型: D=日k线 W=周 M=月 5=5分钟 15=15分钟 30=30分钟 60=60分钟',
-                                 choices=['D', 'W', 'M', '5', '15', '30', '60'])
+        # database table parser
+        db_parser = top_sub_parsers.add_parser('d', help='database and table service')
+        db_parser.add_argument('-d', action='store_true', dest='drop_table', help='drop all tables')
+        db_parser.add_argument('-c', action='store_true', dest='create_table', help='create all tables')
 
-        fundamentals = parser.add_argument_group('fundamentals')
-        fundamentals.add_argument('-f-s-b', action='store_true', dest='save_stocks_basic_data',
-                                  help='save stocks basic data')
-        # subparsers = parser.add_subparsers()
-        # transaction_selected = subparsers.add_parser('-t-a-s-h-d', help='save all selected stocks history data')
-        # transaction_selected.add_argument('--stocks', nargs='+', dest='stocks_selected', help='save all selected stocks history data')
-        # transaction_selected.add_argument('-ktype', choices=['D', 'W', 'M'], help='save the sotck type, D is day, W is week, M is month')
+        # transaction parser
+        transaction_parser = top_sub_parsers.add_parser('t', help='transaction service')
+        tran_sub_parsers = transaction_parser.add_subparsers()
+        hist_parser = tran_sub_parsers.add_parser('h', help='hist data service')
+        hist_parser.add_argument('-hi', action='store_true',
+                                 dest='save_stocks_hist_data',
+                                 help='save stocks history data')
+        hist_parser.add_argument('-r', action='store_true',
+                                 dest='save_stocks_revote_hist_data',
+                                 help='save stocks revote history data')
+        hist_parser.add_argument('-tick', action='store_true',
+                                 dest='save_tick_data',
+                                 help='save tick data(获取历史的分笔数据明细)')
+        hist_parser.add_argument('-ttick', action='store_true',
+                                 dest='save_today_tick_data',
+                                 help='save today tick data(获取当前交易日（交易进行中使用))')
+        hist_parser.add_argument('-bt', action='store_true',
+                                 dest='save_big_trade_data',
+                                 help='save big trade data(获取大单交易数据)')
+        hist_parser.add_argument('-bi', action='store_true',
+                                 dest='save_big_index_data',
+                                 help='save big index data(获取大盘指数实时行情列表)')
 
+        transaction_parser.add_argument('-t', action='store_true',
+                                        dest='today_data',
+                                        help='save today stocks history data')
+        transaction_parser.add_argument('-y', action='store_true',
+                                        dest='yesterday_data',
+                                        help='save yesterday stocks history data')
+        transaction_parser.add_argument('--start', dest='start_date', help='start date')
+        transaction_parser.add_argument('--end', dest='end_date', help='end date')
+        transaction_parser.add_argument('--ktype', dest='ktype',
+                                        help='数据类型: D=日k线 W=周 M=月 5=5分钟 15=15分钟 30=30分钟 60=60分钟',
+                                        choices=['D', 'W', 'M', '5', '15', '30', '60'])
+        transaction_parser.add_argument('-a', action='store_true', dest='all_stocks', help='get all stocks data.')
+        transaction_parser.add_argument('-s', action='store_true', dest='select_stocks', help='get select stocks data.')
+
+        # fundamentals, basic parser
+        fundamentals_parser = top_sub_parsers.add_parser('f', help='fundamentals service(include stock list)')
+        fundamentals_parser.add_argument('-s', action='store_true', dest='save_stocks_basic_data',
+                                         help='save stocks basic data')
         _args = parser.parse_args()
         logger.debug(_args)
         return _args
     args = args_parse()
+
     # fundamentals
-    if args.save_stocks_basic_data:
+    if hasattr(args, 'save_stocks_basic_data') and args.save_stocks_basic_data:
         base_service.save_stocks_basic_data()
 
     # transaction
-    if args.save_all_stocks_hist_data:
-        bser.save_all_stocks_hist_data(args.start_date, args.end_date, ktype=args.ktype)
-    if args.save_select_stocks_hist_data:
-        save_select_stocks_hist_data(args.start_date, args.end_date, ktype=args.ktype)
-    if args.save_today_all_stocks_hist_data:
-        bser.save_today_all_stocks_hist_data(ktype=args.ktype)
-    if args.save_today_select_stocks_hist_data:
-        save_select_stocks_hist_data(today_line, tomorrow, ktype=args.ktype)
-    if args.save_yesterday_all_stocks_hist_data:
-        bser.save_yesterday_all_stocks_hist_data(ktype=args.ktype)
-    if args.save_yesterday_select_stocks_hist_data:
-        save_select_stocks_hist_data(yesterday_line, yesterday_line, ktype=args.ktype)
+    if hasattr(args, 'save_stocks_hist_data') and args.save_stocks_hist_data:
+        if args.all_stocks:
+            if args.today_data:
+                bser.save_all_stocks_hist_data(today_line, today_line, ktype=args.ktype)
+            elif args.yesterday_data:
+                bser.save_all_stocks_hist_data(yesterday_line, yesterday_line, ktype=args.ktype)
+            else:
+                bser.save_all_stocks_hist_data(args.start_date, args.end_date, ktype=args.ktype)
+        if args.select_stocks:
+            if args.today_data:
+                save_select_stocks_hist_data(today_line, today_line, ktype=args.ktype)
+            elif args.yesterday_data:
+                save_select_stocks_hist_data(yesterday_line, yesterday_line, ktype=args.ktype)
+            else:
+                save_select_stocks_hist_data(args.start_date, args.end_date, ktype=args.ktype)
+        else:
+            logger.error('Save stocks hist data must assign -a(all stocks) or -s(select stocks).')
+    if hasattr(args, 'save_stocks_revote_hist_data') and args.save_stocks_revote_hist_data:
+        if args.all_stocks:
+            if args.today_data:
+                bser.save_all_stock_h_data_revote(today_line, today_line)
+            elif args.yesterday_data:
+                bser.save_all_stock_h_data_revote(yesterday_line, yesterday_line)
+            else:
+                bser.save_all_stock_h_data_revote(args.start_date, args.end_date)
+        if args.select_stocks:
+            if args.today_data:
+                save_select_stocks_h_data_revote(today_line, today_line)
+            elif args.yesterday_data:
+                save_select_stocks_h_data_revote(yesterday_line, yesterday_line)
+            else:
+                save_select_stocks_h_data_revote(args.start_date, args.end_date)
+        else:
+            logger.error('Save stocks revote hist data must assign -a(all stocks) or -s(select stocks).')
 
-    # table
-    if args.drop_table:
+    # database and table
+    if hasattr(args, 'drop_table') and args.drop_table:
         table_service.drop_all_tables()
-    if args.create_table:
+    if hasattr(args, 'create_table') and args.create_table:
         table_service.create_all_tables()
-
-
 
 
     # create_tables()

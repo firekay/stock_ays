@@ -55,28 +55,32 @@ def save_stocks_k_data(stocks=None, start=None, end=None, autype='qfq', index=Fa
         last_stock_code = stocks[-1]
         log_save_type = 'select'
     logger.info('Last stock code is: ' + last_stock_code)
-    if start is None or end is None:
-        logger.info('End save %s stocks history k data, start date is: %s, end date is: %s.' %
+    if not start or not end:
+        logger.info('Begin save %s stocks history k data, start date is: %s, end date is: %s.' %
                     (log_save_type, start, end))
     else:
-        logger.info('End save %s stocks history k data.' % log_save_type)
+        logger.info('Begin save %s stocks history k data.' % log_save_type)
     save_stock_k_data_thread = threading.Thread(name='save_stock_k_data', target=dsvc.save_stock_k_data,
                                                 args=(last_stock_code,))
     save_stock_k_data_thread.start()
     threading.Timer(1, check_thread_alive, args=(save_stock_k_data_thread,)).start()
-    stocks = dsvc.get_stocks()
     for stock in stocks:
         dsvc.get_stock_k_data(stock, start, end, autype, index, retry_count, pause)
+    if not start or not end:
+        logger.info('End save %s stocks history k data, start date is: %s, end date is: %s.' %
+                    (log_save_type, start, end))
+    else:
+        logger.info('End save %s stocks history k data.' % log_save_type)
 
 
 def save_select_stocks_hist_data(stocks, start=None, end=None, ktype=None, retry_count=retry_count, pause=0.00):
     """获取个股历史交易数据（包括均线数据），可以通过参数设置获取日k线、周k线、月k线数据。
     本接口只能获取近3年的日线数据
     """
-    if start is None or end is None:
-        logger.info('End save select stocks history data, start date is: %s, end date is: %s.' % (start, end))
+    if not start or not end:
+        logger.info('Begin save select stocks history data, start date is: %s, end date is: %s.' % (start, end))
     else:
-        logger.info('End save select stocks history data.')
+        logger.info('Begin save select stocks history data.')
     ktypes = list(['D', 'W', 'M'])
     last_stock_code = stocks[-1]
     logger.info(last_stock_code)
@@ -104,7 +108,7 @@ def save_select_stocks_hist_data(stocks, start=None, end=None, ktype=None, retry
         else:
             _deal_data(stock, start, end, ktype, retry_count, pause)
 
-    if start is None or end is None:
+    if not start or not end:
         logger.info('End save select stocks history data, start date is: %s, end date is: %s.' % (start, end))
     else:
         logger.info('End save select stocks history data.')
@@ -112,7 +116,7 @@ def save_select_stocks_hist_data(stocks, start=None, end=None, ktype=None, retry
 
 def save_all_stocks_hist_data(start=None, end=None, ktype=None):
     """下载并保持所有的股票的数据：D, W, M"""
-    if start is None or end is None:
+    if not start or not end:
         logger.info('Begin save all stocks history data, start date is: %s, end date is: %s.' % (start, end))
     else:
         logger.info('Begin save all stocks history data.')
@@ -129,7 +133,7 @@ def save_all_stocks_hist_data(start=None, end=None, ktype=None):
     stocks = dsvc.get_stocks()
     for stock in stocks:
         dsvc.get_his_data(stock.code, start, end, ktype)
-    if start is None or end is None:
+    if not start or not end:
         logger.info('End save all stocks history data, start date is: %s, end date is: %s.' % (start, end))
     else:
         logger.info('End save all stocks history data.')
@@ -194,7 +198,7 @@ def save_select_stocks_h_data_revote(stocks, start=None, end=None, autype='qfp',
         retry_count : int, 默认3,如遇网络等问题重复执行的次数
         pause : int, 默认 0,重复请求数据过程中暂停的秒数，防止请求间隔时间太短出现的问题
     """
-    if start is None or end is None:
+    if not start or not end:
         logger.info('Begin save select stocks h revote data, start date is: %s, end date is: %s.'
                     % (start, end))
     else:
@@ -206,7 +210,7 @@ def save_select_stocks_h_data_revote(stocks, start=None, end=None, autype='qfp',
     threading.Timer(1, check_thread_alive, args=(save_h_revote_data_thread,)).start()
     for stock in stocks:
         dsvc.get_h_revote_data(stock, start, end, autype, index, retry_count, pause)
-    if start is None or end is None:
+    if not start or not end:
         logger.info('End save select stocks h revote data, start date is: %s, end date is: %s.'
                     % (start, end))
     else:
@@ -233,24 +237,38 @@ def save_today_all_data():
     dsvc.save_today_all_data()
 
 
-def save_tick_data(date):
+def save_tick_data(stocks, date):
     """获取给定日期的交易历史的分笔数据明细.
 
     通过分析分笔数据，可以大致判断资金的进出情况。在使用过程中，对于获取股票某一阶段的历史分笔数据，需要通过参入交易日参数并append到一个DataFrame或者直接append到本地同一个文件里。历史分笔接口只能获取当前交易日之前的数据，当日分笔历史数据请调用get_today_ticks()接口或者在当日18点后通过本接口获取.
     当code为None,或者code长度不为6,或者date为None时直接返回None"""
 
-    logger.info('Begin save tick data: ' + date)
-    stocks = dsvc.get_stocks()
+    last_stock_code = None
+    log_save_type = 'all'
+
+    if stocks is None:
+        stocks = dsvc.get_stocks()
+    else:
+        assert isinstance(stocks, list), 'stocks must be a list type.'
+        last_stock_code = stocks[-1]
+        log_save_type = 'select'
+    logger.info('Last stock code is: ' + last_stock_code)
+    logger.info('Begin save %s tick data, date is: %s' % (log_save_type, date))
     for stock in stocks:
         dsvc.save_tick_data(stock.code, date)
-    logger.info('End save tick data: ' + date)
+    save_tick_data_thread = threading.Thread(name='save_tick_data', target=dsvc.save_tick_data,
+                                             args=(last_stock_code,))
+    save_tick_data_thread.start()
+    threading.Timer(1, check_thread_alive, args=(save_tick_data_thread,)).start()
+    for stock in stocks:
+        dsvc.get_tick_data(stock, date)
+    logger.info('End save %s tick data, date is: %s' % (log_save_type, date))
 
 
-def save_tick_data(start_date, end_date):
-    if end_date is None:
-        end_date = tomorrow_line
+def save_tick_data(stocks, start_date, end_date):
+    """获取给定日期范围的交易历史的分笔数据明细."""
     for date_mid in util.rangeDate(start_date, end_date):
-        save_tick_data(date_mid)
+        save_tick_data(stocks, date_mid)
 
 
 # TODO: Add get_today_ticks method
@@ -270,24 +288,52 @@ def save_big_index_data():
     dsvc.save_big_index_data()
 
 
-def __save_big_trade_data(date):
-    """获取大单交易数据，默认为大于等于400手，数据来源于新浪财经。"""
-    logger.info('Begin save big trade data: ' + date)
-    stocks = dsvc.get_stocks()
-    for stock in stocks:
-        dsvc.save_big_trade_data(stock.code, date)
-    logger.info('End save big trade data: ' + date)
+def save_big_trade_data(stocks=None, start_date=None, end_date=None):
+    """获取大单交易数据，默认为大于等于400手，数据来源于新浪财经。
+    
+    Args:
+        stocks: 股票列表, 为空则代表全部
+        start_date: 开始时间, 为空代表当天
+        end_date: 结束时间. 为空则表示只有start_date启动用, 
+                        并且如果开始时间为空则end_date无意义,
+                        否则, 得到的是start_date与end_date之间的数据.
+        """
+    last_stock_code = None
+    log_save_type = 'all'
 
-
-def save_one_years_big_trade_data():
-    """获取近一年大盘指数实时行情列表。"""
-    for date in [ date for date in (datetime.datetime.now() + datetime.timedelta(-n) for n in range(365))]:
-        __save_big_trade_data(date.strftime('%Y-%m-%d'))
-
-
-def save_today_big_trade_data():
-    """获取当天大盘指数实时行情列表。"""
-    __save_big_trade_data(today_line)
+    if not stocks:
+        stocks = dsvc.get_stocks()
+    else:
+        assert isinstance(stocks, list), 'stocks must be a list type.'
+        last_stock_code = stocks[-1]
+        log_save_type = 'select'
+    logger.info('Last stock code is: ' + last_stock_code)
+    if start_date:
+        # 没有end_date的时候, 得到的是start_date这一天的, 否则调用start到end(不包括)之间的数据
+        if end_date:
+            logger.info('Begin save %s big trade data, start date is: %s, end date is: %s.' %
+                        (log_save_type, start_date, end_date))
+            [dsvc.save_big_trade_data(stock, date_mid)
+             for date_mid in util.rangeDate(start_date, end_date)
+             for stock in stocks]
+        else:
+            logger.info('Begin save %s big trade data, the date is: %s.' %
+                        (log_save_type, start_date))
+            [dsvc.save_big_trade_data(stock.code, start_date) for stock in stocks]
+    # 没有start_date, 则调用的是当天的数据
+    else:
+        start_date = util.get_today_line()
+        logger.info('Begin save %s big trade data, the date is: %s.' %
+                    (log_save_type, start_date))
+        [dsvc.save_big_trade_data(stock.code, start_date) for stock in stocks]
+    # for logs
+    if start_date:
+        if end_date:
+            logger.info('End save %s big trade data, start date is: %s, end date is: %s.' %
+                        (log_save_type, start_date, end_date))
+    else:
+        logger.info('End save %s big trade data, the date is: %s.' %
+                    (log_save_type, start_date))
 
 
 def save_industry_classified():
