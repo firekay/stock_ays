@@ -1,7 +1,7 @@
 # encoding: UTF-8
 import logging
 import logging.config
-from service import business_service as bser
+from service import transaction_service as bser
 
 logging.config.fileConfig("logging.conf")
 logger = logging.getLogger()

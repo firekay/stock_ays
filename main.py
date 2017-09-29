@@ -1,22 +1,16 @@
 # encoding: UTF-8
-import os
-import yaml
-import sys
 import argparse
-from configparser import ConfigParser
-import tushare as ts
-from peewee import *
-from data import stock_classified as sc
 import logging
-from data import base_data as bd
-from models import model
-from service import data_service as dser
+import os
+import sys
+import yaml
+from data import stock_classified as sc
+from service import classfication_service
 from service import table_service
-from service import business_service as bser
+from service import transaction_service
 from service import base_service
 from strategys import common_strategy as cstg
 from utils import util
-from strategys import common_strategy as cmstg
 
 logger = logging.getLogger(__name__)
 today = util.get_today()
@@ -54,17 +48,17 @@ def setup_logging(
 
 def stock_classified():
     print('stock classified begin')
-    bser.save_industry_classified()
-    bser.save_concept_classified()
-    bser.save_area_classified()
-    bser.save_sme_classified()
-    bser.save_gem_classified()
-    bser.save_st_classified()
-    bser.save_hs300s()
-    bser.save_sz50s()
-    bser.save_zz500s()
-    bser.save_terminated()
-    bser.save_suspend()
+    classfication_service.save_industry_classified()
+    classfication_service.save_concept_classified()
+    classfication_service.save_area_classified()
+    classfication_service.save_sme_classified()
+    classfication_service.save_gem_classified()
+    classfication_service.save_st_classified()
+    classfication_service.save_hs300s()
+    classfication_service.save_sz50s()
+    classfication_service.save_zz500s()
+    classfication_service.save_terminated()
+    classfication_service.save_suspend()
     print('stock classified end')
     
     sme = sc.SmeClassified()
@@ -124,26 +118,26 @@ def stock_classified():
 #     rrr.save_data(date='2010-11-29')
 
 
-def save_all_transaction_data():
-    """下载并保存所有交易数据"""
+# def save_all_transaction_data():
+#     """下载并保存所有交易数据"""
     
     # logger.info('Begin save all stocks history data')
-    # bser.save_all_days_all_stocks_hist_data()
+    # transaction_service.save_all_days_all_stocks_hist_data()
     # logger.info('End save all stocks history data')
 
     # logger.info('Begin save today all stocks history data')
-    # bser.save_yesterday_all_stocks_his_data()
-    # bser.save_today_all_stocks_his_data()
-    # bser.save_all_stocks_his_data(start=util.get_ndays_before_line(6), end=yesterday_line)
+    # transaction_service.save_yesterday_all_stocks_his_data()
+    # transaction_service.save_today_all_stocks_his_data()
+    # transaction_service.save_all_stocks_his_data(start=util.get_ndays_before_line(6), end=yesterday_line)
     # logger.info('End save today all stocks history data')
     #
     # logger.info('Begin save today all data')
-    # bser.save_today_all_data()
+    # transaction_service.save_today_all_data()
     # logger.info('End save today all data')
     # print('End save today all data')
     #
     # logger.info('Begin save tick data')
-    # bser.save_tick_data()
+    # transaction_service.save_tick_data()
     # logger.info('End save tick data')
     # print('End save tick data')
 
@@ -157,14 +151,14 @@ def save_select_stocks_hist_data(start=None, end=None, ktype=None):
     
     stock_codes = ['600622']
     logger.info('Begin save select stocks history data')
-    bser.save_select_stocks_hist_data(stocks=stock_codes, start_date=start, end_date=end, ktype=ktype)
+    transaction_service.save_select_stocks_hist_data(stocks=stock_codes, start_date=start, end_date=end, ktype=ktype)
     logger.info('End save select stocks history data')
 
 
 def save_select_stocks_h_data_revote(start=None, end=None, autype='qfp', index=False):
     stock_codes = ['600622']
-    bser.save_select_stocks_h_data_revote(stock_codes, start_date=start, end_date=end, autype=autype, index=index)
-
+    transaction_service.save_select_stocks_h_data_revote(stock_codes, start_date=start,
+                                                         end_date=end, autype=autype, index=index)
 
 
 def main():
@@ -234,11 +228,11 @@ def main():
     if hasattr(args, 'save_stocks_hist_data') and args.save_stocks_hist_data:
         if args.all_stocks:
             if args.today_data:
-                bser.save_all_stocks_hist_data(today_line, today_line, ktype=args.ktype)
+                transaction_service.save_all_stocks_hist_data(today_line, today_line, ktype=args.ktype)
             elif args.yesterday_data:
-                bser.save_all_stocks_hist_data(yesterday_line, yesterday_line, ktype=args.ktype)
+                transaction_service.save_all_stocks_hist_data(yesterday_line, yesterday_line, ktype=args.ktype)
             else:
-                bser.save_all_stocks_hist_data(args.start_date, args.end_date, ktype=args.ktype)
+                transaction_service.save_all_stocks_hist_data(args.start_date, args.end_date, ktype=args.ktype)
         if args.select_stocks:
             if args.today_data:
                 save_select_stocks_hist_data(today_line, today_line, ktype=args.ktype)
@@ -251,11 +245,11 @@ def main():
     if hasattr(args, 'save_stocks_revote_hist_data') and args.save_stocks_revote_hist_data:
         if args.all_stocks:
             if args.today_data:
-                bser.save_all_stock_h_data_revote(today_line, today_line)
+                transaction_service.save_all_stock_h_data_revote(today_line, today_line)
             elif args.yesterday_data:
-                bser.save_all_stock_h_data_revote(yesterday_line, yesterday_line)
+                transaction_service.save_all_stock_h_data_revote(yesterday_line, yesterday_line)
             else:
-                bser.save_all_stock_h_data_revote(args.start_date, args.end_date)
+                transaction_service.save_all_stock_h_data_revote(args.start_date, args.end_date)
         if args.select_stocks:
             if args.today_data:
                 save_select_stocks_h_data_revote(today_line, today_line)
@@ -272,14 +266,13 @@ def main():
     if hasattr(args, 'create_table') and args.create_table:
         table_service.create_all_tables()
 
-
     # create_tables()
     # save_data()
     # save_all_days_select_stocks_hist_data()
     # dser.save_his_data_scd('600848',start = '2016-10-13', end = '2016-10-14')
     # stock_classified()
     # table_service.create_tables()
-    # bser.save_news()
+    # transaction_service.save_news()
     
 
 if __name__ == '__main__':
