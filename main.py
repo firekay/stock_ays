@@ -157,13 +157,13 @@ def save_select_stocks_hist_data(start=None, end=None, ktype=None):
     
     stock_codes = ['600622']
     logger.info('Begin save select stocks history data')
-    bser.save_select_stocks_hist_data(stocks=stock_codes, start=start, end=end, ktype=ktype)
+    bser.save_select_stocks_hist_data(stocks=stock_codes, start_date=start, end_date=end, ktype=ktype)
     logger.info('End save select stocks history data')
 
 
 def save_select_stocks_h_data_revote(start=None, end=None, autype='qfp', index=False):
     stock_codes = ['600622']
-    bser.save_select_stocks_h_data_revote(stock_codes, start=start, end=end, autype=autype, index=index)
+    bser.save_select_stocks_h_data_revote(stock_codes, start_date=start, end_date=end, autype=autype, index=index)
 
 
 
