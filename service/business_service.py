@@ -1,10 +1,10 @@
 # encoding: UTF-8
 import logging
 import threading
-import threadpool
-import time
 from models.model import *
-import service.data_service as dsvc
+from dal import classification_dal
+from dal import transaction_dal
+from service import base_service
 from service import table_service
 from utils import util
 
@@ -19,7 +19,7 @@ tomorrow = util.get_tomorrow()
 tomorrow_line = util.get_tomorrow_line()
 
 logger = logging.getLogger(__name__)
-retry_count = 5
+RETRY_COUNT = 5
 
 
 def check_thread_alive(thread):
@@ -28,8 +28,8 @@ def check_thread_alive(thread):
         logger.warn('Thread %s not alive.' % thread.getName())
 
 
-def save_stocks_k_data(stocks=None, start=None, end=None, autype='qfq', index=False,
-                       ktype=None, retry_count=retry_count, pause=0.00):
+def save_stocks_k_data(stocks=None, start_date=None, end_date=None, autype='qfq', index=False,
+                       ktype=None, retry_count=RETRY_COUNT, pause=0.00):
     """获取k线数据的历史复权舒服
     
     新接口融合了get_hist_data和get_h_data两个接口的功能，即能方便获取日周月的低频数据，
@@ -39,111 +39,116 @@ def save_stocks_k_data(stocks=None, start=None, end=None, autype='qfq', index=Fa
     Args:
         
         stocks:list,股票代码 e.g. ['600848', '000001']
-        ktype:
+        start_date:string,开始日期 format：YYYY-MM-DD 为空时取当前日期
+        end_date:string,结束日期 format：YYYY-MM-DD 为空时取去年今日
         autype:string,复权类型，qfq-前复权 hfq-后复权 None-不复权，默认为qfq
         index:Boolean，是否是大盘指数，默认为False
-        start:string,开始日期 format：YYYY-MM-DD 为空时取当前日期
-        end:string,结束日期 format：YYYY-MM-DD 为空时取去年今日
+        ktype:
+        retry_count: 重试次数
+        pause: 重试间隔
     """
     last_stock_code = None
     log_save_type = 'all'
 
     if stocks is None:
-        stocks = dsvc.get_stocks()
+        stocks = base_service.get_stocks()
     else:
         assert isinstance(stocks, list), 'stocks must be a list type.'
         last_stock_code = stocks[-1]
         log_save_type = 'select'
     logger.info('Last stock code is: ' + last_stock_code)
-    if not start or not end:
+    if not start_date or not end_date:
         logger.info('Begin save %s stocks history k data, start date is: %s, end date is: %s.' %
-                    (log_save_type, start, end))
+                    (log_save_type, start_date, end_date))
     else:
         logger.info('Begin save %s stocks history k data.' % log_save_type)
-    save_stock_k_data_thread = threading.Thread(name='save_stock_k_data', target=dsvc.save_stock_k_data,
+    save_stock_k_data_thread = threading.Thread(name='save_stock_k_data', target=transaction_dal.save_stock_k_data,
                                                 args=(last_stock_code,))
     save_stock_k_data_thread.start()
     threading.Timer(1, check_thread_alive, args=(save_stock_k_data_thread,)).start()
     for stock in stocks:
-        dsvc.get_stock_k_data(stock, start, end, autype, index, retry_count, pause)
-    if not start or not end:
+        transaction_dal.get_stock_k_data(stock, start_date, end_date, autype, index, ktype, retry_count, pause)
+    if not start_date or not end_date:
         logger.info('End save %s stocks history k data, start date is: %s, end date is: %s.' %
-                    (log_save_type, start, end))
+                    (log_save_type, start_date, end_date))
     else:
         logger.info('End save %s stocks history k data.' % log_save_type)
 
 
-def save_select_stocks_hist_data(stocks, start=None, end=None, ktype=None, retry_count=retry_count, pause=0.00):
+def save_select_stocks_hist_data(stocks, start_date=None, end_date=None, ktype=None,
+                                 retry_count=RETRY_COUNT, pause=0.00):
     """获取个股历史交易数据（包括均线数据），可以通过参数设置获取日k线、周k线、月k线数据。
     本接口只能获取近3年的日线数据
     """
-    if not start or not end:
-        logger.info('Begin save select stocks history data, start date is: %s, end date is: %s.' % (start, end))
+    if not start_date or not end_date:
+        logger.info('Begin save select stocks history data, start date is: %s, end date is: %s.'
+                    % (start_date, end_date))
     else:
         logger.info('Begin save select stocks history data.')
     ktypes = list(['D', 'W', 'M'])
     last_stock_code = stocks[-1]
     logger.info(last_stock_code)
-    save_his_data_thread = threading.Thread(name='save_his_data', target=dsvc.save_his_data, args=(last_stock_code,))
+    save_his_data_thread = threading.Thread(name='save_his_data',
+                                            target=transaction_dal.save_his_data, args=(last_stock_code,))
     save_his_data_thread.start()
 
-    def _deal_data(code, start, end, ktype, retry_count, pause):
-        logger.info('Begin get data: %s,%s,%s' % (code, start, ktype))
+    def _deal_data(code, start_date, end_date, ktype, retry_count, pause):
+        logger.info('Begin get data: %s,%s,%s' % (code, start_date, ktype))
         try:
-            data_df = ts.get_hist_data(code, start, end, ktype, retry_count, pause)
+            data_df = ts.get_hist_data(code, start_date, end_date, ktype, retry_count, pause)
             if data_df is not None and not data_df.empty:
                 data_df['date'] = pd.Series(data_df.axes[0], index=data_df.index)
                 data = data_df.values
-                dsvc.his_data_queue.put((code, ktype, data))
-                logger.info('End get data: %s,%s,%s' % (code, start, ktype))
+                transaction_dal.his_data_queue.put((code, ktype, data))
+                logger.info('End get data: %s,%s,%s' % (code, start_date, ktype))
             else:
-                logger.info('Empty get data: %s,%s,%s,%s' % (code, start, end, ktype))
-        except Exception as e:
-            logger.exception('Get data error: %s,%s,%s' % (code, start, ktype))
+                logger.info('Empty get data: %s,%s,%s,%s' % (code, start_date, end_date, ktype))
+        except Exception:
+            logger.exception('Get data error: %s,%s,%s' % (code, start_date, ktype))
 
     for stock in stocks:
         if ktype is None:
             for ktype in ktypes:
-                _deal_data(stock, start, end, ktype, retry_count, pause)
+                _deal_data(stock, start_date, end_date, ktype, retry_count, pause)
         else:
-            _deal_data(stock, start, end, ktype, retry_count, pause)
+            _deal_data(stock, start_date, end_date, ktype, retry_count, pause)
 
-    if not start or not end:
-        logger.info('End save select stocks history data, start date is: %s, end date is: %s.' % (start, end))
+    if not start_date or not end_date:
+        logger.info('End save select stocks history data, start date is: %s, end date is: %s.' % (start_date, end_date))
     else:
         logger.info('End save select stocks history data.')
 
 
-def save_all_stocks_hist_data(start=None, end=None, ktype=None):
+def save_all_stocks_hist_data(start_date=None, end_date=None, ktype=None):
     """下载并保持所有的股票的数据：D, W, M"""
-    if not start or not end:
-        logger.info('Begin save all stocks history data, start date is: %s, end date is: %s.' % (start, end))
+    if not start_date or not end_date:
+        logger.info('Begin save all stocks history data, start date is: %s, end date is: %s.' % (start_date, end_date))
     else:
         logger.info('Begin save all stocks history data.')
     # pool = threadpool.ThreadPool(128)
-    # requests = threadpool.makeRequests(dsvc.save_his_data)
+    # requests = threadpool.makeRequests(transaction_dal.save_his_data)
     # [pool.putRequest(req) for req in requests]
     # pool.wait()
-    save_his_data_thread = threading.Thread(name='save_his_data', target=dsvc.save_his_data)
+    save_his_data_thread = threading.Thread(name='save_his_data', target=transaction_dal.save_his_data)
     save_his_data_thread.start()
     threading.Timer(1, check_thread_alive, args=(save_his_data_thread,)).start()
 
-    # threading.Thread(name='save_his_data_scd', target=dsvc.save_his_data_scd).start()
+    # threading.Thread(name='save_his_data_scd', target=transaction_dal.save_his_data_scd).start()
 
-    stocks = dsvc.get_stocks()
+    stocks = base_service.get_stocks()
     for stock in stocks:
-        dsvc.get_his_data(stock.code, start, end, ktype)
-    if not start or not end:
-        logger.info('End save all stocks history data, start date is: %s, end date is: %s.' % (start, end))
+        transaction_dal.get_his_data(stock.code, start_date, end_date, ktype)
+    if not start_date or not end_date:
+        logger.info('End save all stocks history data, start date is: %s, end date is: %s.' % (start_date, end_date))
     else:
         logger.info('End save all stocks history data.')
 
 
-# def save_stock_k_data(code, start=None, end=None, autype='qfp', index=False, retry_count=retry_count, pause=0):
-#     dsvc.get_stock_k_data(code, start, end, autype, index, retry_count, pause)
+# def save_stock_k_data(code, start=None, end=None, autype='qfp', index=False, retry_count=RETRY_COUNT, pause=0):
+#     transaction_dal.get_stock_k_data(code, start, end, autype, index, retry_count, pause)
 
 
-# def save_all_stock_k_data(start=None, end=None, autype='qfp', index=False, retry_count=retry_count, pause=0):
+# def save_all_stock_k_data(start=None, end=None, autype='qfp', index=False, retry_count=RETRY_COUNT, pause=0):
 #     """获取B{所有}历史复权数据
     
 #     Args:
@@ -155,64 +160,65 @@ def save_all_stocks_hist_data(start=None, end=None, ktype=None):
 #         pause : int, 默认 0,重复请求数据过程中暂停的秒数，防止请求间隔时间太短出现的问题
 #     """
 #     logger.info('Begin save all stock k data, start is: %s, end is %s.' % (start, end))
-#     save_stock_k_data_thread = threading.Thread(name='save_stock_k_data', target=dsvc.save_stock_k_data)
+#     save_stock_k_data_thread = threading.Thread(name='save_stock_k_data', target=transaction_dal.save_stock_k_data)
 #     save_stock_k_data_thread.start()
 #     threading.Timer(1, check_thread_alive, args=(save_stock_k_data_thread,)).start()
-#     stocks = dsvc.get_stocks()
+#     stocks = base_service.get_stocks()
 #     for stock in stocks:
 #         save_stock_k_data(stock, start, end, autype, index, retry_count, pause)
 #     logger.info('End save all stock k data, start is: %s, end is %s.' % (start, end))
 
 
-def save_all_stock_h_data_revote(start=None, end=None, autype='qfp', index=False, retry_count=retry_count, pause=0):
+def save_all_stock_h_data_revote(start_date=None, end_date=None, autype='qfp', index=False,
+                                 retry_count=RETRY_COUNT, pause=0):
     """获取B{所有}历史复权数据
     
     Args:
-        start:string,开始日期 format：YYYY-MM-DD 为空时取当前日期
-        end:string,结束日期 format：YYYY-MM-DD 为空时取去年今日
+        start_date:string,开始日期 format：YYYY-MM-DD 为空时取当前日期
+        end_date:string,结束日期 format：YYYY-MM-DD 为空时取去年今日
         autype:string,复权类型，qfq-前复权 hfq-后复权 None-不复权，默认为qfq
         index:Boolean，是否是大盘指数，默认为False
         retry_count : int, 默认3,如遇网络等问题重复执行的次数
         pause : int, 默认 0,重复请求数据过程中暂停的秒数，防止请求间隔时间太短出现的问题
     """
-    logger.info('Begin save all stock history data revote, start is: %s, end is %s.' % (start, end))
-    save_h_revote_data_thread = threading.Thread(name='save_h_revote_data', target=dsvc.save_h_revote_data)
+    logger.info('Begin save all stock history data revote, start is: %s, end is %s.' % (start_date, end_date))
+    save_h_revote_data_thread = threading.Thread(name='save_h_revote_data', target=transaction_dal.save_h_revote_data)
     save_h_revote_data_thread.start()
     threading.Timer(1, check_thread_alive, args=(save_h_revote_data_thread,)).start()
-    stocks = dsvc.get_stocks()
+    stocks = base_service.get_stocks()
     for stock in stocks:
-        dsvc.get_h_revote_data(stock, start, end, autype, index, retry_count, pause)
-    logger.info('End save all stock history data revote, start is: %s, end is %s.' % (start, end))
+        transaction_dal.get_h_revote_data(stock, start_date, end_date, autype, index, retry_count, pause)
+    logger.info('End save all stock history data revote, start is: %s, end is %s.' % (start_date, end_date))
 
 
-def save_select_stocks_h_data_revote(stocks, start=None, end=None, autype='qfp', index=False,
-                                    retry_count=retry_count, pause=0):
+def save_select_stocks_h_data_revote(stocks, start_date=None, end_date=None, autype='qfp', index=False,
+                                     retry_count=RETRY_COUNT, pause=0):
     """获取B{选择的}历史复权数据
     
     Args:
         stocks:list, e.g. ['000001', '000002']
-        start:string,开始日期 format：YYYY-MM-DD 为空时取当前日期
-        end:string,结束日期 format：YYYY-MM-DD 为空时取去年今日
+        start_date:string,开始日期 format：YYYY-MM-DD 为空时取当前日期
+        end_date:string,结束日期 format：YYYY-MM-DD 为空时取去年今日
         autype:string,复权类型，qfq-前复权 hfq-后复权 None-不复权，默认为qfq
         index:Boolean，是否是大盘指数，默认为False
         retry_count : int, 默认3,如遇网络等问题重复执行的次数
         pause : int, 默认 0,重复请求数据过程中暂停的秒数，防止请求间隔时间太短出现的问题
     """
-    if not start or not end:
+    if not start_date or not end_date:
         logger.info('Begin save select stocks h revote data, start date is: %s, end date is: %s.'
-                    % (start, end))
+                    % (start_date, end_date))
     else:
         logger.info('Begin save all days select stocks h revote data.')
     last_stock_code = stocks[-1]
-    save_h_revote_data_thread = threading.Thread(name='save_h_revote_data', target=dsvc.save_h_revote_data,
+    save_h_revote_data_thread = threading.Thread(name='save_h_revote_data', target=transaction_dal.save_h_revote_data,
                                                  args=(last_stock_code,))
     save_h_revote_data_thread.start()
     threading.Timer(1, check_thread_alive, args=(save_h_revote_data_thread,)).start()
     for stock in stocks:
-        dsvc.get_h_revote_data(stock, start, end, autype, index, retry_count, pause)
-    if not start or not end:
+        transaction_dal.get_h_revote_data(stock, start_date, end_date, autype, index, retry_count, pause)
+    if not start_date or not end_date:
         logger.info('End save select stocks h revote data, start date is: %s, end date is: %s.'
-                    % (start, end))
+                    % (start_date, end_date))
     else:
         logger.info('End save all days select stocks h revote data.')
 
@@ -226,15 +232,15 @@ def save_today_all_stocks_hist_data(ktype=None):
     """下载并保存当天数据"""
     save_all_stocks_hist_data(today_line, today_line, ktype=ktype)
 
-    
-def save_realtime_quetes2file(codes):
-    def _deal_realtime_quotes_data(codes):
-        data_df = dsvc.get_realtime_quotes(codes)
+#
+# def save_realtime_quetes2file(codes):
+#     def _deal_realtime_quotes_data(codes):
+#         data_df = transaction_dal.get_realtime_quotes(codes)
 
 
 def save_today_all_data():
     """一次性获取当前交易所有股票的行情数据（如果是节假日，即为上一交易日，结果显示速度取决于网速）"""
-    dsvc.save_today_all_data()
+    transaction_dal.save_today_all_data()
 
 
 def save_tick_data(stocks, date):
@@ -247,7 +253,7 @@ def save_tick_data(stocks, date):
     log_save_type = 'all'
 
     if stocks is None:
-        stocks = dsvc.get_stocks()
+        stocks = base_service.get_stocks()
     else:
         assert isinstance(stocks, list), 'stocks must be a list type.'
         last_stock_code = stocks[-1]
@@ -255,19 +261,19 @@ def save_tick_data(stocks, date):
     logger.info('Last stock code is: ' + last_stock_code)
     logger.info('Begin save %s tick data, date is: %s' % (log_save_type, date))
     for stock in stocks:
-        dsvc.save_tick_data(stock.code, date)
-    save_tick_data_thread = threading.Thread(name='save_tick_data', target=dsvc.save_tick_data,
+        transaction_dal.save_tick_data(stock.code, date)
+    save_tick_data_thread = threading.Thread(name='save_tick_data', target=transaction_dal.save_tick_data,
                                              args=(last_stock_code,))
     save_tick_data_thread.start()
     threading.Timer(1, check_thread_alive, args=(save_tick_data_thread,)).start()
     for stock in stocks:
-        dsvc.get_tick_data(stock, date)
+        transaction_dal.get_tick_data(stock, date)
     logger.info('End save %s tick data, date is: %s' % (log_save_type, date))
 
 
 def save_tick_data(stocks, start_date, end_date):
     """获取给定日期范围的交易历史的分笔数据明细."""
-    for date_mid in util.rangeDate(start_date, end_date):
+    for date_mid in util.range_date(start_date, end_date):
         save_tick_data(stocks, date_mid)
 
 
@@ -285,7 +291,7 @@ def save_tick_data(stocks, start_date, end_date):
 
 def save_big_index_data():
     """获取大盘指数实时行情列表，以表格的形式展示大盘指数实时行情。"""
-    dsvc.save_big_index_data()
+    transaction_dal.save_big_index_data()
 
 
 def save_big_trade_data(stocks=None, start_date=None, end_date=None):
@@ -302,7 +308,7 @@ def save_big_trade_data(stocks=None, start_date=None, end_date=None):
     log_save_type = 'all'
 
     if not stocks:
-        stocks = dsvc.get_stocks()
+        stocks = base_service.get_stocks()
     else:
         assert isinstance(stocks, list), 'stocks must be a list type.'
         last_stock_code = stocks[-1]
@@ -313,19 +319,19 @@ def save_big_trade_data(stocks=None, start_date=None, end_date=None):
         if end_date:
             logger.info('Begin save %s big trade data, start date is: %s, end date is: %s.' %
                         (log_save_type, start_date, end_date))
-            [dsvc.save_big_trade_data(stock, date_mid)
-             for date_mid in util.rangeDate(start_date, end_date)
+            [transaction_dal.save_big_trade_data(stock, date_mid)
+             for date_mid in util.range_date(start_date, end_date)
              for stock in stocks]
         else:
             logger.info('Begin save %s big trade data, the date is: %s.' %
                         (log_save_type, start_date))
-            [dsvc.save_big_trade_data(stock.code, start_date) for stock in stocks]
+            [transaction_dal.save_big_trade_data(stock.code, start_date) for stock in stocks]
     # 没有start_date, 则调用的是当天的数据
     else:
         start_date = util.get_today_line()
         logger.info('Begin save %s big trade data, the date is: %s.' %
                     (log_save_type, start_date))
-        [dsvc.save_big_trade_data(stock.code, start_date) for stock in stocks]
+        [transaction_dal.save_big_trade_data(stock.code, start_date) for stock in stocks]
     # for logs
     if start_date:
         if end_date:
@@ -340,105 +346,101 @@ def save_industry_classified():
     """处理行业分类"""
     logger.info('save_industry_classified')
     table_service.truncate_table(IndustryClassified)
-    dsvc.save_industry_classified()
+    classification_dal.save_industry_classified()
 
 
 def save_concept_classified():
     """处理股票概念分类.现实的二级市场交易中，经常会以”概念”来炒作，在数据分析过程中，可根据概念分类监测资金等信息的变动情况。"""
     table_service.truncate_table(ConceptClassified)
-    dsvc.save_concept_classified()
+    classification_dal.save_concept_classified()
 
 
 def save_area_classified():
     """按地域对股票进行分类，即查找出哪些股票属于哪个省份。"""
     table_service.truncate_table(AreaClassified)
-    dsvc.save_area_classified()
+    classification_dal.save_area_classified()
 
     
 def save_sme_classified():
     """获取中小板股票数据，即查找所有002开头的股票"""
     table_service.truncate_table(SmeClassified)
-    dsvc.save_sme_classified()
+    classification_dal.save_sme_classified()
 
 
 def save_gem_classified():
     """获取创业板股票数据，即查找所有300开头的股票"""
     table_service.truncate_table(GemClassified)
-    dsvc.save_gem_classified()
+    classification_dal.save_gem_classified()
 
 
 def save_st_classified():
     """获取风险警示板股票数据，即查找所有st股票"""
     table_service.truncate_table(StClassified)
-    dsvc.save_st_classified()
+    classification_dal.save_st_classified()
 
 
 def save_hs300s():
     """获取沪深300当前成份股及所占权重"""
     table_service.truncate_table(Hs300)
-    dsvc.save_hs300s()
+    classification_dal.save_hs300s()
 
 
 def save_sz50s():
     """上证50成分股"""
     table_service.truncate_table(Sz50)
-    dsvc.save_sz50s()
+    classification_dal.save_sz50s()
 
 
 def save_zz500s():
     """中证500成分股"""
     table_service.truncate_table(Zz500)
-    dsvc.save_zz500s()
+    classification_dal.save_zz500s()
 
 
 def save_terminated():
     """获取已经被终止上市的股票列表，数据从上交所获取，目前只有在上海证券交易所交易被终止的股票。"""
     table_service.truncate_table(Terminated)
-    dsvc.save_terminated()
+    classification_dal.save_terminated()
 
 
 def save_suspend():
     """获取被暂停上市的股票列表，数据从上交所获取，目前只有在上海证券交易所交易被终止的股票。"""
     table_service.truncate_table(Suspend)
-    dsvc.save_suspend()
+    classification_dal.save_suspend()
 
 
-def save_stock_basic():
-    table_service.truncate_table(StockBasic)
-    dsvc.save_stock_basic()
-
-
-def save_news():
-    """获取即时财经新闻，类型包括国内财经、证券、外汇、期货、港股和美股等新闻信息。数据更新较快，使用过程中可用定时任务来获取。
-    
-    根据time和url的元组来判断数据库中是否有数据， 如果存在此新闻就不加入， 如果不存在就插入到mongodb中。
-    """
-    #news_df = dsvc.get_news(top=5)
-    #dsvc.save_news2mongo(news_df)
-    # 数据写入csv文件
-    #news_df.to_csv('logs/latest_news.csv', sep='\t', encoding='utf-8')
-    
-    # 从数据库中初始化time_urls， 不再添加已有的新闻
-    # TODO: 改为通过url来定义唯一新闻
-    time_urls = set(dsvc.get_news_time_and_url_in_mongo())
-    while(True):
-        logger.info('The size of time_urls is: %d' % len(time_urls))
-        news_df = dsvc.get_news(top=5)
-        if(news_df is not None):
-            news_time_urls = [tuple(time_url) for time_url in news_df[['time', 'url']].values]
-            #news_time_urls = news_df[['time', 'url']].apply(lambda x: "('{}', '{}')".format(x[0], x[1]), axis=1) # return type str not a type tuple
-            for i, time_url in enumerate(news_time_urls):
-                if(time_url not in time_urls):
-                    time_urls.add(time_url)
-                else:
-                    news_df.drop(i, inplace=True)
-                    
-            # TODO: drop不能删掉元素， 重新写
-            #for i, time in enumerate(news_times):
-                #if(time in times):
-                    #news_df.drop(i)
-                #else:
-                    #times.add(time)
-            if(not news_df.empty):
-                dsvc.save_news2mongo(news_df)
-        time.sleep(60)
+# def save_news():
+#     """获取即时财经新闻，类型包括国内财经、证券、外汇、期货、港股和美股等新闻信息。数据更新较快，使用过程中可用定时任务来获取。
+#
+#     根据time和url的元组来判断数据库中是否有数据， 如果存在此新闻就不加入， 如果不存在就插入到mongodb中。
+#     """
+#     # news_df = transaction_dal.get_news(top=5)
+#     # transaction_dal.save_news2mongo(news_df)
+#     # 数据写入csv文件
+#     # news_df.to_csv('logs/latest_news.csv', sep='\t', encoding='utf-8')
+#
+#     # 从数据库中初始化time_urls， 不再添加已有的新闻
+#     # TODO: 改为通过url来定义唯一新闻
+#     time_urls = set(transaction_dal.get_news_time_and_url_in_mongo())
+#     while(True):
+#         logger.info('The size of time_urls is: %d' % len(time_urls))
+#         news_df = transaction_dal.get_news(top=5)
+#         if(news_df is not None):
+#             news_time_urls = [tuple(time_url) for time_url in news_df[['time', 'url']].values]
+#             # return type str not a type tuple
+#             # news_time_urls = news_df[['time', 'url']].apply(lambda x: "('{}', '{}')".format(x[0], x[1]), axis=1)
+#             for i, time_url in enumerate(news_time_urls):
+#                 if(time_url not in time_urls):
+#                     time_urls.add(time_url)
+#                 else:
+#                     news_df.drop(i, inplace=True)
+#
+#             # TODO: drop不能删掉元素， 重新写
+#             #for i, time in enumerate(news_times):
+#                 #if(time in times):
+#                     #news_df.drop(i)
+#                 #else:
+#                     #times.add(time)
+#             if(not news_df.empty):
+#                 transaction_dal.save_news2mongo(news_df)
+#         time.sleep(60)

@@ -14,7 +14,7 @@ class BaseModel(Model):
         
 
 class StockBasic(BaseModel):
-    """股票列表"""
+    """stock list"""
     class Meta:
         db_table = 'stock_basic'
 
