@@ -252,7 +252,6 @@ class BigTradeData(BaseModel):
 # #####################################################
 # 投资参考数据
 # #####################################################
-# TODO: 添加
 class DistributionPlans(BaseModel):
     """分配预案"""
     class Meta:
@@ -391,7 +390,7 @@ class FinancingSecuritiesDetailSz(BaseModel):
     rqye = CharField(32)
     rzrqye = CharField(32)
 
-    
+
 # #####################################################
 # 股票分类数据
 # #####################################################
@@ -651,19 +650,360 @@ class CashFlow(BaseModel):
 # #####################################################
 # 宏观经济数据
 # #####################################################
-# TODO: finish this
+class DepositsRate(BaseModel):
+    """存款利率"""
+    class Meta:
+        db_table = 'deposits_rate'
+
+    date = DateField('%Y-%m-%d')
+    deposit_type = CharField(32)
+    rate = CharField(32)
+
+
+class LoanRate(BaseModel):
+    """贷款利率"""
+    class Meta:
+        db_table = 'loan_rate'
+
+    date = DateField('%Y-%m-%d')
+    loan_type = CharField(32)
+    rate = CharField(32)
+
+
+class RequiredReservesRate(BaseModel):
+    """存款准备金率"""
+    class Meta:
+        db_table = 'required_reserves_rate'
+
+    date = DateField('%Y-%m-%d')
+    before = CharField(32)
+    now = CharField(32)
+    changed = CharField(32)
+
+
+class MoneySupply(BaseModel):
+    """货币供应量"""
+    class Meta:
+        db_table = 'money_supply'
+
+    month = CharField(32)
+    m2 = CharField(32)
+    m2_yoy = CharField(32)
+    m1 = CharField(32)
+    m1_yoy = CharField(32)
+    m0 = CharField(32)
+    m0_yoy = CharField(32)
+    cd = CharField(32)
+    cd_yoy = CharField(32)
+    qm = CharField(32)
+    qm_yoy = CharField(32)
+    ftd = CharField(32)
+    ftd_yoy = CharField(32)
+    sd = CharField(32)
+    sd_yoy = CharField(32)
+    rests = CharField(32)
+    rests_yoy = CharField(32)
+
+
+class MoneySupplyBal(BaseModel):
+    """货币供应量(年底余额)"""
+    class Meta:
+        db_table = 'money_supply_bal'
+
+    year = CharField(32)
+    m2 = CharField(32)
+    m1 = CharField(32)
+    m0 = CharField(32)
+    cd = CharField(32)
+    qm = CharField(32)
+    ftd = CharField(32)
+    sd = CharField(32)
+    rests = CharField(32)
+
+
+class GrossDomesticProductYear(BaseModel):
+    """国内生产总值(年度)"""
+    class Meta:
+        db_table = 'gdp_year'
+
+    year = CharField(32)
+    gdp = CharField(32)
+    pc_gdp = CharField(32)
+    gnp = CharField(32)
+    pi = CharField(32)
+    si = CharField(32)
+    industry = CharField(32)
+    cons_industry = CharField(32)
+    ti = CharField(32)
+    trans_industry = CharField(32)
+    lbdy = CharField(32)
+
+
+class GrossDomesticProductQuarter(BaseModel):
+    """国内生产总值(季度)"""
+    class Meta:
+        db_table = 'gdp_quarter'
+
+    quarter = CharField(32)
+    gdp = CharField(32)
+    gdp_yoy = CharField(32)
+    pi = CharField(32)
+    pi_yoy = CharField(32)
+    si = CharField(32)
+    si_yoy = CharField(32)
+    ti = CharField(32)
+    ti_yoy = CharField(32)
+
+
+class GdpThreeDemands(BaseModel):
+    """三大需求对GDP贡献"""
+    class Meta:
+        db_table = 'gdp_three_demands'
+
+    year = CharField(32)
+    end_for = CharField(32)
+    for_rate = CharField(32)
+    asset_for = CharField(32)
+    asset_rate = CharField(32)
+    goods_for = CharField(32)
+    goods_rate = CharField(32)
+
+
+class GdpThreeIndustryPull(BaseModel):
+    """三大产业对GDP拉动"""
+    class Meta:
+        db_table = 'gdp_three_industry_pull'
+
+    year = CharField(32)
+    gdp_yoy = CharField(32)
+    pi = CharField(32)
+    si = CharField(32)
+    industry = CharField(32)
+    ti = CharField(32)
+
+
+class GdpThreeIndustryContrib(BaseModel):
+    """三大产业贡献率"""
+    class Meta:
+        db_table = 'gdp_three_industry_contrib'
+
+    year = CharField(32)
+    gdp_yoy = CharField(32)
+    pi = CharField(32)
+    si = CharField(32)
+    industry = CharField(32)
+    ti = CharField(32)
+
+
+class CPI(BaseModel):
+    """居民消费价格指数"""
+    class Meta:
+        db_table = 'cpi'
+
+    month = CharField(32)
+    cpi = CharField(32)
+
+
+class PPI(BaseModel):
+    """工业品出厂价格指数"""
+    class Meta:
+        db_table = 'ppi'
+
+    month = CharField(32)
+    ppiip = CharField(32)
+    ppi = CharField(32)
+    qm = CharField(32)
+    rmi = CharField(32)
+    pi = CharField(32)
+    cg = CharField(32)
+    food = CharField(32)
+    clothing = CharField(32)
+    roeu = CharField(32)
+    dcg = CharField(32)
 
 
 # #####################################################
 # 龙虎榜数据
 # #####################################################
 # TODO: finish this
+class TopList(BaseModel):
+    """每日龙虎榜列表"""
+    class Meta:
+        db_table = 'top_list'
+
+    code = CharField(8)
+    name = CharField(32)
+    pchange = CharField(32)
+    amount = CharField(32)
+    buy = CharField(32)
+    bratio = CharField(32)
+    sell = CharField(32)
+    sratio = CharField(32)
+    reason = CharField(32)
+    date = DateField('%Y-%m-%d')
+
+
+class IndividualStatisticsTops(BaseModel):
+    """个股上榜统计"""
+    class Meta:
+        db_table = 'individual_statistics_tops'
+
+    code = CharField(8)
+    name = CharField(32)
+    days_type = int(3)
+    count = CharField(32)
+    bamount = CharField(32)
+    samount = CharField(32)
+    net = CharField(32)
+    bcount = CharField(32)
+    scount = CharField(32)
+    insert_date = DateField('%Y%m%d')
+
+
+class BrokerTops(BaseModel):
+    """营业部上榜统计"""
+    class Meta:
+        db_table = 'broker_tops'
+
+    broker = CharField(32)
+    days_type = int(3)
+    count = CharField(32)
+    bamount = CharField(32)
+    bcount = CharField(32)
+    samount = CharField(32)
+    scount = CharField(32)
+    top3 = CharField(32)
+    insert_date = DateField('%Y%m%d')
+
+
+class InstitutionTops(BaseModel):
+    """机构席位追踪"""
+    class Meta:
+        db_table = 'institution_tops'
+
+    code = CharField(8)
+    name = CharField(32)
+    days_type = int(3)
+    bamount = CharField(32)
+    bcount = CharField(32)
+    samount = CharField(32)
+    scount = CharField(32)
+    net = CharField(32)
+    insert_date = DateField('%Y%m%d')
+
+
+class InstitutionDetail(BaseModel):
+    """机构成交明细"""
+    class Meta:
+        db_table = 'institution_detail'
+
+    code = CharField(8)
+    name = CharField(32)
+    deal_date = DateField('%Y-%m-%d')
+    bamount = CharField(32)
+    samount = CharField(32)
+    type = CharField(32)
+    insert_date = DateField('%Y%m%d')
 
 
 # #####################################################
 # 银行间同业拆放利率
 # #####################################################
 # TODO: finish this
+class ShiborRate(BaseModel):
+    """上海银行间同业拆放利率（Shanghai Interbank Offered Rate，简称Shibor）"""
+    class Meta:
+        db_table = 'shibor_rate'
+
+    year = DateField('%Y')    # 指出是哪一年, 用于快速删除一整年数据
+    date = DateField('%Y-%m-%d')
+    ON = CharField(32)
+    W1 = CharField(32)
+    W2 = CharField(32)
+    M1 = CharField(32)
+    M3 = CharField(32)
+    M6 = CharField(32)
+    M9 = CharField(32)
+    Y1 = CharField(32)
 
 
+class ShiborQuote(BaseModel):
+    """银行报价数据"""
+    class Meta:
+        db_table = 'shibor_quote'
 
+    year = DateField('%Y')
+    date = DateField('%Y-%m-%d')
+    bank = CharField(32)
+    ON = CharField(32)
+    ON_B = CharField(32)
+    ON_A = CharField(32)
+    W1_B = CharField(32)
+    W1_A = CharField(32)
+    W2_B = CharField(32)
+    W2_A = CharField(32)
+    M1_B = CharField(32)
+    M1_A = CharField(32)
+    M3_B = CharField(32)
+    M3_A = CharField(32)
+    M6_B = CharField(32)
+    M6_A = CharField(32)
+    M9_B = CharField(32)
+    M9_A = CharField(32)
+    Y1_B = CharField(32)
+    Y1_A = CharField(32)
+
+
+class ShiborMA(BaseModel):
+    """Shibor均值数据"""
+    class Meta:
+        db_table = 'shibor_ma'
+
+    year = DateField('%Y')
+    date = DateField('%Y-%m-%d')
+    on_5 = CharField(32)
+    on_10 = CharField(32)
+    on_20 = CharField(32)
+    W1_5 = CharField(32)
+    W1_10 = CharField(32)
+    W1_20 = CharField(32)
+    W2_5 = CharField(32)
+    W2_10 = CharField(32)
+    W2_20 = CharField(32)
+    M1_5 = CharField(32)
+    M1_10 = CharField(32)
+    M1_20 = CharField(32)
+    M3_5 = CharField(32)
+    M3_10 = CharField(32)
+    M3_20 = CharField(32)
+    M6_5 = CharField(32)
+    M6_10 = CharField(32)
+    M6_20 = CharField(32)
+    M9_5 = CharField(32)
+    M9_10 = CharField(32)
+    M9_20 = CharField(32)
+    Y1_5 = CharField(32)
+    Y1_10 = CharField(32)
+    Y1_20 = CharField(32)
+
+
+class LPR(BaseModel):
+    """贷款基础利率（LPR）"""
+    class Meta:
+        db_table = 'lpr'
+
+    year = DateField('%Y')
+    date = DateField('%Y-%m-%d')
+    Y1 = CharField(32)
+
+
+class LprMA(BaseModel):
+    """LPR均值数据"""
+    class Meta:
+        db_table = 'lpr_ma'
+
+    year = DateField('%Y')
+    date = DateField('%Y-%m-%d')
+    Y1_5 = CharField(32)
+    Y1_10 = CharField(32)
+    Y1_20 = CharField(32)
