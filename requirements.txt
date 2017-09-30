@@ -1,8 +1,9 @@
 lxml
+nose
 numpy
 pandas
 peewee
-tushare
 pymongo
 PyMySQL
+tushare
 yaml
