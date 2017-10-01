@@ -1,7 +1,7 @@
 # encoding: UTF-8
 """项目表的操作"""
-
-import logging.config
+# -*- coding:utf-8 -*-
+import logging
 from models.model import *
 
 logger = logging.getLogger(__name__)
