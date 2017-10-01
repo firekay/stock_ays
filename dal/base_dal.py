@@ -19,7 +19,7 @@ def _check_input(year, quarter):
 
 
 def save_stock_basic():
-    logger.info('Begin save stock basic.')
+    logger.info('Begin get and save StockBasic.')
     try:
         data_df = ts.get_stock_basics()
         data_df['code'] = pd.Series(data_df.axes[0], index=data_df.index)
@@ -31,34 +31,9 @@ def save_stock_basic():
                       for row in data]
         StockBasic.insert_many(data_dicts).execute()
     except Exception:
-        logger.exception('Get stock basic.')
+        logger.exception('Error get and save StockBasic.')
     else:
-        logger.info('Success save stock basic.')
-
-
-# 业绩报告
-def delete_performance_report(year, quarter):
-    """删除业绩报告相应年份季度的数据
-    
-    Args:
-        year: 年份, YYYY格式数字
-        quarter: 季度, 只能是1, 2, 3, 4的数字
-
-    """
-    logger.info('Begin delete performance report data, the year is: %s, quarter is: %s'
-                % (year, quarter))
-    try:
-        PerformanceReport.delete().where(PerformanceReport.year == year,
-                                           PerformanceReport.quarter == quarter)\
-            .execute()
-    except Exception as e:
-        logger.exception('Error delete performance report data, the year is: %s, quarter is: %s'
-                            % (year, quarter))
-        return False
-    else:
-        logger.info('Success delete performance report data, the year is: %s, quarter is: %s'
-                    % (year, quarter))
-        return True
+        logger.info('Success get and save StockBasic.')
 
 
 def get_performance_report(year, quarter):
@@ -71,18 +46,18 @@ def get_performance_report(year, quarter):
         data_dicts: 字段的列表, return None if have exception, return empty if no data
         """
     _check_input(year, quarter)
-    logger.info('Begin get performance report data, the year is: %s, quarter is: %s'
+    logger.info('Begin get PerformanceReport data, the year is: %s, quarter is: %s'
                 % (year, quarter))
     try:
         data_df = ts.get_report_data(year, quarter)
     except Exception as e:
-        logging.exception('Error get performance report data, the year is: %s, quarter is: %s'
+        logging.exception('Error get PerformanceReport data, the year is: %s, quarter is: %s'
                           % (year, quarter))
         return None
     else:
         data_dicts = []
         if data_df.empty:
-            logger.warn('Empty get performance report data, the year is: %s, quarter is: %s'
+            logger.warn('Empty get PerformanceReport data, the year is: %s, quarter is: %s'
                         % (year, quarter))
         else:
             data_dicts = [{'code': row[0], 'name': row[1], 'year': year, 'quarter': quarter,
@@ -90,88 +65,224 @@ def get_performance_report(year, quarter):
                            'roe': row[5],  'epcf': row[6], 'net_profits': row[7], 'profits_yoy': row[8],
                            'distrib': row[9], 'report_date': row[10],
                            'insert_date': today} for row in data_df.values]
-            logger.info('Success get performance report data, the year is: %s, quarter is: %s'
+            logger.info('Success get PerformanceReport data, the year is: %s, quarter is: %s'
                         % (year, quarter))
         return data_dicts
 
 
-def save_performance_report(data_dicts, year, quarter):
-    """存储业绩报告"""
-    assert data_dicts, 'data_dict must not empty and data_dict must not None'
-    logger.info('Begin save performance report data, the year is: %s, quarter is: %s'
+def get_profit_ability(year, quarter):
+    """得到盈利能力
+
+    Args:
+        year: 年份, YYYY格式数字
+        quarter: 季度, 只能是1, 2, 3, 4的数字
+    Returns:
+        data_dicts: 字段的列表, return None if have exception, return empty if no data
+        """
+    _check_input(year, quarter)
+    logger.info('Begin get ProfitAbility, the year is: %s, quarter is: %s'
                 % (year, quarter))
     try:
-        PerformanceReport.insert_many(data_dicts).execute()
-        logger.info('Success save performance report data, the year is: %s, quarter is: %s'
-                    % (year, quarter))
-        return True
+        data_df = ts.get_profit_data(year, quarter)
     except Exception as e:
-        logger.exception('Error save performance report data, the year is: %s, quarter is: %s'
-                         % (year, quarter))
-        return False
-    pass
-
-
-# 盈利能力
-def delete_profit_ability(year, quarter):
-    pass
-
-
-def get_profit_ability(year, quarter):
-    pass
-
-
-def save_profit_ability(year, quarter):
-    pass
-
-
-# 营运能力
-def delete_operation_ability(year, quarter):
-    pass
+        logging.exception('Error get ProfitAbility, the year is: %s, quarter is: %s'
+                          % (year, quarter))
+        return None
+    else:
+        data_dicts = []
+        if data_df.empty:
+            data_dicts = [{'code': row[0], 'name': row[1], 'year': year, 'quarter': quarter,
+                           'roe': row[2], 'net_profit_ratio': row[3], 'gross_profit_rate': row[4],
+                           'net_profits': row[5], 'eps': row[6], 'business_income': row[7], 'bips': row[8],
+                           'insert_date': today} for row in data_df.values]
+            logger.warn('Empty get ProfitAbility, the year is: %s, quarter is: %s'
+                        % (year, quarter))
+        else:
+            logger.info('Success get ProfitAbility, the year is: %s, quarter is: %s'
+                        % (year, quarter))
+        return data_dicts
 
 
 def get_operation_ability(year, quarter):
-    pass
+    """得到营运能力
 
+    Args:
+        year: 年份, YYYY格式数字
+        quarter: 季度, 只能是1, 2, 3, 4的数字
+    Returns:
+        data_dicts: 字段的列表, return None if have exception, return empty if no data
+        """
+    _check_input(year, quarter)
+    logger.info('Begin get OperationAbility, the year is: %s, quarter is: %s'
+                % (year, quarter))
+    try:
+        data_df = ts.get_operation_data(year, quarter)
+    except Exception as e:
+        logging.exception('Error get OperationAbility, the year is: %s, quarter is: %s'
+                          % (year, quarter))
+        return None
+    else:
+        data_dicts = []
+        if data_df.empty:
+            logger.warn('Empty get OperationAbility, the year is: %s, quarter is: %s'
+                        % (year, quarter))
+        else:
+            data_dicts = [{'code': row[0], 'name': row[1], 'year': year, 'quarter': quarter,
+                           'arturnover': row[2], 'arturndays': row[3], 'inventory_turnover': row[4],
+                           'inventory_days': row[5], 'currentasset_turnover': row[6], 'currentasset_days': row[7],
+                           'insert_date': today} for row in data_df.values]
 
-def save_operation_ability(year, quarter):
-    pass
-
-
-# 成长能力
-def delete_growth_ability(year, quarter):
-    pass
+            logger.info('Success get OperationAbility, the year is: %s, quarter is: %s'
+                        % (year, quarter))
+        return data_dicts
 
 
 def get_growth_ability(year, quarter):
-    pass
+    """得到成长能力
 
+    Args:
+        year: 年份, YYYY格式数字
+        quarter: 季度, 只能是1, 2, 3, 4的数字
+    Returns:
+        data_dicts: 字段的列表, return None if have exception, return empty if no data
+        """
+    _check_input(year, quarter)
+    logger.info('Begin get GrowthAbility, the year is: %s, quarter is: %s'
+                % (year, quarter))
+    try:
+        data_df = ts.get_growth_data(year, quarter)
+    except Exception as e:
+        logging.exception('Error get GrowthAbility, the year is: %s, quarter is: %s'
+                          % (year, quarter))
+        return None
+    else:
+        data_dicts = []
+        if data_df.empty:
+            logger.warn('Empty get GrowthAbility, the year is: %s, quarter is: %s'
+                        % (year, quarter))
+        else:
+            data_dicts = [{'code': row[0], 'name': row[1], 'year': year, 'quarter': quarter,
+                           'mbrg': row[2], 'nprg': row[3], 'nav': row[4],
+                           'targ': row[5], 'epsg': row[6], 'seg': row[7],
+                           'insert_date': today} for row in data_df.values]
 
-def save_growth_ability(year, quarter):
-    pass
+            logger.info('Success get GrowthAbility, the year is: %s, quarter is: %s'
+                        % (year, quarter))
+        return data_dicts
 
 
 # 偿债能力
-def delete_pay_debt_ability(year, quarter):
-    pass
-
-
 def get_pay_debt_ability(year, quarter):
-    pass
+    """得到偿债能力
 
+    Args:
+        year: 年份, YYYY格式数字
+        quarter: 季度, 只能是1, 2, 3, 4的数字
+    Returns:
+        data_dicts: 字段的列表, return None if have exception, return empty if no data
+        """
+    _check_input(year, quarter)
+    logger.info('Begin get PayDebtAbility, the year is: %s, quarter is: %s'
+                % (year, quarter))
+    try:
+        data_df = ts.get_debtpaying_data(year, quarter)
+    except Exception as e:
+        logging.exception('Error get PayDebtAbility, the year is: %s, quarter is: %s'
+                          % (year, quarter))
+        return None
+    else:
+        data_dicts = []
+        if data_df.empty:
+            logger.warn('Empty get PayDebtAbility, the year is: %s, quarter is: %s'
+                        % (year, quarter))
+        else:
+            data_dicts = [{'code': row[0], 'name': row[1], 'year': year, 'quarter': quarter,
+                           'currentratio': row[2], 'quickratio': row[3], 'cashratio': row[4],
+                           'icratio': row[5], 'sheqratio': row[6], 'adratio': row[7],
+                           'insert_date': today} for row in data_df.values]
 
-def save_pay_debt_ability(year, quarter):
-    pass
+            logger.info('Success get PayDebtAbility, the year is: %s, quarter is: %s'
+                        % (year, quarter))
+        return data_dicts
 
 
 # 现金流量
-def delete_cash_flow(year, quarter):
-    pass
-
-
 def get_cash_flow(year, quarter):
-    pass
+    """得到现金流量
+
+     Args:
+         year: 年份, YYYY格式数字
+         quarter: 季度, 只能是1, 2, 3, 4的数字
+     Returns:
+         data_dicts: 字段的列表, return None if have exception, return empty if no data
+         """
+    _check_input(year, quarter)
+    logger.info('Begin get CashFlow, the year is: %s, quarter is: %s'
+                % (year, quarter))
+    try:
+        data_df = ts.get_cashflow_data(year, quarter)
+    except Exception as e:
+        logging.exception('Error get CashFlow, the year is: %s, quarter is: %s'
+                          % (year, quarter))
+        return None
+    else:
+        data_dicts = []
+        if data_df.empty:
+            logger.warn('Empty get CashFlow, the year is: %s, quarter is: %s'
+                        % (year, quarter))
+        else:
+            data_dicts = [{'code': row[0], 'name': row[1], 'year': year, 'quarter': quarter,
+                           'cf_sales': row[2], 'rateofreturn': row[3], 'cf_nm': row[4],
+                           'cf_liabilities': row[5], 'cashflowratio': row[6],
+                           'insert_date': today} for row in data_df.values]
+
+            logger.info('Success get CashFlow, the year is: %s, quarter is: %s'
+                        % (year, quarter))
+        return data_dicts
 
 
-def save_cash_flow(year, quarter):
-    pass
+def delete_data(model, year, quarter):
+    """删除相应年份,季度的数据
+
+    Args:
+        model: peewee定义的model, models.model.py中定义的
+        year: 年份, YYYY格式
+        quarter: 季度, 只能是1, 2, 3, 4
+
+    """
+    logger.info('Begin delete %s data, the year is: %s, quarter is: %s'
+                % (model.__name__, year, quarter))
+    try:
+        model.delete().where(model.year == year, model.quarter == quarter) \
+            .execute()
+    except Exception as e:
+        logger.exception('Error delete %s data, the year is: %s, quarter is: %s'
+                         % (model.__name__, year, quarter))
+        return False
+    else:
+        logger.info('Success delete %s data, the year is: %s, quarter is: %s'
+                    % (model.__name__, year, quarter))
+        return True
+
+
+def save_data(model, data_dicts, year, quarter):
+    """存储相应年份,季度的数据
+
+    Args:
+        model: peewee定义的model, models.model.py中定义的
+        data_dicts: 字典的列表, 跟model对应的数据
+        year: 年份, YYYY格式
+        quarter: 季度, 只能是1, 2, 3, 4
+    """
+    assert not data_dicts.empty, 'data_dict must not empty and data_dict must not None'
+    logger.info('Begin save %s data, the year is: %s, quarter is: %s'
+                % (model.__name__, year, quarter))
+    try:
+        PerformanceReport.insert_many(data_dicts).execute()
+        logger.info('Success save %s data, the year is: %s, quarter is: %s'
+                    % (model.__name__, year, quarter))
+        return True
+    except Exception as e:
+        logger.exception('Error save %s data, the year is: %s, quarter is: %s'
+                         % (model.__name__, year, quarter))
+        return False
