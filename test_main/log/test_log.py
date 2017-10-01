@@ -1,8 +1,9 @@
-import os
 import logging.config
+import os
 import sys
 
 import yaml
+
 import test_log_level
 
 reload(sys)

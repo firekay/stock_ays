@@ -4,7 +4,7 @@ from service import table_service
 from models.model import *
 
 
-table_model = RestrictedStock
+table_model = NewStocks
 table_models = []
 
 
