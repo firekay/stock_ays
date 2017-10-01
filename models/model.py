@@ -1,10 +1,7 @@
-#encoding: UTF-8
+# encoding: UTF-8
 
-from peewee import *
 from utils.mysql_utils import *
 from utils.util import *
-import tushare as ts
-import pandas as pd
 
 
 today = str(get_today())
@@ -105,7 +102,7 @@ class HistoryDataW(BaseModel):
     ma5 = DecimalField(max_digits=10, decimal_places=3)
     ma10 = DecimalField(max_digits=10, decimal_places=4)
     ma20 = DecimalField(max_digits=10, decimal_places=4)
-    v_ma5 =  DecimalField(max_digits=12, decimal_places=2)
+    v_ma5 = DecimalField(max_digits=12, decimal_places=2)
     v_ma10 = DecimalField(max_digits=12, decimal_places=2)
     v_ma20 = DecimalField(max_digits=12, decimal_places=2)
     turnover = DecimalField(max_digits=10, decimal_places=2)
@@ -129,7 +126,7 @@ class HistoryDataM(BaseModel):
     ma5 = DecimalField(max_digits=10, decimal_places=3)
     ma10 = DecimalField(max_digits=10, decimal_places=4)
     ma20 = DecimalField(max_digits=10, decimal_places=4)
-    v_ma5 =  DecimalField(max_digits=12, decimal_places=2)
+    v_ma5 = DecimalField(max_digits=12, decimal_places=2)
     v_ma10 = DecimalField(max_digits=12, decimal_places=2)
     v_ma20 = DecimalField(max_digits=12, decimal_places=2)
     turnover = DecimalField(max_digits=10, decimal_places=2)
@@ -154,7 +151,7 @@ class HistoryDataScd(BaseModel):
     ma5 = DecimalField(max_digits=10, decimal_places=3)
     ma10 = DecimalField(max_digits=10, decimal_places=4)
     ma20 = DecimalField(max_digits=10, decimal_places=4)
-    v_ma5 =  DecimalField(max_digits=12, decimal_places=2)
+    v_ma5 = DecimalField(max_digits=12, decimal_places=2)
     v_ma10 = DecimalField(max_digits=12, decimal_places=2)
     v_ma20 = DecimalField(max_digits=12, decimal_places=2)
     turnover = DecimalField(max_digits=5, decimal_places=2)
