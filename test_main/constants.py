@@ -1,0 +1,2 @@
+YEAR = 2017
+QUARTER = 2
