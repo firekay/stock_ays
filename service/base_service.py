@@ -5,6 +5,7 @@ import logging
 from models.model import *
 from service import table_service
 from dal import base_dal
+from dal import dal_util
 
 logger = logging.getLogger(__name__)
 
@@ -30,40 +31,40 @@ def get_stocks():
 def save_performance_report(year, quarter):
     data_dicts = base_dal.get_performance_report(year, quarter)
     if not data_dicts.empty:
-        if base_dal.delete_data(PerformanceReport, year, quarter):
-            base_dal.save_data(PerformanceReport, data_dicts, year, quarter)
+        if dal_util.delete_data(PerformanceReport, year, quarter):
+            dal_util.save_data(PerformanceReport, data_dicts, year, quarter)
 
 
 def save_profit_ability(year, quarter):
     data_dicts = base_dal.get_profit_ability(year, quarter)
     if not data_dicts.empty:
-        if base_dal.delete_data(ProfitAbility, year, quarter):
-            base_dal.save_data(ProfitAbility, year, quarter)
+        if dal_util.delete_data(ProfitAbility, year, quarter):
+            dal_util.save_data(ProfitAbility, year, quarter)
 
 
 def save_operation_ability(year, quarter):
     data_dicts = base_dal.get_operation_ability(year, quarter)
     if not data_dicts.empty:
-        if base_dal.delete_data(OperationAbility, year, quarter):
-            base_dal.save_data(OperationAbility, year, quarter)
+        if dal_util.delete_data(OperationAbility, year, quarter):
+            dal_util.save_data(OperationAbility, year, quarter)
 
 
 def save_growth_ability(year, quarter):
     data_dicts = base_dal.get_growth_ability(year, quarter)
     if not data_dicts.empty:
-        if base_dal.delete_data(GrowthAbility, year, quarter):
-            base_dal.save_data(GrowthAbility, year, quarter)
+        if dal_util.delete_data(GrowthAbility, year, quarter):
+            dal_util.save_data(GrowthAbility, year, quarter)
 
 
 def save_pay_debt_ability(year, quarter):
     data_dicts = base_dal.get_pay_debt_ability(year, quarter)
     if not data_dicts.empty:
-        if base_dal.delete_data(PayDebtAbility, year, quarter):
-            base_dal.save_data(PayDebtAbility, year, quarter)
+        if dal_util.delete_data(PayDebtAbility, year, quarter):
+            dal_util.save_data(PayDebtAbility, year, quarter)
 
 
 def save_cash_flow(year, quarter):
     data_dicts = base_dal.get_cash_flow(year, quarter)
     if not data_dicts.empty:
-        if base_dal.delete_data(CashFlow, year, quarter):
-            base_dal.save_data(CashFlow, year, quarter)
+        if dal_util.delete_data(CashFlow, year, quarter):
+            dal_util.save_data(CashFlow, year, quarter)
