@@ -23,7 +23,7 @@ def get_deposit_rate():
             logger.warn('Empty get DepositsRate.')
         else:
             data_dicts = [{'date': row[0], 'deposit_type': row[1], 'rate': row[2]} for row in data_df.values]
-            logger.info('End get DepositsRate.')
+            logger.info('Success get DepositsRate.')
         return data_dicts
 
 
@@ -41,7 +41,7 @@ def get_loan_rate():
             logger.warn('Empty get LoanRate.')
         else:
             data_dicts = [{'date': row[0], 'loan_type': row[1], 'rate': row[2]} for row in data_df.values]
-            logger.info('End get LoanRate.')
+            logger.info('Success get LoanRate.')
         return data_dicts
 
 
@@ -60,7 +60,7 @@ def get_required_reserves_rate():
         else:
             data_dicts = [{'date': row[0], 'before': row[1], 'now': row[2], 'changed': row[3]}
                           for row in data_df.values]
-            logger.info('End get RequiredReservesRate.')
+            logger.info('Success get RequiredReservesRate.')
         return data_dicts
 
 
@@ -83,7 +83,7 @@ def get_money_supply():
                            'qm': row[9], 'qm_yoy': row[10], 'ftd': row[11], 'ftd_yoy': row[12],
                            'sd':row[13], 'sd_yoy':row[14], 'rests': row[15], 'rests_yoy': row[16]}
                           for row in data_df.values]
-            logger.info('End get MoneySupply.')
+            logger.info('Success get MoneySupply.')
         return data_dicts
 
 
@@ -104,7 +104,7 @@ def get_money_supply_bal():
                            'm1': row[2], 'm0': row[3], 'cd': row[4],
                            'qm': row[5], 'ftd': row[6], 'sd': row[7], 'rests': row[8]}
                           for row in data_df.values]
-            logger.info('End get MoneySupplyBal.')
+            logger.info('Success get MoneySupplyBal.')
         return data_dicts
 
 
@@ -126,7 +126,7 @@ def get_gdp_year():
                            'si': row[5], 'industry': row[6], 'cons_industry': row[7], 'ti': row[8],
                            'trans_industry': row[9], 'lbdy': row[10]}
                           for row in data_df.values]
-            logger.info('End get GrossDomesticProductYear.')
+            logger.info('Success get GrossDomesticProductYear.')
         return data_dicts
 
 
@@ -147,7 +147,7 @@ def get_gdp_quarter():
                            'gdp_yoy': row[2], 'pi': row[3], 'pi_yoy': row[4],
                            'si': row[5], 'si_yoy': row[6], 'ti': row[7], 'ti_yoy': row[8]}
                           for row in data_df.values]
-            logger.info('End get GrossDomesticProductQuarter.')
+            logger.info('Success get GrossDomesticProductQuarter.')
         return data_dicts
 
 
@@ -168,7 +168,7 @@ def get_gdp_three_demands():
                            'for_rate': row[2], 'asset_for': row[3], 'asset_rate': row[4],
                            'goods_for': row[5], 'goods_rate': row[6]}
                           for row in data_df.values]
-            logger.info('End get GdpThreeDemands.')
+            logger.info('Success get GdpThreeDemands.')
         return data_dicts
 
 
@@ -188,7 +188,7 @@ def get_gdp_three_industry_pull():
             data_dicts = [{'year': row[0], 'gdp_yoy': row[1], 'pi': row[2], 'si': row[3],
                            'industry': row[4], 'ti': row[5]}
                           for row in data_df.values]
-            logger.info('End get GdpThreeIndustryPull.')
+            logger.info('Success get GdpThreeIndustryPull.')
         return data_dicts
 
 
@@ -209,7 +209,7 @@ def get_gdp_three_industry_contrib():
                            'pi': row[2], 'si': row[3], 'industry': row[4],
                            'ti': row[5]}
                           for row in data_df.values]
-            logger.info('End get GdpThreeIndustryContrib.')
+            logger.info('Success get GdpThreeIndustryContrib.')
         return data_dicts
 
 
@@ -227,7 +227,7 @@ def get_cpi():
             logger.warn('Empty get CPI.')
         else:
             data_dicts = [{'month': row[0], 'cpi': row[1]} for row in data_df.values]
-            logger.info('End get CPI.')
+            logger.info('Success get CPI.')
         return data_dicts
 
 
@@ -250,6 +250,6 @@ def get_ppi():
                            'roeu': row[9], 'dcg': row[10]}
                           for row in data_df.values]
 
-            logger.info('End get PPI.')
+            logger.info('Success get PPI.')
         return data_dicts
 
