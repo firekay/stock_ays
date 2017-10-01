@@ -273,8 +273,8 @@ class PerformanceForecast(BaseModel):
 
     code = CharField(8)
     name = CharField(32)
-    year = int(4)
-    quarter = int(1)
+    year = CharField(4)
+    quarter = CharField(1)
     type = CharField(32)
     report_date = DateField('%Y-%m-%d')
     pre_eps = CharField(32)
@@ -289,6 +289,8 @@ class RestrictedStock(BaseModel):
 
     code = CharField(8)
     name = CharField(32)
+    year = CharField(4)
+    month = CharField(2)
     date = DateField('%Y-%m-%d')
     count = CharField(32)
     ratio = CharField(32)
@@ -302,8 +304,8 @@ class FundHoldings(BaseModel):
 
     code = CharField(8)
     name = CharField(32)
-    year = int(4)
-    quarter = int(1)
+    year = CharField(4)
+    quarter = CharField(1)
     date = DateField('%Y-%m-%d')
     nums = CharField(32)
     nlast = CharField(32)
@@ -319,9 +321,10 @@ class NewStocks(BaseModel):
         db_table = 'new_stocks'
 
     code = CharField(8)
+    xcode = CharField(8)
     name = CharField(32)
     ipo_date = DateField('%Y-%m-%d')
-    issue_date = DateField('%Y-%m-%d')
+    issue_date = CharField(32)
     amount = CharField(32)
     markets = CharField(32)
     price = CharField(32)
@@ -329,6 +332,7 @@ class NewStocks(BaseModel):
     limit = CharField(32)
     funds = CharField(32)
     ballot = CharField(32)
+    insert_date = DateField('%Y%m%d')
 
 
 class FinancingSecuritiesSh(BaseModel):
@@ -475,8 +479,8 @@ class Zz500(BaseModel):
     class Meta:
         db_table = 'zz500'
         
-    code = CharField()
-    name = CharField()    
+    code = CharField(8)
+    name = CharField(32)
 
 
 class Terminated(BaseModel):
@@ -544,8 +548,8 @@ class PerformanceReport(BaseModel):
 
     code = CharField(8)
     name = CharField(32)
-    year = int(4)
-    quarter = int()
+    year = CharField(4)
+    quarter = CharField()
     esp = CharField(32)
     eps_yoy = CharField(32)
     bvps = CharField(32)
@@ -560,12 +564,12 @@ class PerformanceReport(BaseModel):
 class ProfitAbility(BaseModel):
     """盈利能力"""
     class Meta:
-        db_table = 'performance_report'
+        db_table = 'profit_ability'
 
     code = CharField(8)
     name = CharField(32)
-    year = int(4)
-    quarter = int(1)
+    year = CharField(4)
+    quarter = CharField(1)
     roe = CharField(32)
     net_profit_ratio = CharField(32)
     gross_profit_rate = CharField(32)
@@ -577,14 +581,14 @@ class ProfitAbility(BaseModel):
 
 
 class OperationAbility(BaseModel):
-    """运营能力"""
+    """营运能力"""
     class Meta:
         db_table = 'operation_ability'
 
     code = CharField(8)
     name = CharField(32)
-    year = int(4)
-    quarter = int(1)
+    year = CharField(4)
+    quarter = CharField(1)
     arturnover = CharField(32)
     arturndays = CharField(32)
     inventory_turnover = CharField(32)
@@ -601,8 +605,8 @@ class GrowthAbility(BaseModel):
 
     code = CharField(8)
     name = CharField(32)
-    year = int(4)
-    quarter = int(1)
+    year = CharField(4)
+    quarter = CharField(1)
     mbrg = CharField(32)
     nprg = CharField(32)
     nav = CharField(32)
@@ -613,14 +617,14 @@ class GrowthAbility(BaseModel):
 
 
 class PayDebtAbility(BaseModel):
-    """成长能力"""
+    """偿债能力"""
     class Meta:
         db_table = 'pay_debt_ability'
 
     code = CharField(8)
     name = CharField(32)
-    year = int(4)
-    quarter = int(1)
+    year = CharField(4)
+    quarter = CharField(1)
     currentratio = CharField(32)
     quickratio = CharField(32)
     cashratio = CharField(32)
@@ -637,8 +641,8 @@ class CashFlow(BaseModel):
 
     code = CharField(8)
     name = CharField(32)
-    year = int(4)
-    quarter = int(1)
+    year = CharField(4)
+    quarter = CharField(1)
     cf_sales = CharField(32)
     rateofreturn = CharField(32)
     cf_nm = CharField(32)
@@ -825,7 +829,6 @@ class PPI(BaseModel):
 # #####################################################
 # 龙虎榜数据
 # #####################################################
-# TODO: finish this
 class TopList(BaseModel):
     """每日龙虎榜列表"""
     class Meta:
@@ -850,7 +853,7 @@ class IndividualStatisticsTops(BaseModel):
 
     code = CharField(8)
     name = CharField(32)
-    days_type = int(3)
+    days_type = CharField(3)
     count = CharField(32)
     bamount = CharField(32)
     samount = CharField(32)
@@ -866,7 +869,7 @@ class BrokerTops(BaseModel):
         db_table = 'broker_tops'
 
     broker = CharField(32)
-    days_type = int(3)
+    days_type = CharField(3)
     count = CharField(32)
     bamount = CharField(32)
     bcount = CharField(32)
@@ -883,7 +886,7 @@ class InstitutionTops(BaseModel):
 
     code = CharField(8)
     name = CharField(32)
-    days_type = int(3)
+    days_type = CharField(3)
     bamount = CharField(32)
     bcount = CharField(32)
     samount = CharField(32)
@@ -909,7 +912,6 @@ class InstitutionDetail(BaseModel):
 # #####################################################
 # 银行间同业拆放利率
 # #####################################################
-# TODO: finish this
 class ShiborRate(BaseModel):
     """上海银行间同业拆放利率（Shanghai Interbank Offered Rate，简称Shibor）"""
     class Meta:
