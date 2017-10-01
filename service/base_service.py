@@ -27,3 +27,5 @@ def get_stocks():
     return StockBasic.select(StockBasic.code).where(StockBasic.timeToMarket != 0).order_by(StockBasic.code)
 
 
+def save_performance_report(year, quarter):
+    data_df = base_dal.get_performance_report(year, quarter)
