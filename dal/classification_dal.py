@@ -7,14 +7,21 @@ from models.model import *
 logger = logging.getLogger(__name__)
 today = get_today_line()
 
-his_data_queue = Queue()
-his_data_scd_queue = Queue()
-h_revote_data_queue = Queue()
-stock_k_data_queue = Queue()
-tick_data_queue = Queue()
-big_trade_data_queue = Queue()
 RETRY_COUNT = 5
 PAUSE = 0.001
+
+
+def delete_industry_classified():
+    delete_ok = True
+    logger.info('Begin delete industry classified行业信息.')
+    try:
+        IndustryClassified.delete().execute()
+    except Exception:
+        delete_ok = False
+        logger.exception('Error delete industry classified行业信息.')
+    else:
+        logger.info('Success delete industry classified行业信息.')
+    return delete_ok
 
 
 def save_industry_classified():

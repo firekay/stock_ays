@@ -1,6 +1,7 @@
 # encoding: UTF-8
 
 import datetime
+import time
 
 delta1 = datetime.timedelta(days=1)
 
@@ -26,6 +27,37 @@ def range_date(start_str, end_str):
     while start_d < end_d:
         yield date2str(start_d)
         start_d += delta1
+
+
+def get_now():
+    return time.strftime('%Y-%m-%d %H:%M:%S')
+
+
+def int2time(timestamp):
+    datearr = datetime.datetime.utcfromtimestamp(timestamp)
+    timestr = datearr.strftime("%Y-%m-%d %H:%M:%S")
+    return timestr
+
+
+def diff_day(start=None, end=None):
+    d1 = datetime.datetime.strptime(end, '%Y-%m-%d')
+    d2 = datetime.datetime.strptime(start, '%Y-%m-%d')
+    delta = d1 - d2
+    return delta.days
+
+
+def get_year():
+    year = datetime.datetime.today().year
+    return year
+
+
+def get_month():
+    month = datetime.datetime.today().month
+    return month
+
+
+def get_hour():
+    return datetime.datetime.today().hour
 
 
 def get_today():
