@@ -29,6 +29,24 @@ def delete_data(model, year, quarter):
         return True
 
 
+def delete_insert_data(model, insert_date):
+    """删除插入时间的数据
+    
+    Args:
+        model: peewee定义的model, models.model.py中定义的
+        insert_date: 插入时间
+    """
+    logger.info('Begin delete %s data, insert date is: %s.' % (model.__name__, insert_date))
+    try:
+        model.delete().where(model.insert_date == insert_date).execute()
+    except Exception:
+        logger.exception('Error delete %s data, insert date is: %s.' % (model.__name__, insert_date))
+        return False
+    else:
+        logger.info('Success delete %s data, insert date is: %s.' % (model.__name__, insert_date))
+        return True
+
+
 def save_data(model, data_dicts, year, quarter):
     """存储相应年份,季度的数据
 
