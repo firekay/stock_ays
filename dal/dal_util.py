@@ -38,11 +38,11 @@ def save_data(model, data_dicts, year, quarter):
         year: 年份, YYYY格式
         quarter: 季度, 只能是1, 2, 3, 4
     """
-    assert not data_dicts.empty, 'data_dict must not empty and data_dict must not None'
+    assert data_dicts, 'data_dict must not empty and data_dict must not None'
     logger.info('Begin save %s data, the year is: %s, quarter is: %s'
                 % (model.__name__, year, quarter))
     try:
-        PerformanceReport.insert_many(data_dicts).execute()
+        model.insert_many(data_dicts).execute()
     except Exception as e:
         logger.exception('Error save %s data, the year is: %s, quarter is: %s'
                          % (model.__name__, year, quarter))
@@ -59,13 +59,11 @@ def save_data(model, data_dicts):
     Args:
         model: peewee定义的model, models.model.py中定义的
         data_dicts: 字典的列表, 跟model对应的数据
-        year: 年份, YYYY格式
-        quarter: 季度, 只能是1, 2, 3, 4
     """
-    assert not data_dicts.empty, 'data_dict must not empty and data_dict must not None'
+    assert data_dicts, 'data_dict must not empty and data_dict must not None'
     logger.info('Begin save all %s data' % model.__name__)
     try:
-        PerformanceReport.insert_many(data_dicts).execute()
+        model.insert_many(data_dicts).execute()
     except Exception as e:
         logger.exception('Error save all %s data' % model.__name__)
         return False
