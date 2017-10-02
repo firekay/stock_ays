@@ -7,22 +7,24 @@ from dal import winners_list_dal as wllist_dal
 from dal import util_dal
 
 
+today_line = get_today_line()
+
 DAYS_TYPE = [5, 10, 30, 60]
 
 
 def save_top_list(date):
     data_dicts = wllist_dal.get_top_list(date)
     if data_dicts:
-        if util_dal.delete_date(TopList, date):
-            util_dal.save_data(TopList, data_dicts)
+        if util_dal.delete_date_data(TopList, date):
+            util_dal.save_date_data(TopList, data_dicts, date)
 
 
 def save_individual_statistics_tops(days_type=None):
     def _save_individual_statistics_tops(day_type):
         data_dicts = wllist_dal.get_individual_statistics_tops(day_type)
         if data_dicts:
-            if util_dal.delete_insert_date_days_type_data(IndividualStatisticsTops, today, day_type):
-                util_dal.save_data(IndividualStatisticsTops, data_dicts)
+            if util_dal.delete_insert_date_days_type_data(IndividualStatisticsTops, today_line, day_type):
+                util_dal.save_date_day_type_data(IndividualStatisticsTops, data_dicts, today_line, day_type)
     if not days_type:
         for d in DAYS_TYPE:
             _save_individual_statistics_tops(d)
@@ -37,8 +39,8 @@ def save_broker_tops(days_type=None):
     def _save_broker_tops(day_type):
         data_dicts = wllist_dal.get_broker_tops(day_type)
         if data_dicts:
-            if util_dal.delete_insert_date_days_type_data(BrokerTops, today, day_type):
-                util_dal.save_data(BrokerTops, data_dicts)
+            if util_dal.delete_insert_date_days_type_data(BrokerTops, today_line, day_type):
+                util_dal.save_date_day_type_data(BrokerTops, data_dicts, today_line,day_type)
     if not days_type:
         for d in DAYS_TYPE:
             _save_broker_tops(d)
@@ -53,8 +55,8 @@ def save_institution_tops(days_type=None):
     def _save_institution_tops(day_type):
         data_dicts = wllist_dal.get_institution_tops(day_type)
         if data_dicts:
-            if util_dal.delete_insert_date_days_type_data(InstitutionTops, today, day_type):
-                util_dal.save_data(InstitutionTops, data_dicts)
+            if util_dal.delete_insert_date_days_type_data(InstitutionTops, today_line, day_type):
+                util_dal.save_date_day_type_data(InstitutionTops, data_dicts, today_line, day_type)
     if not days_type:
         for d in DAYS_TYPE:
             _save_institution_tops(d)
@@ -68,5 +70,5 @@ def save_institution_tops(days_type=None):
 def save_institution_detail():
     data_dicts = wllist_dal.get_institution_detail()
     if data_dicts:
-        if util_dal.delete_insert_date_data(InstitutionDetail, today):
-            util_dal.save_data(InstitutionDetail, data_dicts)
+        if util_dal.delete_insert_date_data(InstitutionDetail, today_line):
+            util_dal.save_date_data(InstitutionDetail, data_dicts, today_line)
