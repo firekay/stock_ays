@@ -231,7 +231,7 @@ class DistributionPlans(BaseModel):
 
     code = CharField(8)
     name = CharField(32)
-    year = DateField('%Y')
+    year = CharField(4)
     report_date = DateField('%Y-%m-%d')
     divi = CharField(32)
     shares = CharField(32)
