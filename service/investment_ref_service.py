@@ -1,6 +1,8 @@
 # encoding: utf-8
 import logging
 from dal import investment_ref_dal as irdal
+from models.model import *
+from dal import util_dal
 from utils import util
 
 
@@ -8,30 +10,60 @@ logger = logging.getLogger(__name__)
 
 
 def save_distribution_plans(year, top=5000):
-    """存储分配预案数据"""
+    """得到分配预案数据
+    
+    Args:
+        year : 预案公布的年份，默认为2014
+        top :取最新n条数据，默认取最近公布的5000条
+    """
     data_dicts = irdal.get_distribution_plans_data(year, top)
     if data_dicts:
-        irdal.save_distribution_plans_data(data_dicts)
-
-
-def save_restricted_stock(year=None, month=None):
-    year = util.get_year() if year is None else year
-    month = util.get_month() if month is None else month
-    """存储限售股解禁"""
-    data_dicts = irdal.get_restricted_stock(year, month)
-    if data_dicts:
-        if irdal.delete_restricted_stock(year, month):
-            irdal.save_restricted_stock(data_dicts, year, month)
+        if util_dal.delete_year_data(DistributionPlans, year):
+            irdal.save_distribution_plans_data(data_dicts, year)
 
 
 def save_performance_forecast(year, quarter):
+    """业绩预告
+    
+    Args:
+        year: 年份
+        quarter: 季度, 默认删除给定年份的所有季度数据
+    """
     data_dicts = irdal.get_performance_forecast(year, quarter)
     if data_dicts:
-        if irdal.delete_performance_forecast(year, quarter):
-            irdal.save_performance_forecast(data_dicts, year, quarter)
+        if util_dal.delete_year_quarter_data(PerformanceForecast, year, quarter):
+            util_dal.save_year_quarter_data(PerformanceForecast, data_dicts, year, quarter)
+
+
+def save_restricted_stock(year=None, month=None):
+    """ 限售股解禁数据
+    
+    Args
+        year:年份,默认为当前年
+        month:解禁月份，默认为当前月
+    """
+    year = util.get_year() if year is None else year
+    month = util.get_month() if month is None else month
+    data_dicts = irdal.get_restricted_stock(year, month)
+    if data_dicts:
+        if util_dal.delete_year_month_data(RestrictedStock, year, month):
+            util_dal.save_year_month_data(RestrictedStock, data_dicts, year, month)
+
+
+def save_fund_holdings(year, quarter):
+    """基金持股
+    Args:
+        year: 年份
+        quarter: 季度, 默认删除给定年份的所有季度数据
+    """
+    data_dicts = irdal.get_fund_holdings(year, quarter)
+    if data_dicts:
+        if util_dal.delete_year_quarter_data(FundHoldings, year, quarter):
+            util_dal.save_year_quarter_data(FundHoldings, data_dicts, year, quarter)
 
 
 def save_new_stocks():
+    """新股数据"""
     new_stocks_dal = irdal.NewStocksDal()
     data_dicts = new_stocks_dal.get_new_stocks()
     if data_dicts:
@@ -39,6 +71,12 @@ def save_new_stocks():
 
 
 def save_financing_securities_sh(start_date=None, end_date=None):
+    """融资融券（沪市)
+    
+    Args:
+        start_date: 开始日期 format：YYYY-MM-DD 为空时取去年今日
+        end_date: 结束日期 format：YYYY-MM-DD 为空时取当前日期
+    """
     fs_sh_dal = irdal.FinancingSecuritiesShDal()
     data_dicts = fs_sh_dal.get_financing_securities_sh(start_date, end_date)
     if data_dicts:
@@ -46,6 +84,13 @@ def save_financing_securities_sh(start_date=None, end_date=None):
 
 
 def save_financing_securities_detail_sh(start_date, end_date=None):
+    """沪市融资融券明细数据
+    
+    Args:
+        start_date: 开始日期 format：YYYY-MM-DD 默认为空’‘, 
+                    如过end_date为空, 则只取start_date这一天数据
+        end_date: 结束日期 format：YYYY-MM-DD 默认为空’‘
+    """
     # 如果end_date为None, 则只有start_date一天的的数据
     fsd_sh_dal = irdal.FinancingSecuritiesDetailShDal()
     if end_date:
@@ -59,3 +104,39 @@ def save_financing_securities_detail_sh(start_date, end_date=None):
         if data_dicts:
             if fsd_sh_dal.delete_some_days_data(date=start_date):
                 fsd_sh_dal.save_financing_securities_detail_sh(data_dicts, date=start_date)
+
+
+def save_financing_securities_sz(start_date=None, end_date=None):
+    """融资融券（深市)
+    
+    Args:
+        start_date: 开始日期 format：YYYY-MM-DD 为空时取去年今日
+        end_date: 结束日期 format：YYYY-MM-DD 为空时取当前日期
+    """
+    fs_sz_dal = irdal.FinancingSecuritiesSzDal()
+    data_dicts = fs_sz_dal.get_financing_securities_sz(start_date, end_date)
+    if data_dicts:
+        fs_sz_dal.save_financing_securities_sz(data_dicts)
+
+
+def save_financing_securities_detail_sz(start_date, end_date=None):
+    """深市融资融券明细数据
+    
+    Args:
+        start_date: 开始日期 format：YYYY-MM-DD 默认为空’‘, 
+                    如过end_date为空, 则只取start_date这一天数据
+        end_date: 结束日期 format：YYYY-MM-DD 默认为空’‘
+    """
+    # 如果end_date为None, 则只有start_date一天的的数据
+    fsd_sz_dal = irdal.FinancingSecuritiesDetailSzDal()
+    if end_date:
+        data_dicts = fsd_sz_dal.get_financing_securities_detail_sz(start_date=start_date, end_date=end_date)
+        if data_dicts:
+            if fsd_sz_dal.delete_some_days_data(start_date=start_date, end_date=end_date):
+                fsd_sz_dal.save_financing_securities_detail_sz(data_dicts,
+                                                               start_date=start_date,end_date=end_date)
+    else:
+        data_dicts = fsd_sz_dal.get_financing_securities_detail_sz(date=start_date)
+        if data_dicts:
+            if fsd_sz_dal.delete_some_days_data(date=start_date):
+                fsd_sz_dal.save_financing_securities_detail_sz(data_dicts, date=start_date)
