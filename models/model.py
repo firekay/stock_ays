@@ -260,7 +260,7 @@ class DistributionPlans(BaseModel):
     report_date = DateField('%Y-%m-%d')
     divi = CharField(32)
     shares = CharField(32)
-    insert_date = DateField('%Y%m%d')
+    insert_date = DateField('%Y-%m-%d')
 
 
 class PerformanceForecast(BaseModel):
@@ -276,7 +276,7 @@ class PerformanceForecast(BaseModel):
     report_date = DateField('%Y-%m-%d')
     pre_eps = CharField(32)
     range = CharField(32)
-    insert_date = DateField('%Y%m%d')
+    insert_date = DateField('%Y-%m-%d')
 
 
 class RestrictedStock(BaseModel):
@@ -291,7 +291,7 @@ class RestrictedStock(BaseModel):
     date = DateField('%Y-%m-%d')
     count = CharField(32)
     ratio = CharField(32)
-    insert_date = DateField('%Y%m%d')
+    insert_date = DateField('%Y-%m-%d')
 
 
 class FundHoldings(BaseModel):
@@ -310,7 +310,7 @@ class FundHoldings(BaseModel):
     clast = CharField(32)
     amount = CharField(32)
     ratio = CharField(32)
-    insert_date = DateField('%Y%m%d')
+    insert_date = DateField('%Y-%m-%d')
 
 
 class NewStocks(BaseModel):
@@ -329,7 +329,7 @@ class NewStocks(BaseModel):
     limit = CharField(32)
     funds = CharField(32)
     ballot = CharField(32)
-    insert_date = DateField('%Y%m%d')
+    insert_date = DateField('%Y-%m-%d')
 
 
 class FinancingSecuritiesSh(BaseModel):
@@ -535,7 +535,7 @@ class StockBasic(BaseModel):
     gpr = DecimalField(max_digits=12, decimal_places=2)
     npr = DecimalField(max_digits=12, decimal_places=2)
     holders = DecimalField(max_digits=12, decimal_places=2)
-    insert_date = DateField('%Y%m%d')
+    insert_date = DateField('%Y-%m-%d')
 
 
 class PerformanceReport(BaseModel):
@@ -556,7 +556,7 @@ class PerformanceReport(BaseModel):
     profits_yoy = CharField(32)
     distrib = CharField(32)
     report_date = CharField(32)
-    insert_date = DateField('%Y%m%d')
+    insert_date = DateField('%Y-%m-%d')
 
 
 class ProfitAbility(BaseModel):
@@ -575,7 +575,7 @@ class ProfitAbility(BaseModel):
     esp = CharField(32)
     business_income = CharField(32)
     bips = CharField(32)
-    insert_date = DateField('%Y%m%d')
+    insert_date = DateField('%Y-%m-%d')
 
 
 class OperationAbility(BaseModel):
@@ -593,7 +593,7 @@ class OperationAbility(BaseModel):
     inventory_days = CharField(32)
     currentasset_turnover = CharField(32)
     currentasset_days = CharField(32)
-    insert_date = DateField('%Y%m%d')
+    insert_date = DateField('%Y-%m-%d')
 
 
 class GrowthAbility(BaseModel):
@@ -611,7 +611,7 @@ class GrowthAbility(BaseModel):
     targ = CharField(32)
     epsg = CharField(32)
     seg = CharField(32)
-    insert_date = DateField('%Y%m%d')
+    insert_date = DateField('%Y-%m-%d')
 
 
 class PayDebtAbility(BaseModel):
@@ -629,7 +629,7 @@ class PayDebtAbility(BaseModel):
     icratio = CharField(32)
     sheqratio = CharField(32)
     adratio = CharField(32)
-    insert_date = DateField('%Y%m%d')
+    insert_date = DateField('%Y-%m-%d')
 
 
 class CashFlow(BaseModel):
@@ -646,7 +646,7 @@ class CashFlow(BaseModel):
     cf_nm = CharField(32)
     cf_liabilities = CharField(32)
     cashflowratio = CharField(32)
-    insert_date = DateField('%Y%m%d')
+    insert_date = DateField('%Y-%m-%d')
 
 
 # #####################################################
@@ -858,7 +858,7 @@ class IndividualStatisticsTops(BaseModel):
     net = CharField(32)
     bcount = CharField(32)
     scount = CharField(32)
-    insert_date = DateField('%Y%m%d')
+    insert_date = DateField('%Y-%m-%d')
 
 
 class BrokerTops(BaseModel):
@@ -874,7 +874,7 @@ class BrokerTops(BaseModel):
     samount = CharField(32)
     scount = CharField(32)
     top3 = CharField(32)
-    insert_date = DateField('%Y%m%d')
+    insert_date = DateField('%Y-%m-%d')
 
 
 class InstitutionTops(BaseModel):
@@ -890,7 +890,7 @@ class InstitutionTops(BaseModel):
     samount = CharField(32)
     scount = CharField(32)
     net = CharField(32)
-    insert_date = DateField('%Y%m%d')
+    insert_date = DateField('%Y-%m-%d')
 
 
 class InstitutionDetail(BaseModel):
@@ -904,7 +904,7 @@ class InstitutionDetail(BaseModel):
     bamount = CharField(32)
     samount = CharField(32)
     type = CharField(32)
-    insert_date = DateField('%Y%m%d')
+    insert_date = DateField('%Y-%m-%d')
 
 
 # #####################################################

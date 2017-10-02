@@ -3,21 +3,18 @@
 import logging
 import tushare as ts
 
+from dal.constants import *
 from models.model import *
 from utils import util
 
 logger = logging.getLogger(__name__)
 
-RETRY_COUNT = 5
-PAUSE = 0.001
-DATE_CHK_MSG = '年度输入错误：请输入1989年以后的年份数字，格式：YYYY'
-DATE_CHK_Q_MSG = '季度输入错误：请输入1、2、3或4数字'
 
-today = util.get_today()
+today_line = util.get_today_line()
 
 
 def _check_input(year, quarter):
-    if isinstance(year, str) or year < 1989 :
+    if isinstance(year, str) or year < 1989:
         raise TypeError(DATE_CHK_MSG)
     elif quarter is None or isinstance(quarter, str) or quarter not in [1, 2, 3, 4]:
         raise TypeError(DATE_CHK_Q_MSG)
@@ -48,7 +45,7 @@ def get_distribution_plans_data(year, top=25, retry_count=RETRY_COUNT, pause=PAU
             logger.warn('Empty get distribution plans, the year is ' + year)
         else:
             data_dicts = [{'year': year, 'code': row[0], 'name': row[1], 'report_date': row[3],
-                          'divi': row[4], 'shares': row[5], 'insert_date': today}
+                          'divi': row[4], 'shares': row[5], 'insert_date': today_line}
                          for row in data_df.values]
             logger.info('Success get distribution plans, the year is ' + year)
         return data_dicts
@@ -95,7 +92,7 @@ def get_performance_forecast(year, quarter):
         else:
             data_dicts = [{'code': row[0], 'name': row[1], 'year': year, 'quarter': quarter,
                            'type': row[2], 'report_date': row[3], 'pre_eps': row[4],
-                           'range': row[5], 'insert_date': today} for row in data_df.values]
+                           'range': row[5], 'insert_date': today_line} for row in data_df.values]
             logger.info('Success get performance forecast data, the year is: %s, quarter is: %s'
                         % (year, quarter))
         return data_dicts
@@ -178,7 +175,7 @@ def get_restricted_stock(year=None, month=None, retry_count=RETRY_COUNT, pause=P
         data_dicts = []
         if not data_df.empty:
             data_dicts = [{'code': row[0], 'name': row[1], 'year': year, 'month': month,
-                           'date': row[2], 'count': row[3], 'ratio': row[4], 'insert_date': today}
+                           'date': row[2], 'count': row[3], 'ratio': row[4], 'insert_date': today_line}
                           for row in data_df.values]
             logger.info('Success get restricted stock data, the year is: %s, month is: %s'
                         % (year, month))
@@ -237,7 +234,7 @@ def get_fund_holdings(year, quarter):
             data_dicts = [{'code': row[0], 'name': row[1], 'year': year, 'quarter': quarter,
                            'date': row[2], 'nums': row[3], 'nlast': row[4], 'count': row[5],
                            'clast': row[6], 'amount': row[7], 'ratio': row[8],
-                           'insert_date': today} for row in data_df.values]
+                           'insert_date': today_line} for row in data_df.values]
             logger.info('Success get fund holdings data, the year is: %s, quarter is: %s'
                         % (year, quarter))
         return data_dicts
@@ -289,7 +286,7 @@ class NewStocksDal(object):
                 data_dicts = [{'code': row[0], 'xcode': row[1], 'name': row[2], 'ipo_date': row[3],
                                'issue_date': row[4], 'amount': row[5], 'markets': row[6], 'price': row[7],
                                'pe': row[8], 'limit': row[9], 'funds': row[10], 'ballot': row[11],
-                               'insert_date': today} for row in data_df.values]
+                               'insert_date': today_line} for row in data_df.values]
                 logger.info('Success get get new stocks.')
             return data_dicts
 
@@ -550,7 +547,7 @@ class FinancingSecuritiesDetailSzDal(object):
         return delete_ok
 
     def get_financing_securities_detail_sz(self, date='', start_date='', end_date='',
-                                           retry_count=RETRY_COUNT, pause = PAUSE):
+                                           retry_count=RETRY_COUNT, pause=PAUSE):
         # 1. 参数全为空; 2. 只有date 3. 只有start_date和end_date
         logger.info('Begin get financing securities details sz data. Date is %s,'
                     ' start_date is %s, end_date is %s' % (date, start_date, end_date))

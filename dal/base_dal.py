@@ -7,6 +7,7 @@ import logging
 logger = logging.getLogger(__name__)
 DATE_CHK_MSG = '年度输入错误：请输入1989年以后的年份数字，格式：YYYY'
 DATE_CHK_Q_MSG = '季度输入错误：请输入1、2、3或4数字'
+today_line = get_today_line()
 
 
 def _check_input(year, quarter):
@@ -27,7 +28,7 @@ def save_stock_basic():
         data_dicts = [{'code': row[15], 'name': row[0], 'industry': row[1], 'area': row[2], 'pe': row[3],
                        'outstanding': row[4], 'totals': row[5], 'totalAssets':row[6], 'liquidAssets':row[7],
                        'fixedAssets': row[8], 'reserved': row[9], 'reservedPerShare': row[10], 'eps': row[11],
-                       'bvps': row[12], 'pb': row[13], 'timeToMarket': row[14], 'insert_date': today}
+                       'bvps': row[12], 'pb': row[13], 'timeToMarket': row[14], 'insert_date': today_line}
                       for row in data]
         StockBasic.insert_many(data_dicts).execute()
     except Exception:
@@ -64,7 +65,7 @@ def get_performance_report(year, quarter):
                            'eps': row[2], 'eps_yoy': row[3], 'bvps': row[4],
                            'roe': row[5],  'epcf': row[6], 'net_profits': row[7], 'profits_yoy': row[8],
                            'distrib': row[9], 'report_date': row[10],
-                           'insert_date': today} for row in data_df.values]
+                           'insert_date': today_line} for row in data_df.values]
             logger.info('Success get PerformanceReport data, the year is: %s, quarter is: %s'
                         % (year, quarter))
         return data_dicts
@@ -94,7 +95,7 @@ def get_profit_ability(year, quarter):
             data_dicts = [{'code': row[0], 'name': row[1], 'year': year, 'quarter': quarter,
                            'roe': row[2], 'net_profit_ratio': row[3], 'gross_profit_rate': row[4],
                            'net_profits': row[5], 'eps': row[6], 'business_income': row[7], 'bips': row[8],
-                           'insert_date': today} for row in data_df.values]
+                           'insert_date': today_line} for row in data_df.values]
             logger.warn('Empty get ProfitAbility, the year is: %s, quarter is: %s'
                         % (year, quarter))
         else:
@@ -130,7 +131,7 @@ def get_operation_ability(year, quarter):
             data_dicts = [{'code': row[0], 'name': row[1], 'year': year, 'quarter': quarter,
                            'arturnover': row[2], 'arturndays': row[3], 'inventory_turnover': row[4],
                            'inventory_days': row[5], 'currentasset_turnover': row[6], 'currentasset_days': row[7],
-                           'insert_date': today} for row in data_df.values]
+                           'insert_date': today_line} for row in data_df.values]
 
             logger.info('Success get OperationAbility, the year is: %s, quarter is: %s'
                         % (year, quarter))
@@ -164,7 +165,7 @@ def get_growth_ability(year, quarter):
             data_dicts = [{'code': row[0], 'name': row[1], 'year': year, 'quarter': quarter,
                            'mbrg': row[2], 'nprg': row[3], 'nav': row[4],
                            'targ': row[5], 'epsg': row[6], 'seg': row[7],
-                           'insert_date': today} for row in data_df.values]
+                           'insert_date': today_line} for row in data_df.values]
 
             logger.info('Success get GrowthAbility, the year is: %s, quarter is: %s'
                         % (year, quarter))
@@ -199,7 +200,7 @@ def get_pay_debt_ability(year, quarter):
             data_dicts = [{'code': row[0], 'name': row[1], 'year': year, 'quarter': quarter,
                            'currentratio': row[2], 'quickratio': row[3], 'cashratio': row[4],
                            'icratio': row[5], 'sheqratio': row[6], 'adratio': row[7],
-                           'insert_date': today} for row in data_df.values]
+                           'insert_date': today_line} for row in data_df.values]
 
             logger.info('Success get PayDebtAbility, the year is: %s, quarter is: %s'
                         % (year, quarter))
@@ -234,7 +235,7 @@ def get_cash_flow(year, quarter):
             data_dicts = [{'code': row[0], 'name': row[1], 'year': year, 'quarter': quarter,
                            'cf_sales': row[2], 'rateofreturn': row[3], 'cf_nm': row[4],
                            'cf_liabilities': row[5], 'cashflowratio': row[6],
-                           'insert_date': today} for row in data_df.values]
+                           'insert_date': today_line} for row in data_df.values]
 
             logger.info('Success get CashFlow, the year is: %s, quarter is: %s'
                         % (year, quarter))

@@ -6,6 +6,7 @@ from constants import *
 from models.model import *
 
 logger = logging.getLogger(__name__)
+today_line = get_today_line()
 
 
 def get_top_list(date, retry_count=RETRY_COUNT, pause=PAUSE):
@@ -48,7 +49,7 @@ def get_individual_statistics_tops(days=5, retry_count=RETRY_COUNT, pause=PAUSE)
             data_dicts = [{'code': row[0], 'name': row[1],
                            'count': row[2], 'bamount': row[3], 'samount': row[4],
                            'net': row[5], 'bcount': row[6], 'scount': row[7],
-                           'days_type': days, 'insert_date': today}
+                           'days_type': days, 'insert_date': today_line}
                           for row in data_df.values]
             logger.info('Success get IndividualStatisticsTops. Days is: %s.' % days)
         return data_dicts
@@ -71,7 +72,7 @@ def get_broker_tops(days=5, retry_count=RETRY_COUNT, pause=PAUSE):
             data_dicts = [{'broker': row[0], 'count': row[1],
                            'bamount': row[2], 'bcount': row[3], 'samount': row[4],
                            'scount': row[5], 'top3': row[6],
-                           'days_type': days, 'insert_date': today}
+                           'days_type': days, 'insert_date': today_line}
                           for row in data_df.values]
             logger.info('Success get BrokerTops. Days is: %s.' % days)
         return data_dicts
@@ -94,7 +95,7 @@ def get_institution_tops(days=5, retry_count=RETRY_COUNT, pause=PAUSE):
             data_dicts = [{'code': row[0], 'name': row[1],
                            'bamount': row[2], 'bcount': row[3], 'samount': row[4],
                            'scount': row[5], 'net': row[6],
-                           'days_type': days, 'insert_date': today}
+                           'days_type': days, 'insert_date': today_line}
                           for row in data_df.values]
             logger.info('Success get InstitutionTops. Days is: %s.' % days)
         return data_dicts
@@ -116,7 +117,7 @@ def get_institution_detail(retry_count=RETRY_COUNT, pause=PAUSE):
         else:
             data_dicts = [{'code': row[0], 'name': row[1],
                            'date': row[2], 'bamount': row[3], 'samount': row[4],
-                           'type': row[5], 'insert_date': today}
+                           'type': row[5], 'insert_date': today_line}
                           for row in data_df.values]
             logger.info('Success get InstitutionDetail.')
         return data_dicts

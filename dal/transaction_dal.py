@@ -1,24 +1,17 @@
 # encoding: UTF-8
 """调用接口得到数据，以及存入mysql， mongodb"""
-import sys
-import traceback
 import logging
-import logging.config
-from peewee import *
 import tushare as ts
 import pandas as pd
 from queue import Queue
 import json
+from dal.constants import *
 from utils import mongo_utils
-from utils.mysql_utils import *
-from utils.util import *
-import threading
-import time
 from models.model import *
 from service import base_service
 
 logger = logging.getLogger(__name__)
-today = get_today_line()
+today_line = get_today_line()
 
 his_data_queue = Queue()
 his_data_scd_queue = Queue()
@@ -26,8 +19,6 @@ h_revote_data_queue = Queue()
 stock_k_data_queue = Queue()
 tick_data_queue = Queue()
 big_trade_data_queue = Queue()
-RETRY_COUNT = 5
-PAUSE = 0.001
 
 max_stock = base_service.get_max_stock()
 
@@ -320,18 +311,18 @@ def save_revote_his_data(code, start=None, end=None, autype='qfq',
 
 def save_today_all_data():
     """一次性获取当前交易所有股票的行情数据（如果是节假日，即为上一交易日，结果显示速度取决于网速）"""
-    logger.info('Begin get %s\'s all stock data.' % today)
+    logger.info('Begin get %s\'s all stock data.' % today_line)
     try:
         data_df = ts.get_today_all()
         data = data_df.values
-        data_dicts = [{'code': row[0], 'name': row[1], 'date': today, 'changepercent': row[2], 'trade': row[3],
+        data_dicts = [{'code': row[0], 'name': row[1], 'date': today_line, 'changepercent': row[2], 'trade': row[3],
                        'open': row[4], 'hign': row[5], 'low': row[6], 'settlement': row[7], 'volume': row[8],
                        'turnoverratio': row[9], 'amount': row[10], 'per': row[11], 'pb': row[12],
                        'mktcap': row[13], 'nmc': row[14]} for row in data]
         TodayAllData.insert_many(data_dicts).execute()
     except Exception as e:
-        logger.exception('Get %s\'s all stock data.' % today)
-    logger.info('End get %s\'s all stock data.' % today)
+        logger.exception('Get %s\'s all stock data.' % today_line)
+    logger.info('End get %s\'s all stock data.' % today_line)
 
 
 def save_tick_data(code=None, date=None, retry_count=RETRY_COUNT):
@@ -380,17 +371,17 @@ def get_tick_data(code, date, retry_count=RETRY_COUNT, pause=PAUSE, src='sn'):
 
 def save_big_index_data():
     """获取大盘指数实时行情列表，以表格的形式展示大盘指数实时行情。"""
-    logger.info('Begin get %s\'s big index data.' % today)
+    logger.info('Begin get %s\'s big index data.' % today_line)
     try:
         data_df = ts.get_index()
         data = data_df.values
-        data_dicts = [{'date': today, 'code': row[0], 'name': row[1], 'change': row[2], 'open': row[3],
+        data_dicts = [{'date': today_line, 'code': row[0], 'name': row[1], 'change': row[2], 'open': row[3],
                        'preclose': row[4], 'close': row[5], 'high': row[6], 'low': row[7],
                        'volume': row[8], 'amount': row[9]} for row in data]
         BigIndexData.insert_many(data_dicts).execute()
-        logger.info('End get and save %s\'s big index data.' % today)
+        logger.info('End get and save %s\'s big index data.' % today_line)
     except Exception as e:
-        logger.exception('Error get and save %s\'s big index data.' % today)
+        logger.exception('Error get and save %s\'s big index data.' % today_line)
 
 
 def save_big_trade_data(code=None, date=None, vol=400, retry_count=RETRY_COUNT, pause=PAUSE):
