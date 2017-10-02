@@ -125,15 +125,9 @@ def save_all_stocks_hist_data(start_date=None, end_date=None, ktype=None):
         logger.info('Begin save all stocks history data, start date is: %s, end date is: %s.' % (start_date, end_date))
     else:
         logger.info('Begin save all stocks history data.')
-    # pool = threadpool.ThreadPool(128)
-    # requests = threadpool.makeRequests(transaction_dal.save_his_data)
-    # [pool.putRequest(req) for req in requests]
-    # pool.wait()
     save_his_data_thread = threading.Thread(name='save_his_data', target=transaction_dal.save_his_data)
     save_his_data_thread.start()
     threading.Timer(1, check_thread_alive, args=(save_his_data_thread,)).start()
-
-    # threading.Thread(name='save_his_data_scd', target=transaction_dal.save_his_data_scd).start()
 
     stocks = base_service.get_stocks()
     for stock in stocks:

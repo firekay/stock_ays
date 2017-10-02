@@ -132,31 +132,6 @@ class HistoryDataM(BaseModel):
     turnover = DecimalField(max_digits=10, decimal_places=2)
 
 
-class HistoryDataScd(BaseModel):
-    """历史行情: 5, 15, 30, 60分钟"""
-    class Meta:
-        db_table = 'history_data_scd'
-
-    code = CharField()
-    ktype = CharField(5)
-    date = DateField('%Y-%m-%d')
-    time = TimeField('%H:%M:%S')
-    open = DecimalField(max_digits=8, decimal_places=2)
-    hign = DecimalField(max_digits=8, decimal_places=2)
-    close = DecimalField(max_digits=8, decimal_places=2)
-    low = DecimalField(max_digits=8, decimal_places=2)
-    volume = DecimalField(max_digits=12, decimal_places=2)
-    price_change = DecimalField(max_digits=10, decimal_places=2)
-    p_change = DecimalField(max_digits=10, decimal_places=2)
-    ma5 = DecimalField(max_digits=10, decimal_places=3)
-    ma10 = DecimalField(max_digits=10, decimal_places=4)
-    ma20 = DecimalField(max_digits=10, decimal_places=4)
-    v_ma5 = DecimalField(max_digits=12, decimal_places=2)
-    v_ma10 = DecimalField(max_digits=12, decimal_places=2)
-    v_ma20 = DecimalField(max_digits=12, decimal_places=2)
-    turnover = DecimalField(max_digits=5, decimal_places=2)
-
-
 class RevoteHistoryData(BaseModel):
     """复权数据"""
     # get_h_data
