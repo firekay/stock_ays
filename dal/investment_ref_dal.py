@@ -33,21 +33,21 @@ def get_distribution_plans_data(year, top=25, retry_count=RETRY_COUNT, pause=PAU
     Returns:
         data_dicts: 字典的列表, 具体的字段及值, 如果没有返回空列表, 如果接口出错返回None
     """
-    logger.info('Begin get distribution plans, the year is ' + year)
+    logger.info('Begin get distribution plans, the year is %s' % year)
     try:
         data_df = ts.profit_data(year, top, retry_count, pause)
     except Exception as e:
-        logger.exception('Error get distribution plans, the year is ' + year)
+        logger.exception('Error get distribution plans, the year is %s' % year)
         return None
     else:
         data_dicts = []
         if data_df.empty:
-            logger.warn('Empty get distribution plans, the year is ' + year)
+            logger.warn('Empty get distribution plans, the year is %s' % year)
         else:
             data_dicts = [{'year': year, 'code': row[0], 'name': row[1], 'report_date': row[3],
                           'divi': row[4], 'shares': row[5], 'insert_date': today_line}
                          for row in data_df.values]
-            logger.info('Success get distribution plans, the year is ' + year)
+            logger.info('Success get distribution plans, the year is %s' % year)
         return data_dicts
 
 
@@ -56,14 +56,15 @@ def save_distribution_plans_data(data_dicts, year):
     
     Args:
         data_dicts: 字典的列表, 具体的字段及值
+        year: 年份, YYYY格式
         """
     assert data_dicts, 'data_dict must not empty and data_dict must not None'
-    logger.info('Begin save distribution plans, the year is ' + year)
+    logger.info('Begin save distribution plans, the year is %s' % year)
     try:
         DistributionPlans.insert_many(data_dicts).execute()
-        logger.info('Success save distribution plans, the year is ' + year)
+        logger.info('Success save distribution plans, the year is %s' % year)
     except Exception as e:
-        logger.exception('Error save distribution plans, the year is ' + year)
+        logger.exception('Error save distribution plans, the year is %s' % year)
 
 
 def get_performance_forecast(year, quarter):
@@ -96,57 +97,6 @@ def get_performance_forecast(year, quarter):
             logger.info('Success get performance forecast data, the year is: %s, quarter is: %s'
                         % (year, quarter))
         return data_dicts
-
-
-def save_performance_forecast(data_dicts, year, quarter):
-    """存储业绩预告"""
-    assert data_dicts, 'data_dict must not empty and data_dict must not None'
-    logger.info('Begin save performance forecast data, the year is: %s, quarter is: %s'
-                % (year, quarter))
-    try:
-        PerformanceForecast.insert_many(data_dicts).execute()
-        logger.info('Success save performance forecast data, the year is: %s, quarter is: %s'
-                    % (year, quarter))
-        return True
-    except Exception as e:
-        logger.exception('Error save performance forecast data, the year is: %s, quarter is: %s'
-                         % (year, quarter))
-        return False
-
-
-def delete_performance_forecast(year, quarter=None):
-    """删除业绩报告相应年份季度的数据
-    
-    Args:
-        year: 年份
-        quarter: 季度, 默认删除给定年份的所有季度数据
-    Returns:
-        bool: if success delete, return True, else return False
-        """
-    logger.info('Begin delete performance forecast data, the year is: %s, quarter is: %s'
-                % (year, quarter))
-    if quarter:
-        try:
-            PerformanceForecast.delete().where(PerformanceForecast.year == year,
-                                               PerformanceForecast.quarter == quarter)\
-                .execute()
-            logger.info('Success delete performance forecast data, the year is: %s, quarter is: %s'
-                        % (year, quarter))
-            return True
-        except Exception as e:
-            logger.exception('Error delete performance forecast data, the year is: %s, quarter is: %s'
-                             % (year, quarter))
-            return False
-    else:
-        try:
-            PerformanceForecast.delete().where(PerformanceForecast.year == year).execute()
-            logger.info('Success delete performance forecast data, whole year,  the year is: %s.'
-                        % year)
-            return True
-        except Exception as e:
-            logger.exception('Error delete performance forecast data, whole year the year is: %s.'
-                             % year)
-            return False
 
 
 def get_restricted_stock(year=None, month=None, retry_count=RETRY_COUNT, pause=PAUSE):
@@ -240,41 +190,12 @@ def get_fund_holdings(year, quarter):
         return data_dicts
 
 
-def delete_fund_holdings(year, quarter):
-    logger.info('Begin delete fund holdings data, the year is: %s, quarter is: %s'
-                % (year, quarter))
-    try:
-        FundHoldings.delete().where(FundHoldings.year == year, FundHoldings.quarter == quarter).execute()
-        logger.info('Success delete fund holdings data, the year is: %s, quarter is: %s'
-                    % (year, quarter))
-        return True
-    except:
-        logger.exception('Error delete fund holdings data, the year is: %s, quarter is: %s'
-                         % (year, quarter))
-        return False
-
-
-def save_fund_holdings(data_dicts, year, quarter):
-    assert data_dicts, 'data_dict must not empty and data_dict must not None'
-    logger.info('Begin save fund holdings data, the year is: %s, quarter is: %s'
-                % (year, quarter))
-    try:
-        FundHoldings.insert_many(data_dicts).execute()
-        logger.info('Success save fund holdings data, the year is: %s, quarter is: %s'
-                    % (year, quarter))
-        return True
-    except Exception as e:
-        logger.exception('Error save fund holdings data, the year is: %s, quarter is: %s'
-                         % (year, quarter))
-        return False
-
-
 class NewStocksDal(object):
 
     def get_new_stocks(self, retry_count=RETRY_COUNT, pause=PAUSE):
         logger.info('Begin get new stocks.')
         try:
-            data_df = ts.new_stocks()
+            data_df = ts.new_stocks(retry_count, pause)
         except Exception:
             logger.exception('Error get new stocks.')
             return None
@@ -324,7 +245,7 @@ class FinancingSecuritiesShDal(object):
 
     def select_financing_securities_sh_all_days(self):
         fs_shs = FinancingSecuritiesSh.select(FinancingSecuritiesSh.op_date)
-        return [fs_sh.op_date for fs_sh in fs_shs]
+        return [util.date2str(fs_sh.op_date) for fs_sh in fs_shs]
 
     def get_financing_securities_sh(self, start_date=None, end_date=None,
                                     retry_count=RETRY_COUNT, pause=PAUSE):
@@ -374,8 +295,8 @@ class FinancingSecuritiesDetailShDal(object):
     def delete_some_days_data(self, date=None, start_date=None, end_date=None):
         # date must be not None, or start_date and end_date must not None.
         delete_ok = True
-        logger.info('Begin delete financing securities details sh data. Date is %s' % date)
         if date:
+            logger.info('Begin delete financing securities details sh data. Date is %s' % date)
             try:
                 FinancingSecuritiesDetailSh.delete()\
                     .where(FinancingSecuritiesDetailSh.op_date == date).execute()
@@ -386,6 +307,8 @@ class FinancingSecuritiesDetailShDal(object):
                 logger.exception('Error delete financing securities details sh data. Date is %s'
                                  % date)
         elif start_date and end_date:
+            logger.info('Begin delete financing securities details sh data. Start_date is %s,'
+                        ' end_date is %s' % (start_date, end_date))
             try:
                 FinancingSecuritiesDetailSh.delete()\
                     .where(FinancingSecuritiesDetailSh.op_date >= start_date,
@@ -403,8 +326,8 @@ class FinancingSecuritiesDetailShDal(object):
     def get_financing_securities_detail_sh(self, date='', start_date='', end_date='',
                                            retry_count=RETRY_COUNT, pause = PAUSE):
         # 1. 参数全为空; 2. 只有date 3. 只有start_date和end_date
-        logger.info('Begin get financing securities details sh data. Date is %s,'
-                    ' start_date is %s, end_date is %s' % (date, start_date, end_date))
+        # logger.info('Begin get financing securities details sh data. Date is %s,'
+        #             ' start_date is %s, end_date is %s' % (date, start_date, end_date))
         if date:
             logger.info('Begin get financing securities details sh data. Date is %s' % date)
             try:
@@ -470,7 +393,7 @@ class FinancingSecuritiesSzDal(object):
 
     def select_financing_securities_sz_all_days(self):
         fs_szs = FinancingSecuritiesSz.select(FinancingSecuritiesSz.op_date)
-        return [fs_sz.op_date for fs_sz in fs_szs]
+        return [util.date2str(fs_sz.op_date) for fs_sz in fs_szs]
 
     def get_financing_securities_sz(self, start_date=None, end_date=None,
                                     retry_count=RETRY_COUNT, pause=PAUSE):
