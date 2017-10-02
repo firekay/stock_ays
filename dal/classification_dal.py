@@ -23,106 +23,106 @@ def delete_industry_classified():
 
 def save_industry_classified():
     """在现实交易中，经常会按行业统计股票的涨跌幅或资金进出，本接口按照sina财经对沪深股票进行的行业分类，返回所有股票所属行业的信息。"""
-    logger.info('Beginget and save industry classified行业信息.')
+    logger.info('Begin get and save industry classified行业信息.')
     try:
         data_df = ts.get_industry_classified(standard=type)
         data = data_df.values
         data_dicts = [{'code': row[0], 'name': row[1], 'c_name': row[2]} for row in data]
         IndustryClassified.insert_many(data_dicts).execute()
-        logger.info('Endget and save industry classified行业信息.')
+        logger.info('End get and save industry classified行业信息.')
     except Exception as e:
-        logger.exception('Errorget and save industry classified行业信息.')
+        logger.exception('Error get and save industry classified行业信息.')
 
 
 def save_concept_classified():
     """返回股票概念的分类数据，现实的二级市场交易中，经常会以”概念”来炒作，在数据分析过程中，可根据概念分类监测资金等信息的变动情况。"""
-    logger.info('Beginget and save concept clssified股票概念的分类数据.')
+    logger.info('Begin get and save concept clssified股票概念的分类数据.')
     try:
         data_df = ts.get_concept_classified()
         data = data_df.values
         data_dicts = [{'code': row[0], 'name': row[1], 'c_name': row[2]} for row in data]
         ConceptClassified.insert_many(data_dicts).execute()
-        logger.info('Endget and save concept clssified股票概念的分类数据.')
+        logger.info('End get and save concept clssified股票概念的分类数据.')
     except Exception as e:
-        logger.exception('Errorget and save concept clssified股票概念的分类数据.')
+        logger.exception('Error get and save concept clssified股票概念的分类数据.')
 
 
 def save_area_classified():
     """按地域对股票进行分类，即查找出哪些股票属于哪个省份。"""
-    logger.info('Beginget and save area clssified.')
+    logger.info('Begin get and save area clssified.')
     try:
         data_df = ts.get_area_classified()
         data = data_df.values
         data_dicts = [{'code': row[0], 'name': row[1], 'area': row[2]} for row in data]
         AreaClassified.insert_many(data_dicts).execute()
-        logger.info('Endget and save area clssified.')
+        logger.info('End get and save area clssified.')
     except Exception as e:
-        logger.exception('Errorget and save area clssified.')
+        logger.exception('Error get and save area clssified.')
 
 
 def save_sme_classified():
     """获取中小板股票数据，即查找所有002开头的股票"""
-    logger.info('Beginget and save sme中小板 clssified.')
+    logger.info('Begin get and save sme中小板 clssified.')
     try:
         data_df = ts.get_sme_classified()
         data = data_df.values
         data_dicts = [{'code': row[0], 'name': row[1]} for row in data]
         SmeClassified.insert_many(data_dicts).execute()
-        logger.info('Endget and save sme中小板 classified.')
+        logger.info('End get and save sme中小板 classified.')
     except Exception as e:
-        logger.exception('Errorget and save sme中小板 classified.')
+        logger.exception('Error get and save sme中小板 classified.')
 
 
 def save_gem_classified():
     """获取创业板股票数据，即查找所有300开头的股票"""
-    logger.info('Beginget and save gem 创业板股票数据clssified.')
+    logger.info('Begin get and save gem 创业板股票数据clssified.')
     try:
         data_df = ts.get_gem_classified()
         data = data_df.values
         data_dicts = [{'code': row[0], 'name': row[1]} for row in data]
         GemClassified.insert_many(data_dicts).execute()
-        logger.info('Endget and save gem 创业板股票数据classified.')
+        logger.info('End get and save gem 创业板股票数据classified.')
     except Exception as e:
-        logger.exception('Errorget and save gem 创业板股票数据classified.')
+        logger.exception('Error get and save gem 创业板股票数据classified.')
 
 
 def save_st_classified():
     """获取风险警示板股票数据，即查找所有st股票"""
-    logger.info('Beginget and save st clssified.')
+    logger.info('Begin get and save st clssified.')
     try:
         data_df = ts.get_st_classified()
         data = data_df.values
         data_dicts = [{'code': row[0], 'name': row[1]} for row in data]
         StClassified.insert_many(data_dicts).execute()
-        logger.info('Endget and save st classified.')
+        logger.info('End get and save st classified.')
     except Exception as e:
-        logger.exception('Errorget and save st classified.')
+        logger.exception('Error get and save st classified.')
 
 
 def save_hs300s():
     """获取沪深300当前成份股及所占权重"""
-    logger.info('Beginget and save hs300 clssified.')
+    logger.info('Begin get and save hs300 clssified.')
     try:
         data_df = ts.get_hs300s()
         data = data_df.values
         data_dicts = [{'code': row[0], 'name': row[1], 'date': row[2], 'weight': row[3]} for row in data]
         Hs300.insert_many(data_dicts).execute()
-        logger.info('Endget and save hs300 classified.')
+        logger.info('End get and save hs300 classified.')
     except Exception as e:
-        logger.exception('Errorget and save hs300 classified.')
+        logger.exception('Error get and save hs300 classified.')
 
 
 def save_sz50s():
     """上证50成分股"""
-    logger.info('Beginget and save sz50 clssified.')
+    logger.info('Begin get and save sz50 clssified.')
     try:
         data_df = ts.get_sz50s()
         data = data_df.values
         data_dicts = [{'code': row[0], 'name': row[1]} for row in data]
         Sz50.insert_many(data_dicts).execute()
-        logger.info('Endget and save sz50 classified.')
+        logger.info('End get and save sz50 classified.')
     except Exception as e:
-        logger.exception('Errorget and save sz50 classified.')
+        logger.exception('Error get and save sz50 classified.')
 
 
 def save_zz500s():
