@@ -13,6 +13,7 @@ DAYS_TYPE = [5, 10, 30, 60]
 
 
 def save_top_list(date):
+    """每日龙虎榜列表"""
     data_dicts = wllist_dal.get_top_list(date)
     if data_dicts:
         if util_dal.delete_date_data(TopList, date):
@@ -20,6 +21,7 @@ def save_top_list(date):
 
 
 def save_individual_statistics_tops(days_type=None):
+    """个股上榜统计"""
     def _save_individual_statistics_tops(day_type):
         data_dicts = wllist_dal.get_individual_statistics_tops(day_type)
         if data_dicts:
@@ -36,6 +38,7 @@ def save_individual_statistics_tops(days_type=None):
 
 
 def save_broker_tops(days_type=None):
+    """营业部上榜统计"""
     def _save_broker_tops(day_type):
         data_dicts = wllist_dal.get_broker_tops(day_type)
         if data_dicts:
@@ -52,6 +55,7 @@ def save_broker_tops(days_type=None):
 
 
 def save_institution_tops(days_type=None):
+    """机构席位追踪"""
     def _save_institution_tops(day_type):
         data_dicts = wllist_dal.get_institution_tops(day_type)
         if data_dicts:
@@ -68,6 +72,7 @@ def save_institution_tops(days_type=None):
 
 
 def save_institution_detail():
+    """机构成交明细"""
     data_dicts = wllist_dal.get_institution_detail()
     if data_dicts:
         if util_dal.delete_insert_date_data(InstitutionDetail, today_line):
