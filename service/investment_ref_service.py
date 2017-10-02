@@ -39,7 +39,7 @@ def save_new_stocks():
 
 
 def save_financing_securities_sh(start_date=None, end_date=None):
-    fs_sh_dal = FinancingSecuritiesShDal()
+    fs_sh_dal = irdal.FinancingSecuritiesShDal()
     data_dicts = fs_sh_dal.get_financing_securities_sh(start_date, end_date)
     if data_dicts:
         fs_sh_dal.save_financing_securities_sh(data_dicts)
@@ -47,16 +47,15 @@ def save_financing_securities_sh(start_date=None, end_date=None):
 
 def save_financing_securities_detail_sh(start_date, end_date=None):
     # 如果end_date为None, 则只有start_date一天的的数据
-    fsd_sh_dal = FinancingSecuritiesDetailShDal()
+    fsd_sh_dal = irdal.FinancingSecuritiesDetailShDal()
     if end_date:
         data_dicts = fsd_sh_dal.get_financing_securities_detail_sh(start_date=start_date, end_date=end_date)
         if data_dicts:
             if fsd_sh_dal.delete_some_days_data(start_date=start_date, end_date=end_date):
                 fsd_sh_dal.save_financing_securities_detail_sh(data_dicts,
-                                                           start_date=start_date,end_date=end_date)
+                                                               start_date=start_date,end_date=end_date)
     else:
         data_dicts = fsd_sh_dal.get_financing_securities_detail_sh(date=start_date)
         if data_dicts:
             if fsd_sh_dal.delete_some_days_data(date=start_date):
                 fsd_sh_dal.save_financing_securities_detail_sh(data_dicts, date=start_date)
-
