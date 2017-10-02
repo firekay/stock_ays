@@ -55,7 +55,7 @@ def delete_year_month_data(model, year, month):
         return True
 
 
-def delete_year(model, year):
+def delete_year_data(model, year):
     """删除相应年份的数据
 
     Args:
@@ -67,7 +67,7 @@ def delete_year(model, year):
 
     logger.info('Begin delete %s data, year is: %s.' % (model.__name__, year))
     try:
-        TopList.delete().where(model.date == date).execute()
+        TopList.delete().where(model.year == year).execute()
     except Exception:
         logger.exception('Error delete %s data, year is: %s.' % (model.__name__, year))
         return False
@@ -76,7 +76,7 @@ def delete_year(model, year):
         return True
 
 
-def delete_date(model, date):
+def delete_date_data(model, date):
     """删除相应天的数据
 
     Args:
@@ -208,6 +208,50 @@ def save_year_month_data(model, data_dicts, year, month):
     else:
         logger.info('Success save %s data, the year is: %s, month is: %s'
                     % (model.__name__, year, month))
+        return True
+
+
+def save_date_day_type_data(model, data_dicts, date, day_type):
+    """存储数据
+
+    Args:
+        model: peewee定义的model, models.model.py中定义的
+        data_dicts: 字典的列表, 跟model对应的数据
+        date: 日期
+        day_type: 天统计的类型
+    """
+    assert data_dicts, 'data_dict must not empty and data_dict must not None'
+    logger.info('Begin save %s data, date is: %s, day_type is: %s'
+                % (model.__name__, date, day_type))
+    try:
+        model.insert_many(data_dicts).execute()
+    except Exception as e:
+        logger.exception('Error save %s data, date is: %s, day_type is: %s'
+                         % (model.__name__, date, day_type))
+        return False
+    else:
+        logger.info('Success save %s data, date is: %s, day_type is: %s' %
+                    (model.__name__, date, day_type))
+        return True
+
+
+def save_date_data(model, data_dicts, date):
+    """存储数据
+
+    Args:
+        model: peewee定义的model, models.model.py中定义的
+        data_dicts: 字典的列表, 跟model对应的数据
+        date: 日期
+    """
+    assert data_dicts, 'data_dict must not empty and data_dict must not None'
+    logger.info('Begin save %s data, date is: %s' % (model.__name__, date))
+    try:
+        model.insert_many(data_dicts).execute()
+    except Exception as e:
+        logger.exception('Error save %s data, date is: %s' % (model.__name__, date))
+        return False
+    else:
+        logger.info('Success save %s data, date is: %s' % (model.__name__, date))
         return True
 
 
