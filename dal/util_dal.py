@@ -5,14 +5,15 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def delete_data(model, year, quarter):
+def delete_year_quarter_data(model, year, quarter):
     """删除相应年份,季度的数据
 
     Args:
         model: peewee定义的model, models.model.py中定义的
         year: 年份, YYYY格式
         quarter: 季度, 只能是1, 2, 3, 4
-
+    Returns:
+        bool: if success delete, return True, else return False
     """
     logger.info('Begin delete %s data, the year is: %s, quarter is: %s'
                 % (model.__name__, year, quarter))
@@ -29,7 +30,41 @@ def delete_data(model, year, quarter):
         return True
 
 
+def delete_year_month_data(model, year, month):
+    """删除相应年份,季度的数据
+
+    Args:
+        model: peewee定义的model, models.model.py中定义的
+        year: 年份, YYYY格式
+        month: 月份
+    Returns:
+        bool: if success delete, return True, else return False
+    """
+    logger.info('Begin delete %s data, the year is: %s, month is: %s'
+                % (model.__name__, year, month))
+    try:
+        model.delete().where(model.year == year, model.month == month) \
+            .execute()
+    except Exception as e:
+        logger.exception('Error delete %s data, the year is: %s, month is: %s'
+                         % (model.__name__, year, month))
+        return False
+    else:
+        logger.info('Success delete %s data, the year is: %s, month is: %s'
+                    % (model.__name__, year, month))
+        return True
+
+
 def delete_year(model, year):
+    """删除相应年份的数据
+
+    Args:
+        model: peewee定义的model, models.model.py中定义的
+        year: 年份, YYYY格式
+    Returns:
+        bool: if success delete, return True, else return False
+    """
+
     logger.info('Begin delete %s data, year is: %s.' % (model.__name__, year))
     try:
         TopList.delete().where(model.date == date).execute()
@@ -42,6 +77,14 @@ def delete_year(model, year):
 
 
 def delete_date(model, date):
+    """删除相应天的数据
+
+    Args:
+        model: peewee定义的model, models.model.py中定义的
+        date: 日期, model的字段名称必须为date
+    Returns:
+        bool: if success delete, return True, else return False
+    """
     logger.info('Begin delete %s data, insert date is: %s.' % (model.__name__, date))
     try:
         TopList.delete().where(model.date == date).execute()
@@ -60,6 +103,8 @@ def delete_insert_date_days_type_data(model, insert_date, days_type):
         model: peewee定义的model, models.model.py中定义的
         insert_date: 插入时间
         days_type: 天的类型类型, e.g.: 5, 10, 30, 60
+    Returns:
+        bool: if success delete, return True, else return False
     """
     logger.info('Begin delete %s data, insert date is: %s.' % (model.__name__, insert_date))
     try:
@@ -79,7 +124,9 @@ def delete_insert_date_data(model, insert_date):
     
     Args:
         model: peewee定义的model, models.model.py中定义的
-        insert_date: 插入时间
+        insert_date: 插入时间, model的字段名必须为insert_date
+    Returns:
+        bool: if success delete, return True, else return False
     """
     logger.info('Begin delete %s data, insert date is: %s.' % (model.__name__, insert_date))
     try:
