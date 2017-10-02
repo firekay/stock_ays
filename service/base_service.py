@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 def save_stocks_basic_data():
+    """股票列表"""
     table_service.truncate_table(StockBasic)
     base_dal.save_stock_basic()
 
@@ -29,6 +30,12 @@ def get_stocks():
 
 
 def save_performance_report(year, quarter):
+    """业绩报告（主表）
+    
+    Args:
+        year: 年份, YYYY格式数字
+        quarter: 季度, 只能是1, 2, 3, 4的数字
+    """
     data_dicts = base_dal.get_performance_report(year, quarter)
     if not data_dicts.empty:
         if util_dal.delete_year_quarter_data(PerformanceReport, year, quarter):
@@ -36,6 +43,12 @@ def save_performance_report(year, quarter):
 
 
 def save_profit_ability(year, quarter):
+    """盈利能力
+    
+    Args:
+        year: 年份, YYYY格式数字
+        quarter: 季度, 只能是1, 2, 3, 4的数字
+    """
     data_dicts = base_dal.get_profit_ability(year, quarter)
     if not data_dicts.empty:
         if util_dal.delete_year_quarter_data(ProfitAbility, year, quarter):
@@ -43,6 +56,12 @@ def save_profit_ability(year, quarter):
 
 
 def save_operation_ability(year, quarter):
+    """得到营运能力
+
+    Args:
+        year: 年份, YYYY格式数字
+        quarter: 季度, 只能是1, 2, 3, 4的数字
+    """
     data_dicts = base_dal.get_operation_ability(year, quarter)
     if not data_dicts.empty:
         if util_dal.delete_year_quarter_data(OperationAbility, year, quarter):
@@ -50,6 +69,12 @@ def save_operation_ability(year, quarter):
 
 
 def save_growth_ability(year, quarter):
+    """得到成长能力
+
+    Args:
+        year: 年份, YYYY格式数字
+        quarter: 季度, 只能是1, 2, 3, 4的数字
+    """
     data_dicts = base_dal.get_growth_ability(year, quarter)
     if not data_dicts.empty:
         if util_dal.delete_year_quarter_data(GrowthAbility, year, quarter):
@@ -57,6 +82,12 @@ def save_growth_ability(year, quarter):
 
 
 def save_pay_debt_ability(year, quarter):
+    """得到偿债能力
+
+    Args:
+        year: 年份, YYYY格式数字
+        quarter: 季度, 只能是1, 2, 3, 4的数字
+    """
     data_dicts = base_dal.get_pay_debt_ability(year, quarter)
     if not data_dicts.empty:
         if util_dal.delete_year_quarter_data(PayDebtAbility, year, quarter):
@@ -64,6 +95,14 @@ def save_pay_debt_ability(year, quarter):
 
 
 def save_cash_flow(year, quarter):
+    """得到现金流量
+
+     Args:
+         year: 年份, YYYY格式数字
+         quarter: 季度, 只能是1, 2, 3, 4的数字
+     Returns:
+         data_dicts: 字段的列表, return None if have exception, return empty if no data
+     """
     data_dicts = base_dal.get_cash_flow(year, quarter)
     if not data_dicts.empty:
         if util_dal.delete_year_quarter_data(CashFlow, year, quarter):
