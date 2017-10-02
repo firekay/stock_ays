@@ -184,7 +184,7 @@ def get_pay_debt_ability(year, quarter):
         quarter: 季度, 只能是1, 2, 3, 4的数字
     Returns:
         data_dicts: 字段的列表, return None if have exception, return empty if no data
-        """
+    """
     _check_input(year, quarter)
     logger.info('Begin get PayDebtAbility, the year is: %s, quarter is: %s'
                 % (year, quarter))
@@ -219,7 +219,7 @@ def get_cash_flow(year, quarter):
          quarter: 季度, 只能是1, 2, 3, 4的数字
      Returns:
          data_dicts: 字段的列表, return None if have exception, return empty if no data
-         """
+     """
     _check_input(year, quarter)
     logger.info('Begin get CashFlow, the year is: %s, quarter is: %s'
                 % (year, quarter))
