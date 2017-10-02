@@ -32,39 +32,39 @@ def save_performance_report(year, quarter):
     data_dicts = base_dal.get_performance_report(year, quarter)
     if not data_dicts.empty:
         if util_dal.delete_year_quarter_data(PerformanceReport, year, quarter):
-            util_dal.save_data(PerformanceReport, data_dicts, year, quarter)
+            util_dal.save_year_quarter_data(PerformanceReport, data_dicts, year, quarter)
 
 
 def save_profit_ability(year, quarter):
     data_dicts = base_dal.get_profit_ability(year, quarter)
     if not data_dicts.empty:
         if util_dal.delete_year_quarter_data(ProfitAbility, year, quarter):
-            util_dal.save_data(ProfitAbility, year, quarter)
+            util_dal.save_year_quarter_data(ProfitAbility, year, quarter)
 
 
 def save_operation_ability(year, quarter):
     data_dicts = base_dal.get_operation_ability(year, quarter)
     if not data_dicts.empty:
         if util_dal.delete_year_quarter_data(OperationAbility, year, quarter):
-            util_dal.save_data(OperationAbility, year, quarter)
+            util_dal.save_year_quarter_data(OperationAbility, year, quarter)
 
 
 def save_growth_ability(year, quarter):
     data_dicts = base_dal.get_growth_ability(year, quarter)
     if not data_dicts.empty:
         if util_dal.delete_year_quarter_data(GrowthAbility, year, quarter):
-            util_dal.save_data(GrowthAbility, year, quarter)
+            util_dal.save_year_quarter_data(GrowthAbility, year, quarter)
 
 
 def save_pay_debt_ability(year, quarter):
     data_dicts = base_dal.get_pay_debt_ability(year, quarter)
     if not data_dicts.empty:
         if util_dal.delete_year_quarter_data(PayDebtAbility, year, quarter):
-            util_dal.save_data(PayDebtAbility, year, quarter)
+            util_dal.save_year_quarter_data(PayDebtAbility, year, quarter)
 
 
 def save_cash_flow(year, quarter):
     data_dicts = base_dal.get_cash_flow(year, quarter)
     if not data_dicts.empty:
         if util_dal.delete_year_quarter_data(CashFlow, year, quarter):
-            util_dal.save_data(CashFlow, year, quarter)
+            util_dal.save_year_quarter_data(CashFlow, year, quarter)
