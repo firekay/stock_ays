@@ -4,14 +4,40 @@ from test_main.constants import *
 import test_main
 
 
+def test_save_stocks_basic_data():
+    base_service.save_stocks_basic_data()
+
+
 def test_save_performance_report():
     base_service.save_performance_report(YEAR, QUARTER)
 
 
-def test_save_stocks_basic_data():
-    base_service.save_stocks_basic_data()
+def test_save_profit_ability():
+    base_service.save_profit_ability(YEAR, QUARTER)
+
+
+def test_save_operation_ability():
+    base_service.save_operation_ability(YEAR, QUARTER)
+
+
+def test_save_growth_ability():
+    base_service.save_growth_ability(YEAR, QUARTER)
+
+
+def test_save_pay_debt_ability():
+    base_service.save_pay_debt_ability(YEAR, QUARTER)
+
+
+def test_save_cash_flow():
+    base_service.save_cash_flow(YEAR, QUARTER)
+
 
 if __name__ == '__main__':
     test_main.setup_logging()
     test_save_stocks_basic_data()
-    # test_save_performance_report()
+    test_save_performance_report()
+    test_save_profit_ability()
+    test_save_operation_ability()
+    test_save_growth_ability()
+    test_save_pay_debt_ability()
+    test_save_cash_flow()
