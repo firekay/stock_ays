@@ -21,11 +21,15 @@ def delete_industry_classified():
     return delete_ok
 
 
-def save_industry_classified():
-    """在现实交易中，经常会按行业统计股票的涨跌幅或资金进出，本接口按照sina财经对沪深股票进行的行业分类，返回所有股票所属行业的信息。"""
+def save_industry_classified(source='sina'):
+    """在现实交易中，经常会按行业统计股票的涨跌幅或资金进出，本接口按照sina财经对沪深股票进行的行业分类，返回所有股票所属行业的信息。
+    
+    Args:
+        source: sina-新浪, sw-申万
+        """
     logger.info('Begin get and save industry classified行业信息.')
     try:
-        data_df = ts.get_industry_classified(standard=type)
+        data_df = ts.get_industry_classified(standard=source)
         data = data_df.values
         data_dicts = [{'code': row[0], 'name': row[1], 'c_name': row[2]} for row in data]
         IndustryClassified.insert_many(data_dicts).execute()
@@ -39,7 +43,7 @@ def save_concept_classified():
     logger.info('Begin get and save concept clssified股票概念的分类数据.')
     try:
         data_df = ts.get_concept_classified()
-        data = data_df.values
+        data = data_df
         data_dicts = [{'code': row[0], 'name': row[1], 'c_name': row[2]} for row in data]
         ConceptClassified.insert_many(data_dicts).execute()
         logger.info('End get and save concept clssified股票概念的分类数据.')
