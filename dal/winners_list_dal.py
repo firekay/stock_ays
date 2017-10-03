@@ -116,7 +116,7 @@ def get_institution_detail(retry_count=RETRY_COUNT, pause=PAUSE):
             logger.warn('Empty get InstitutionDetail.')
         else:
             data_dicts = [{'code': row[0], 'name': row[1],
-                           'date': row[2], 'bamount': row[3], 'samount': row[4],
+                           'deal_date': row[2], 'bamount': row[3], 'samount': row[4],
                            'type': row[5], 'insert_date': today_line}
                           for row in data_df.values]
             logger.info('Success get InstitutionDetail.')
