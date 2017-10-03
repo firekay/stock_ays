@@ -5,23 +5,23 @@ from test_main.constants import *
 
 
 def test_save_shibor_rate():
-    blservice.save_shibor_rate()
+    blservice.save_shibor_rate(YEAR)
 
 
 def test_save_shibor_quote():
-    blservice.save_shibor_quote()
+    blservice.save_shibor_quote(YEAR)
 
 
 def test_save_shibor_ma():
-    blservice.save_shibor_ma()
+    blservice.save_shibor_ma(YEAR)
 
 
 def test_save_lpr():
-    blservice.save_lpr()
+    blservice.save_lpr(YEAR)
 
 
 def test_save_lpr_ma():
-    blservice.save_lpr_ma()
+    blservice.save_lpr_ma(YEAR)
 
 
 if __name__ == '__main__':
