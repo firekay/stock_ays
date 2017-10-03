@@ -15,7 +15,7 @@ def save_shibor_rate(year=None):
     data_dicts = bankl_dal.get_shibor_rate(year)
     if data_dicts:
         if util_dal.delete_year_data(ShiborRate, year):
-            util_dal.save_year_data(ShiborRate, year)
+            util_dal.save_year_data(ShiborRate, data_dicts, year)
 
 
 def save_shibor_quote(year=None):
@@ -27,7 +27,7 @@ def save_shibor_quote(year=None):
     data_dicts = bankl_dal.get_shibor_quote(year)
     if data_dicts:
         if util_dal.delete_year_data(ShiborQuote, year):
-            util_dal.save_year_data(ShiborQuote, year)
+            util_dal.save_year_data(ShiborQuote, data_dicts, year)
 
 
 def save_shibor_ma(year=None):
@@ -39,7 +39,7 @@ def save_shibor_ma(year=None):
     data_dicts = bankl_dal.get_shibor_ma(year)
     if data_dicts:
         if util_dal.delete_year_data(ShiborMA, year):
-            util_dal.save_year_data(ShiborMA, year)
+            util_dal.save_year_data(ShiborMA, data_dicts, year)
 
 
 def save_lpr(year=None):
@@ -51,7 +51,7 @@ def save_lpr(year=None):
     data_dicts = bankl_dal.get_lpr(year)
     if data_dicts:
         if util_dal.delete_year_data(LPR, year):
-            util_dal.save_year_data(LPR, year)
+            util_dal.save_year_data(LPR, data_dicts, year)
 
 
 def save_lpr_ma(year=None):
@@ -63,4 +63,4 @@ def save_lpr_ma(year=None):
     data_dicts = bankl_dal.get_lpr_ma(year)
     if data_dicts:
         if util_dal.delete_year_data(LprMA, year):
-            util_dal.save_year_data(LprMA, year)
+            util_dal.save_year_data(LprMA, data_dicts, year)
