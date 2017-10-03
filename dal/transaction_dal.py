@@ -24,7 +24,24 @@ max_stock = base_service.get_max_stock()
 
 def get_stock_k_data(code, start_date='', end_date='', autype='qfq', index=False,
                      ktype=None, retry_count=RETRY_COUNT, pause=PAUSE):
-    """从tushare得到k线数据"""
+    """获取k线数据的历史复权数据
+    
+    新接口融合了get_hist_data和get_h_data两个接口的功能，即能方便获取日周月的低频数据，
+    也可以获取5、15、30和60分钟相对高频的数据。
+    同时，上市以来的前后复权数据也能在一行代码中轻松获得，当然，您也可以选择不复权。
+    
+    Args:
+        stocks:list,股票代码 e.g. ['600848', '000001']
+        start_date:string,开始日期 format：YYYY-MM-DD 为空时取当前日期
+        end_date:string,结束日期 format：YYYY-MM-DD 为空时取去年今日
+        autype:string,复权类型，qfq-前复权 hfq-后复权 None-不复权，默认为qfq
+        index:Boolean，是否是大盘指数，默认为False
+        ktype: 数据类型: D, W M, 默认为D
+        retry_count: 重试次数
+        pause: 重试间隔
+    """
+    if ktype is None:
+        ktype = 'D'
     if start_date != '' or end_date != '':
         logger.info('Begin get sotck %s history k data, start date is: %s, end date is: %s, ktype is %s.'
                     % (code, start_date, end_date, ktype))
@@ -35,29 +52,30 @@ def get_stock_k_data(code, start_date='', end_date='', autype='qfq', index=False
                                 retry_count=retry_count, pause=pause)
     except Exception as e:
         if start_date != '' or end_date != '':
-            logger.exception('Error get sotck %s history k data, start date is: %s, end date is: %s.'
-                             % (code, start_date, end_date))
+            logger.exception('Error get sotck %s history k data, start date is: %s, end date is: %s, ktype is: %s.'
+                             % (code, start_date, end_date, ktype))
         else:
-            logger.exception('Error get stock %s history k data, all date.' % code)
+            logger.exception('Error get stock %s history k data, all date, ktype is: %s.' % (code, ktype))
     else:
         if data_df is not None and not data_df.empty:
             # data_df['date'] = pd.Series(data_df.axes[0], index=data_df.index)
             data = data_df.values
             stock_k_data_queue.put((code, ktype, autype, data))
             if start_date != '' or end_date != '':
-                logger.info('End get sotck %s history k data, start date is: %s, end date is: %s.'
-                            % (code, start_date, end_date))
+                logger.info('End get sotck %s history k data, start date is: %s, end date is: %s, ktype is: %s.'
+                            % (code, start_date, end_date, ktype))
             else:
-                logger.info('End get stock %s history k data, all date.' % code)
+                logger.info('End get stock %s history k data, all date, ktype is %s.' % (code, ktype))
         else:
             if start_date != '' or end_date != '':
-                logger.info('Empty get sotck %s history k data, start date is: %s, end date is: %s.'
-                            % (code, start_date, end_date))
+                logger.info('Empty get sotck %s history k data, start date is: %s, end date is: %s, ktype is %s.'
+                            % (code, start_date, end_date, ktype))
             else:
-                logger.info('Empty get stock %s history k data, all date.' % code)
+                logger.info('Empty get stock %s history k data, all date, ktype is: %s.' % (code, ktype))
 
 
 def save_stock_k_data(last_stock_code=None):
+    """保存k线数据的历史复权数据"""
     logger.info('Begin save stock k data thread.')
     if last_stock_code:
         last_stock = last_stock_code
@@ -78,6 +96,7 @@ def save_stock_k_data(last_stock_code=None):
                         (code, ktype))
             data_dicts = [{'code': code, 'autype': autype, 'date': row[0], 'open':row[1],
                            'close': row[2], 'high': row[3], 'low': row[4], 'volume': row[5]} for row in data]
+            logging.info('Begin save stock k data, code is: %s, ktype is %s.' % (code, ktype))
 
             try:
                 # TODO: 添加5分钟, 15分钟.. 代码
@@ -88,8 +107,10 @@ def save_stock_k_data(last_stock_code=None):
                 if ktype.upper() == 'M':
                     HistoryKDataM.insert_many(data_dicts).execute()
             except Exception as e:
-                logger.exception('Save stock k data error. Code is: %s, ktype is: %s.' % (code, ktype))
+                logger.exception('Error save stock k data, code is: %s, ktype is: %s.' % (code, ktype))
                 logger.error('Error data is: %s' % data)
+            else:
+                logging.info('Success save stock k data, code is: %s, ktype is %s.' % (code, ktype))
 
 
 def save_h_revote_data(last_stock_code=None):
