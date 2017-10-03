@@ -4,9 +4,6 @@ from utils.mysql_utils import *
 from utils.util import *
 
 
-today = str(get_today())
-
-
 class BaseModel(Model):
     class Meta:
         database = database
@@ -24,40 +21,40 @@ class HistoryKDataD(BaseModel):
     code = CharField(8)
     date = DateField('%Y-%m-%d')
     autype = CharField(5)  # 复权类型: qfq-前复权 hfq-后复权 None-不复权，默认为qfq
-    open = DecimalField(max_digits=8, decimal_places=2)
-    close = DecimalField(max_digits=8, decimal_places=2)
-    hign = DecimalField(max_digits=8, decimal_places=2)
-    low = DecimalField(max_digits=8, decimal_places=2)
+    open = DecimalField(max_digits=8, decimal_places=3)
+    close = DecimalField(max_digits=8, decimal_places=3)
+    high = DecimalField(max_digits=8, decimal_places=3)
+    low = DecimalField(max_digits=8, decimal_places=3)
     volume = DecimalField(max_digits=12, decimal_places=2)
 
 
 class HistoryKDataW(BaseModel):
     """历史行情: 周"""
     class Meta:
-        db_table = 'history_k_data_d'
+        db_table = 'history_k_data_w'
 
     code = CharField(8)
     date = DateField('%Y-%m-%d')
     autype = CharField(5)  # 复权类型: qfq-前复权 hfq-后复权 None-不复权，默认为qfq
-    open = DecimalField(max_digits=8, decimal_places=2)
-    close = DecimalField(max_digits=8, decimal_places=2)
-    hign = DecimalField(max_digits=8, decimal_places=2)
-    low = DecimalField(max_digits=8, decimal_places=2)
+    open = DecimalField(max_digits=8, decimal_places=3)
+    close = DecimalField(max_digits=8, decimal_places=3)
+    high = DecimalField(max_digits=8, decimal_places=3)
+    low = DecimalField(max_digits=8, decimal_places=3)
     volume = DecimalField(max_digits=12, decimal_places=2)
 
 
 class HistoryKDataM(BaseModel):
     """历史行情: 月"""
     class Meta:
-        db_table = 'history_k_data_d'
+        db_table = 'history_k_data_m'
 
     code = CharField(8)
     date = DateField('%Y-%m-%d')
     autype = CharField(5)  # 复权类型: qfq-前复权 hfq-后复权 None-不复权，默认为qfq
-    open = DecimalField(max_digits=8, decimal_places=2)
-    close = DecimalField(max_digits=8, decimal_places=2)
-    hign = DecimalField(max_digits=8, decimal_places=2)
-    low = DecimalField(max_digits=8, decimal_places=2)
+    open = DecimalField(max_digits=8, decimal_places=3)
+    close = DecimalField(max_digits=8, decimal_places=3)
+    high = DecimalField(max_digits=8, decimal_places=3)
+    low = DecimalField(max_digits=8, decimal_places=3)
     volume = DecimalField(max_digits=12, decimal_places=2)
 
 
@@ -68,19 +65,19 @@ class HistoryDataD(BaseModel):
 
     code = CharField(8)
     date = DateField('%Y-%m-%d')
-    open = DecimalField(max_digits=8, decimal_places=2)
-    hign = DecimalField(max_digits=8, decimal_places=2)
-    close = DecimalField(max_digits=8, decimal_places=2)
-    low = DecimalField(max_digits=8, decimal_places=2)
+    open = DecimalField(max_digits=8, decimal_places=3)
+    hign = DecimalField(max_digits=8, decimal_places=3)
+    close = DecimalField(max_digits=8, decimal_places=3)
+    low = DecimalField(max_digits=8, decimal_places=3)
     volume = DecimalField(max_digits=12, decimal_places=2)
-    price_change = DecimalField(max_digits=10, decimal_places=2)
-    p_change = DecimalField(max_digits=10, decimal_places=2)
-    ma5 = DecimalField(max_digits=10, decimal_places=3)
+    price_change = DecimalField(max_digits=10, decimal_places=3)
+    p_change = DecimalField(max_digits=10, decimal_places=3)
+    ma5 = DecimalField(max_digits=10, decimal_places=4)
     ma10 = DecimalField(max_digits=10, decimal_places=4)
     ma20 = DecimalField(max_digits=10, decimal_places=4)
-    v_ma5 = DecimalField(max_digits=12, decimal_places=2)
-    v_ma10 = DecimalField(max_digits=12, decimal_places=2)
-    v_ma20 = DecimalField(max_digits=12, decimal_places=2)
+    v_ma5 = DecimalField(max_digits=12, decimal_places=3)
+    v_ma10 = DecimalField(max_digits=12, decimal_places=3)
+    v_ma20 = DecimalField(max_digits=12, decimal_places=3)
     turnover = DecimalField(max_digits=10, decimal_places=2)
 
 
@@ -92,19 +89,19 @@ class HistoryDataW(BaseModel):
 
     code = CharField(8)
     date = DateField('%Y-%m-%d')
-    open = DecimalField(max_digits=8, decimal_places=2)
-    hign = DecimalField(max_digits=8, decimal_places=2)
-    close = DecimalField(max_digits=8, decimal_places=2)
-    low = DecimalField(max_digits=8, decimal_places=2)
+    open = DecimalField(max_digits=8, decimal_places=3)
+    hign = DecimalField(max_digits=8, decimal_places=3)
+    close = DecimalField(max_digits=8, decimal_places=3)
+    low = DecimalField(max_digits=8, decimal_places=3)
     volume = DecimalField(max_digits=12, decimal_places=2)
-    price_change = DecimalField(max_digits=10, decimal_places=2)
-    p_change = DecimalField(max_digits=10, decimal_places=2)
-    ma5 = DecimalField(max_digits=10, decimal_places=3)
+    price_change = DecimalField(max_digits=10, decimal_places=3)
+    p_change = DecimalField(max_digits=10, decimal_places=3)
+    ma5 = DecimalField(max_digits=10, decimal_places=4)
     ma10 = DecimalField(max_digits=10, decimal_places=4)
     ma20 = DecimalField(max_digits=10, decimal_places=4)
-    v_ma5 = DecimalField(max_digits=12, decimal_places=2)
-    v_ma10 = DecimalField(max_digits=12, decimal_places=2)
-    v_ma20 = DecimalField(max_digits=12, decimal_places=2)
+    v_ma5 = DecimalField(max_digits=12, decimal_places=3)
+    v_ma10 = DecimalField(max_digits=12, decimal_places=3)
+    v_ma20 = DecimalField(max_digits=12, decimal_places=3)
     turnover = DecimalField(max_digits=10, decimal_places=2)
 
 
@@ -116,19 +113,19 @@ class HistoryDataM(BaseModel):
 
     code = CharField(8)
     date = DateField('%Y-%m-%d')
-    open = DecimalField(max_digits=8, decimal_places=2)
-    hign = DecimalField(max_digits=8, decimal_places=2)
-    close = DecimalField(max_digits=8, decimal_places=2)
-    low = DecimalField(max_digits=8, decimal_places=2)
+    open = DecimalField(max_digits=8, decimal_places=3)
+    hign = DecimalField(max_digits=8, decimal_places=3)
+    close = DecimalField(max_digits=8, decimal_places=3)
+    low = DecimalField(max_digits=8, decimal_places=3)
     volume = DecimalField(max_digits=12, decimal_places=2)
-    price_change = DecimalField(max_digits=10, decimal_places=2)
-    p_change = DecimalField(max_digits=10, decimal_places=2)
-    ma5 = DecimalField(max_digits=10, decimal_places=3)
+    price_change = DecimalField(max_digits=10, decimal_places=3)
+    p_change = DecimalField(max_digits=10, decimal_places=3)
+    ma5 = DecimalField(max_digits=10, decimal_places=4)
     ma10 = DecimalField(max_digits=10, decimal_places=4)
     ma20 = DecimalField(max_digits=10, decimal_places=4)
-    v_ma5 = DecimalField(max_digits=12, decimal_places=2)
-    v_ma10 = DecimalField(max_digits=12, decimal_places=2)
-    v_ma20 = DecimalField(max_digits=12, decimal_places=2)
+    v_ma5 = DecimalField(max_digits=12, decimal_places=3)
+    v_ma10 = DecimalField(max_digits=12, decimal_places=3)
+    v_ma20 = DecimalField(max_digits=12, decimal_places=3)
     turnover = DecimalField(max_digits=10, decimal_places=2)
 
 
@@ -141,12 +138,12 @@ class RevoteHistoryData(BaseModel):
     code = CharField()
     autype = CharField(5)  # 复权类型: qfq-前复权 hfq-后复权 None-不复权，默认为qfq
     date = DateField('%Y-%m-%d')
-    open = DecimalField(max_digits=8, decimal_places=2)
-    hign = DecimalField(max_digits=8, decimal_places=2)
-    close = DecimalField(max_digits=8, decimal_places=2)
-    low = DecimalField(max_digits=8, decimal_places=2)
+    open = DecimalField(max_digits=8, decimal_places=3)
+    hign = DecimalField(max_digits=8, decimal_places=3)
+    close = DecimalField(max_digits=8, decimal_places=3)
+    low = DecimalField(max_digits=8, decimal_places=3)
     volume = DecimalField(max_digits=12, decimal_places=2)
-    amount = DecimalField(max_digits=15, decimal_places=2)
+    amount = DecimalField(max_digits=15, decimal_places=3)
 
 
 class TodayAllData(BaseModel):
@@ -158,14 +155,14 @@ class TodayAllData(BaseModel):
     name = CharField()
     date = DateField('%Y-%m-%d')
     changepercent = DecimalField(max_digits=8, decimal_places=3)
-    trade = DecimalField(max_digits=8, decimal_places=2)
-    open = DecimalField(max_digits=8, decimal_places=2)
-    hign = DecimalField(max_digits=8, decimal_places=2)
-    low = DecimalField(max_digits=8, decimal_places=2)
-    settlement = DecimalField(max_digits=8, decimal_places=2)
+    trade = DecicmalField(max_digits=8, decimal_places=3)
+    open = DecimalField(max_digits=8, decimal_places=3)
+    hign = DecimalField(max_digits=8, decimal_places=3)
+    close = DecimalField(max_digits=8, decimal_places=3)
+    low = DecimalField(max_digits=8, decimal_places=3)
     volume = DecimalField(max_digits=12, decimal_places=2)
     turnoverratio = DecimalField(max_digits=8, decimal_places=5)
-    amount = DecimalField(max_digits=15, decimal_places=2)
+    amount = DecimalField(max_digits=15, decimal_places=3)
     per = DecimalField(max_digits=10, decimal_places=4)
     pb = DecimalField(max_digits=10, decimal_places=4)
     mktcap = DecimalField(max_digits=15, decimal_places=2)
@@ -180,10 +177,10 @@ class TickData(BaseModel):
     code = CharField()
     date = DateField('%Y-%m-%d')
     time = TimeField('%H:%M:%S')
-    price = DecimalField(max_digits=8, decimal_places=2)
-    pchange = DecimalField(max_digits=5, decimal_places=2)
-    change = DecimalField(max_digits=5, decimal_places=2)
-    volume = DecimalField(max_digits=10, decimal_places=2)
+    price = DecimalField(max_digits=10, decimal_places=2)
+    pchange = DecimalField(max_digits=8, decimal_places=2)
+    change = DecimalField(max_digits=8, decimal_places=2)
+    volume = DecimalField(max_digits=12, decimal_places=2)
     amount = DecimalField(max_digits=12, decimal_places=2)
     type = CharField()
 
@@ -202,7 +199,7 @@ class BigIndexData(BaseModel):
     close = DecimalField(max_digits=12, decimal_places=4)
     hign = DecimalField(max_digits=12, decimal_places=4)
     low = DecimalField(max_digits=12, decimal_places=4)
-    volume = DecimalField(max_digits=10, decimal_places=2)
+    volume = DecimalField(max_digits=12, decimal_places=2)
     amount = DecimalField(max_digits=12, decimal_places=4)
 
 
@@ -215,8 +212,8 @@ class BigTradeData(BaseModel):
     code = CharField()
     name = CharField()
     time = TimeField('%H:%M:%S')
-    price = DecimalField(max_digits=8, decimal_places=2)
-    volume = DecimalField(max_digits=10, decimal_places=2)
+    price = DecimalField(max_digits=8, decimal_places=3)
+    volume = DecimalField(max_digits=12, decimal_places=2)
     preprice = DecimalField(max_digits=8, decimal_places=2)
     type = CharField()
 
