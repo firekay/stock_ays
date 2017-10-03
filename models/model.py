@@ -815,7 +815,7 @@ class TopList(BaseModel):
     bratio = CharField(32)
     sell = CharField(32)
     sratio = CharField(32)
-    reason = CharField(32)
+    reason = CharField()
     date = DateField('%Y-%m-%d')
 
 
@@ -841,7 +841,7 @@ class BrokerTops(BaseModel):
     class Meta:
         db_table = 'broker_tops'
 
-    broker = CharField(32)
+    broker = CharField()
     days_type = CharField(3)
     count = CharField(32)
     bamount = CharField(32)
@@ -878,7 +878,7 @@ class InstitutionDetail(BaseModel):
     deal_date = DateField('%Y-%m-%d')
     bamount = CharField(32)
     samount = CharField(32)
-    type = CharField(32)
+    type = CharField()
     insert_date = DateField('%Y-%m-%d')
 
 
