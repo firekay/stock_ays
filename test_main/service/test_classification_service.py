@@ -50,4 +50,14 @@ def test_save_suspend():
 if __name__ == '__main__':
     test_main.setup_logging()
     test_save_industry_classified()
-
+    test_save_industry_classified()
+    test_save_concept_classified()
+    test_save_area_classified()
+    test_save_sme_classified()
+    test_save_gem_classified()
+    test_save_st_classified()
+    test_save_hs300s()
+    test_save_sz50s()
+    test_save_zz500s()
+    test_save_terminated()
+    test_save_suspend()
