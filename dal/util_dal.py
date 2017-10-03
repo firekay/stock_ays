@@ -66,8 +66,9 @@ def delete_year_data(model, year):
     """
 
     logger.info('Begin delete %s data, year is: %s.' % (model.__name__, year))
+    year = str(year)
     try:
-        TopList.delete().where(model.year == year).execute()
+        model.delete().where(model.year == year).execute()
     except Exception:
         logger.exception('Error delete %s data, year is: %s.' % (model.__name__, year))
         return False
@@ -87,7 +88,7 @@ def delete_date_data(model, date):
     """
     logger.info('Begin delete %s data, insert date is: %s.' % (model.__name__, date))
     try:
-        TopList.delete().where(model.date == date).execute()
+        model.delete().where(model.date == date).execute()
     except Exception:
         logger.exception('Error delete %s data, insert date is: %s.' % (model.__name__, date))
         return False
