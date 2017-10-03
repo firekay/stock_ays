@@ -28,6 +28,7 @@ def get_shibor_rate(year=None):
         if data_df is None or data_df.empty:
             logger.warn('Empty get ShiborRate. year is: %s.' % year)
         else:
+            data_df['date'] = data_df['date'].astype(str)
             data_dicts = [{'date': row[0], 'ON': row[1],
                            'W1': row[2], 'W2': row[3], 'M1': row[4],
                            'M3': row[5], 'M6': row[6], 'M9': row[7], 'Y1': row[8],
@@ -56,6 +57,7 @@ def get_shibor_quote(year=None):
         if data_df is None or data_df.empty:
             logger.warn('Empty get ShiborQuote. year is: %s.' % year)
         else:
+            data_df['date'] = data_df['date'].astype(str)
             data_dicts = [{'date': row[0], 'bank': row[1],
                            'ON': row[2], 'ON_B': row[3], 'ON_A': row[4],
                            'W1_B': row[5], 'W1_A': row[6], 'W2_B': row[7], 'W2_A': row[8],
@@ -87,6 +89,7 @@ def get_shibor_ma(year=None):
         if data_df is None or data_df.empty:
             logger.warn('Empty get ShiborMA. year is: %s.' % year)
         else:
+            data_df['date'] = data_df['date'].astype(str)
             data_dicts = [{'date': row[0], 'on_5': row[1],
                            'on_10': row[2], 'on_20': row[3], 'W1_5': row[4],
                            'W1_10': row[5], 'W1_20': row[6], 'W2_5': row[7], 'W2_10': row[8],
@@ -116,10 +119,12 @@ def get_lpr(year=None):
         logger.exception('Error get LPR. year is: %s.' % year)
         return None
     else:
+        data_df['date'] = data_df['date'].astype(str)
         data_dicts = []
         if data_df is None or data_df.empty:
             logger.warn('Empty get LPR. year is: %s.' % year)
         else:
+            data_df['date'] = data_df['date'].astype(str)
             data_dicts = [{'date': row[0], 'Y1': row[1], 'year': year}
                           for row in data_df.values]
             logger.info('Success get LPR. year is: %s.' % year)
@@ -141,10 +146,12 @@ def get_lpr_ma(year=None):
         logger.exception('Error get LprMA. year is: %s.' % year)
         return None
     else:
+        data_df['date'] = data_df['date'].astype(str)
         data_dicts = []
         if data_df is None or data_df.empty:
             logger.warn('Empty get LprMA. year is: %s.' % year)
         else:
+            data_df['date'] = data_df['date'].astype(str)
             data_dicts = [{'date': row[0], 'Y1_5': row[1],
                            'Y1_10': row[2], 'Y1_20': row[3], 'year': year}
                           for row in data_df.values]
