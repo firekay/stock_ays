@@ -890,7 +890,7 @@ class ShiborRate(BaseModel):
     class Meta:
         db_table = 'shibor_rate'
 
-    year = DateField('%Y')    # 指出是哪一年, 用于快速删除一整年数据
+    year = CharField(4)    # 指出是哪一年, 用于快速删除一整年数据
     date = DateField('%Y-%m-%d')
     ON = CharField(32)
     W1 = CharField(32)
@@ -907,7 +907,7 @@ class ShiborQuote(BaseModel):
     class Meta:
         db_table = 'shibor_quote'
 
-    year = DateField('%Y')
+    year = CharField(4)
     date = DateField('%Y-%m-%d')
     bank = CharField(32)
     ON = CharField(32)
@@ -934,7 +934,7 @@ class ShiborMA(BaseModel):
     class Meta:
         db_table = 'shibor_ma'
 
-    year = DateField('%Y')
+    year = CharField(4)
     date = DateField('%Y-%m-%d')
     on_5 = CharField(32)
     on_10 = CharField(32)
@@ -967,7 +967,7 @@ class LPR(BaseModel):
     class Meta:
         db_table = 'lpr'
 
-    year = DateField('%Y')
+    year = CharField(4)
     date = DateField('%Y-%m-%d')
     Y1 = CharField(32)
 
@@ -977,7 +977,7 @@ class LprMA(BaseModel):
     class Meta:
         db_table = 'lpr_ma'
 
-    year = DateField('%Y')
+    year = CharField(4)
     date = DateField('%Y-%m-%d')
     Y1_5 = CharField(32)
     Y1_10 = CharField(32)
