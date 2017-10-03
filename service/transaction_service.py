@@ -6,6 +6,8 @@ from dal import classification_dal
 from dal import transaction_dal
 from service import base_service
 from service import table_service
+import pandas as pd
+import tushare as ts
 from utils import util
 
 
@@ -28,8 +30,8 @@ def check_thread_alive(thread):
         logger.warn('Thread %s not alive.' % thread.getName())
 
 
-def save_stocks_k_data(stocks=None, start_date=None, end_date=None, autype='qfq', index=False,
-                       ktype=None, retry_count=RETRY_COUNT, pause=0.00):
+def save_stocks_k_data(ktype, stocks=None, start_date='', end_date='', autype='qfq', index=False,
+                       retry_count=RETRY_COUNT, pause=0.00):
     """获取k线数据的历史复权舒服
     
     新接口融合了get_hist_data和get_h_data两个接口的功能，即能方便获取日周月的低频数据，
@@ -37,13 +39,12 @@ def save_stocks_k_data(stocks=None, start_date=None, end_date=None, autype='qfq'
     同时，上市以来的前后复权数据也能在一行代码中轻松获得，当然，您也可以选择不复权。
     
     Args:
-        
         stocks:list,股票代码 e.g. ['600848', '000001']
         start_date:string,开始日期 format：YYYY-MM-DD 为空时取当前日期
         end_date:string,结束日期 format：YYYY-MM-DD 为空时取去年今日
         autype:string,复权类型，qfq-前复权 hfq-后复权 None-不复权，默认为qfq
         index:Boolean，是否是大盘指数，默认为False
-        ktype:
+        ktype: 数据类型: D, W M 
         retry_count: 重试次数
         pause: 重试间隔
     """
@@ -56,7 +57,7 @@ def save_stocks_k_data(stocks=None, start_date=None, end_date=None, autype='qfq'
         assert isinstance(stocks, list), 'stocks must be a list type.'
         last_stock_code = stocks[-1]
         log_save_type = 'select'
-    logger.info('Last stock code is: ' + last_stock_code)
+    logger.info('Last stock code is: ' + str(last_stock_code))
     if not start_date or not end_date:
         logger.info('Begin save %s stocks history k data, start date is: %s, end date is: %s.' %
                     (log_save_type, start_date, end_date))
@@ -65,9 +66,9 @@ def save_stocks_k_data(stocks=None, start_date=None, end_date=None, autype='qfq'
     save_stock_k_data_thread = threading.Thread(name='save_stock_k_data', target=transaction_dal.save_stock_k_data,
                                                 args=(last_stock_code,))
     save_stock_k_data_thread.start()
-    threading.Timer(1, check_thread_alive, args=(save_stock_k_data_thread,)).start()
+    # threading.Timer(1, check_thread_alive, args=(save_stock_k_data_thread,)).start()
     for stock in stocks:
-        transaction_dal.get_stock_k_data(stock, start_date, end_date, autype, index, ktype, retry_count, pause)
+        transaction_dal.get_stock_k_data(stock.code, start_date, end_date, autype, index, ktype, retry_count, pause)
     if not start_date or not end_date:
         logger.info('End save %s stocks history k data, start date is: %s, end date is: %s.' %
                     (log_save_type, start_date, end_date))
