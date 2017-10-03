@@ -155,7 +155,7 @@ class TodayAllData(BaseModel):
     name = CharField()
     date = DateField('%Y-%m-%d')
     changepercent = DecimalField(max_digits=8, decimal_places=3)
-    trade = DecicmalField(max_digits=8, decimal_places=3)
+    trade = DecimalField(max_digits=8, decimal_places=3)
     open = DecimalField(max_digits=8, decimal_places=3)
     hign = DecimalField(max_digits=8, decimal_places=3)
     close = DecimalField(max_digits=8, decimal_places=3)
