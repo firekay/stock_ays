@@ -30,9 +30,9 @@ def check_thread_alive(thread):
         logger.warn('Thread %s not alive.' % thread.getName())
 
 
-def save_stocks_k_data(ktype, stocks=None, start_date='', end_date='', autype='qfq', index=False,
-                       retry_count=RETRY_COUNT, pause=0.00):
-    """获取k线数据的历史复权舒服
+def save_stocks_k_data(stocks=None, start_date='', end_date='', autype='qfq', index=False,
+                       ktype=None, retry_count=RETRY_COUNT, pause=0.00):
+    """获取k线数据的历史复权数据
     
     新接口融合了get_hist_data和get_h_data两个接口的功能，即能方便获取日周月的低频数据，
     也可以获取5、15、30和60分钟相对高频的数据。
@@ -44,7 +44,7 @@ def save_stocks_k_data(ktype, stocks=None, start_date='', end_date='', autype='q
         end_date:string,结束日期 format：YYYY-MM-DD 为空时取去年今日
         autype:string,复权类型，qfq-前复权 hfq-后复权 None-不复权，默认为qfq
         index:Boolean，是否是大盘指数，默认为False
-        ktype: 数据类型: D, W M 
+        ktype: 数据类型: D, W M, 默认为
         retry_count: 重试次数
         pause: 重试间隔
     """
@@ -52,7 +52,7 @@ def save_stocks_k_data(ktype, stocks=None, start_date='', end_date='', autype='q
     log_save_type = 'all'
 
     if stocks is None:
-        stocks = base_service.get_stocks()
+        stocks = [stock.code for stock in base_service.get_stocks()]
     else:
         assert isinstance(stocks, list), 'stocks must be a list type.'
         last_stock_code = stocks[-1]
@@ -68,7 +68,7 @@ def save_stocks_k_data(ktype, stocks=None, start_date='', end_date='', autype='q
     save_stock_k_data_thread.start()
     # threading.Timer(1, check_thread_alive, args=(save_stock_k_data_thread,)).start()
     for stock in stocks:
-        transaction_dal.get_stock_k_data(stock.code, start_date, end_date, autype, index, ktype, retry_count, pause)
+        transaction_dal.get_stock_k_data(stock, start_date, end_date, autype, index, ktype, retry_count, pause)
     if not start_date or not end_date:
         logger.info('End save %s stocks history k data, start date is: %s, end date is: %s.' %
                     (log_save_type, start_date, end_date))
