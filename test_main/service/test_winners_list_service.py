@@ -5,7 +5,7 @@ import test_main
 
 
 def test_save_top_list():
-    wlservice.save_top_list()
+    wlservice.save_top_list(DATE)
 
 
 def test_save_individual_statistics_tops():
