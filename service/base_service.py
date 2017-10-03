@@ -37,7 +37,7 @@ def save_performance_report(year, quarter):
         quarter: 季度, 只能是1, 2, 3, 4的数字
     """
     data_dicts = base_dal.get_performance_report(year, quarter)
-    if not data_dicts.empty:
+    if data_dicts:
         if util_dal.delete_year_quarter_data(PerformanceReport, year, quarter):
             util_dal.save_year_quarter_data(PerformanceReport, data_dicts, year, quarter)
 
@@ -50,9 +50,9 @@ def save_profit_ability(year, quarter):
         quarter: 季度, 只能是1, 2, 3, 4的数字
     """
     data_dicts = base_dal.get_profit_ability(year, quarter)
-    if not data_dicts.empty:
+    if data_dicts:
         if util_dal.delete_year_quarter_data(ProfitAbility, year, quarter):
-            util_dal.save_year_quarter_data(ProfitAbility, year, quarter)
+            util_dal.save_year_quarter_data(ProfitAbility, data_dicts, year, quarter)
 
 
 def save_operation_ability(year, quarter):
@@ -63,9 +63,9 @@ def save_operation_ability(year, quarter):
         quarter: 季度, 只能是1, 2, 3, 4的数字
     """
     data_dicts = base_dal.get_operation_ability(year, quarter)
-    if not data_dicts.empty:
+    if data_dicts:
         if util_dal.delete_year_quarter_data(OperationAbility, year, quarter):
-            util_dal.save_year_quarter_data(OperationAbility, year, quarter)
+            util_dal.save_year_quarter_data(OperationAbility, data_dicts, year, quarter)
 
 
 def save_growth_ability(year, quarter):
@@ -76,9 +76,9 @@ def save_growth_ability(year, quarter):
         quarter: 季度, 只能是1, 2, 3, 4的数字
     """
     data_dicts = base_dal.get_growth_ability(year, quarter)
-    if not data_dicts.empty:
+    if data_dicts:
         if util_dal.delete_year_quarter_data(GrowthAbility, year, quarter):
-            util_dal.save_year_quarter_data(GrowthAbility, year, quarter)
+            util_dal.save_year_quarter_data(GrowthAbility, data_dicts, year, quarter)
 
 
 def save_pay_debt_ability(year, quarter):
@@ -89,9 +89,9 @@ def save_pay_debt_ability(year, quarter):
         quarter: 季度, 只能是1, 2, 3, 4的数字
     """
     data_dicts = base_dal.get_pay_debt_ability(year, quarter)
-    if not data_dicts.empty:
+    if data_dicts:
         if util_dal.delete_year_quarter_data(PayDebtAbility, year, quarter):
-            util_dal.save_year_quarter_data(PayDebtAbility, year, quarter)
+            util_dal.save_year_quarter_data(PayDebtAbility, data_dicts, year, quarter)
 
 
 def save_cash_flow(year, quarter):
@@ -104,6 +104,6 @@ def save_cash_flow(year, quarter):
          data_dicts: 字段的列表, return None if have exception, return empty if no data
      """
     data_dicts = base_dal.get_cash_flow(year, quarter)
-    if not data_dicts.empty:
+    if data_dicts:
         if util_dal.delete_year_quarter_data(CashFlow, year, quarter):
-            util_dal.save_year_quarter_data(CashFlow, year, quarter)
+            util_dal.save_year_quarter_data(CashFlow, data_dicts, year, quarter)
