@@ -147,17 +147,17 @@ def save_h_revote_data(last_stock_code=None):
 
 def get_h_revote_data(code, start_date=None, end_date=None, autype='qfp', index=False,
                       retry_count=RETRY_COUNT, pause=0, drop_factor=True):
-    if start_date is None or end_date is None:
-        logger.info('Begin get sotck %s h revote data, start date is: %s, end date is: %s.'
+    if start_date is not None or end_date is not None:
+        logger.info('Begin get sotck h revote data, code is: %s, start date is: %s, end date is: %s.'
                     % (code, start_date, end_date))
     else:
-        logger.info('Begin get stock %s h revote data, all date.' % code)
+        logger.info('Begin get stock h revote data, all date, code is: %s.' % code)
 
     try:
         data_df = ts.get_h_data(code, start_date, end_date, autype,
                                 index, retry_count, pause, drop_factor)
     except Exception as e:
-        if start_date is None or end_date is None:
+        if start_date is not None or end_date is not None:
             logger.exception('Error get sotck h revote data, code is: %s start date is: %s, end date is: %s.'
                              % (code, start_date, end_date))
         else:
@@ -168,13 +168,13 @@ def get_h_revote_data(code, start_date=None, end_date=None, autype='qfp', index=
             data_df['date'] = data_df['date'].astype(str)
             data = data_df.values
             h_revote_data_queue.put((code, autype, data))
-            if start_date is None or end_date is None:
-                logger.info('End get sotck h revote data, code is: %s, start date is: %s, end date is: %s.'
+            if start_date is not None or end_date is not None:
+                logger.info('Success get sotck h revote data, code is: %s, start date is: %s, end date is: %s.'
                             % (code, start_date, end_date))
             else:
-                logger.info('End get stock h revote data, all date, code is: %s.' % code)
+                logger.info('Success get stock h revote data, all date, code is: %s.' % code)
         else:
-            if start_date is None or end_date is None:
+            if start_date is not None or end_date is not None:
                 logger.warn('Empty get sotck h revote data, code is: %s, start date is: %s, end date is: %s.'
                             % (code, start_date, end_date))
             else:
@@ -193,7 +193,7 @@ def save_his_data(last_stock_code=None):
     else:
         last_stock = base_service.get_max_stock()
 
-    logger.info("Max stock code is: %s" % last_stock)
+    logger.info("Last stock code is: %s" % last_stock)
 
     while True:
         if his_data_queue.empty():
@@ -239,24 +239,39 @@ def get_his_data(code, start_date=None, end_date=None, ktype=None, retry_count=R
     适合搭配均线数据进行选股和分析，如果需要全部历史数据，请调用下一个接口get_h_data()。"""
     if ktype is None:
         ktype = 'D'
-
-    logger.info('Begin get data, code is: %s, start_date is: %s, end_date is: %s,ktype is: %s'
-                % (code, start_date, end_date, ktype))
+    if start_date is not None:
+        logger.info('Begin get data, code is: %s, start_date is: %s, end_date is: %s,ktype is: %s'
+                    % (code, start_date, end_date, ktype))
+    else:
+        logger.info('Begin get data, all date, code is: %s, ktype is: %s'
+                    % (code, ktype))
     try:
         data_df = ts.get_hist_data(code, start_date, end_date, ktype, retry_count, pause)
     except Exception as e:
-        logger.exception('Error get data, code is: %s, start_date is: %s, end_date is: %s,ktype is: %s'
-                         % (code, start_date, end_date, ktype))
+        if start_date is not None:
+            logger.exception('Error get data, code is: %s, start_date is: %s, end_date is: %s,ktype is: %s'
+                             % (code, start_date, end_date, ktype))
+        else:
+            logger.exception('Error get data, all date, code is: %s, ktype is: %s'
+                             % (code, ktype))
     else:
         if data_df is not None and not data_df.empty:
             data_df['date'] = pd.Series(data_df.axes[0], index=data_df.index)
             data = data_df.values
             his_data_queue.put((code, ktype, data))
-            logger.info('Success get data, code is: %s, start_date is: %s, end_date is: %s,ktype is: %s'
-                        % (code, start_date, end_date, ktype))
+            if start_date is not None:
+                logger.info('Success get data, code is: %s, start_date is: %s, end_date is: %s,ktype is: %s'
+                            % (code, start_date, end_date, ktype))
+            else:
+                logger.info('Success get data, all date, code is: %s, ktype is: %s'
+                            % (code, ktype))
         else:
-            logger.warn('Empty get data, code is: %s, start_date is: %s, end_date is: %s,ktype is: %s'
-                        % (code, start_date, end_date, ktype))
+            if start_date is not None:
+                logger.warn('Empty get data, code is: %s, start_date is: %s, end_date is: %s,ktype is: %s'
+                            % (code, start_date, end_date, ktype))
+            else:
+                logger.warn('Empty get data, all date, code is: %s, ktype is: %s'
+                            % (code, ktype))
 
 
 # def get_his_data_scd(code, start_date=None, end=None,

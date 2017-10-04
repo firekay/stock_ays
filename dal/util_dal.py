@@ -140,6 +140,54 @@ def delete_insert_date_data(model, insert_date):
         return True
 
 
+def delete_code_data(model, code):
+    """删除给定股票代码的数据
+    
+    Args:
+        model: peewee定义的model, models.model.py中定义的
+        code: 股票代码
+    Returns:
+        bool: if success delete, return True, else return False
+    """
+    logger.info('Begin delete %s data, code is: %s.'
+                % (model.__name__, code))
+    try:
+        model.delete().where(model.code == code).execute()
+    except Exception:
+        logger.exception('Error delete %s data, code is: %s.'
+                         % (model.__name__, code))
+        return False
+    else:
+        logger.info('Success delete %s data, code is: %s.'
+                    % (model.__name__, code))
+        return True
+
+
+def delete_code_start_date_end_date_data(model, code, start_date, end_date):
+    """删除给定股票代码开始时间到结束时间之间的数据
+    
+    Args:
+        model: peewee定义的model, models.model.py中定义的
+        code: 股票代码
+        start_date: 开始时间, model的字段名必须为date
+        end_date: 结束时间, model的字段名必须为date
+    Returns:
+        bool: if success delete, return True, else return False
+    """
+    logger.info('Begin delete %s data, code is: %s, start date is: %s, end_date is: %s.'
+                % (model.__name__, code, start_date, end_date))
+    try:
+        model.delete().where(model.code == code, model.date >= start_date, model.date <= end_date).execute()
+    except Exception:
+        logger.exception('Error delete %s data, code is: %s, start date is: %s, end_date is: %s.'
+                         % (model.__name__, code, start_date, end_date))
+        return False
+    else:
+        logger.info('Success delete %s data, code is: %s, start date is: %s, end_date is: %s.'
+                    % (model.__name__, code, start_date, end_date))
+        return True
+
+
 def save_year_data(model, data_dicts, year):
     """存储相应年份,季度的数据
 
