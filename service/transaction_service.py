@@ -99,6 +99,8 @@ def save_stocks_k_data(stocks=None, start_date='', end_date='', autype='qfq', in
                     (log_save_type, start_date, end_date, ktype))
     else:
         logger.info('End save %s stocks history k data, all date, ktype is: %s.' % (log_save_type, ktype))
+    # for stop the save thread
+    transaction_dal.stock_k_data_queue.put((last_stock_code, 'stop', 'stop', 'stop'))
 
 
 def save_stocks_hist_data(stocks=None, start_date=None, end_date=None, ktype=None):
@@ -163,6 +165,7 @@ def save_stocks_hist_data(stocks=None, start_date=None, end_date=None, ktype=Non
     else:
         logger.info('End save %s stocks history data, all date, ktype is: %s.'
                     % (log_save_type, ktype))
+    transaction_dal.his_data_queue.put((last_stock_code, 'stop', 'stop', 'stop'))
 
 
 def save_stock_h_data_revote(stocks=None, start_date=None, end_date=None, autype='qfp', index=False):
@@ -212,6 +215,7 @@ def save_stock_h_data_revote(stocks=None, start_date=None, end_date=None, autype
                     (log_save_type, start_date, end_date))
     else:
         logger.info('End save %s stocks history k data, all date.' % log_save_type)
+    transaction_dal.h_revote_data_queue.put((last_stock_code, 'stop', 'stop', 'stop'))
 
 
 def save_yesterday_all_stocks_hist_data(ktype=None):

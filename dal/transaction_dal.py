@@ -84,10 +84,14 @@ def save_stock_k_data(last_stock_code=None):
         if stock_k_data_queue.empty():
             time.sleep(0.01)
         else:
-            logger.info('stock_k_data_queue\'s size is: %s' % (stock_k_data_queue.qsize()))
             stock_k_data = stock_k_data_queue.get()
+            logger.info('stock_k_data_queue\'s size is: %s' % (stock_k_data_queue.qsize()))
             code = stock_k_data[0]
             ktype = stock_k_data[1]
+            # when ktype is stop, stop the thread
+            if ktype == 'stop':
+                logger.info('Stop save stock k data thread.')
+                break
             autype = stock_k_data[2]
             data = stock_k_data[3]
             logger.info('Get stock k data from stock_k_data_queue, stock code is: %s, ktype is: %s.' %
@@ -109,8 +113,6 @@ def save_stock_k_data(last_stock_code=None):
                 logger.error('Error data is: %s' % data)
             else:
                 logging.info('Success save stock k data, code is: %s, ktype is %s.' % (code, ktype))
-            if code == last_stock_code:
-                break
 
 
 def save_h_revote_data(last_stock_code=None):
@@ -128,6 +130,10 @@ def save_h_revote_data(last_stock_code=None):
             h_revote_data = h_revote_data_queue.get()
             code = h_revote_data[0]
             autype = h_revote_data[1]
+            # when autype is stop, stop the thread
+            if autype == 'stop':
+                logger.info('Stop save h revote data thread.')
+                break
             data = h_revote_data[2]
             logger.info('Get h revode data from h_revote_data_queue, stock code is: %s.' % code)
             data_dicts = [{'code': code, 'autype': autype, 'date': row[6], 'open': row[0], 'hign': row[1],
@@ -140,9 +146,6 @@ def save_h_revote_data(last_stock_code=None):
                 logger.error('Error data is: %s.' % data)
             else:
                 logger.info('Success save history revote data, stock is: %s.' % code)
-
-            if code == last_stock:
-                break
 
 
 def get_h_revote_data(code, start_date=None, end_date=None, autype='qfp', index=False,
@@ -199,10 +202,13 @@ def save_his_data(last_stock_code=None):
         if his_data_queue.empty():
             time.sleep(0.01)
         else:
-            logger.info('his_data_queue\'s size is: %s' % (his_data_queue.qsize()))
             his_data = his_data_queue.get()
+            logger.info('his_data_queue\'s size is: %s' % (his_data_queue.qsize()))
             code = his_data[0]
             ktype = his_data[1]
+            if ktype == 'stop':
+                logger.info('Stop save his data thread.')
+                break
             data = his_data[2]
             logger.info('Get history data from his_data_queue, code: %s, ktype: %s.' % (code, ktype))
             data_dicts = [{'code': code, 'date': row[14],
@@ -228,9 +234,6 @@ def save_his_data(last_stock_code=None):
                 logger.error('Error data is: %s' % data)
             else:
                 logger.warn('Success save history data from his_data_queue, code: %s, ktype: %s.' % (code, ktype))
-
-            if code == last_stock:
-                break
 
 
 def get_his_data(code, start_date=None, end_date=None, ktype=None, retry_count=RETRY_COUNT, pause=PAUSE):
