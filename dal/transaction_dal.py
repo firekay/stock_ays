@@ -19,8 +19,6 @@ stock_k_data_queue = Queue()
 tick_data_queue = Queue()
 big_trade_data_queue = Queue()
 
-max_stock = base_service.get_max_stock()
-
 
 def get_stock_k_data(code, start_date='', end_date='', autype='qfq', index=False,
                      ktype=None, retry_count=RETRY_COUNT, pause=PAUSE):
@@ -80,8 +78,8 @@ def save_stock_k_data(last_stock_code=None):
     if last_stock_code:
         last_stock = last_stock_code
     else:
-        last_stock = max_stock
-    logger.info("Max stock code is: %s" % last_stock)
+        last_stock = base_service.get_max_stock()
+    logger.info("Last stock code is: %s" % last_stock)
     while True:
         if stock_k_data_queue.empty():
             time.sleep(0.01)
@@ -111,6 +109,8 @@ def save_stock_k_data(last_stock_code=None):
                 logger.error('Error data is: %s' % data)
             else:
                 logging.info('Success save stock k data, code is: %s, ktype is %s.' % (code, ktype))
+            if code == last_stock_code:
+                break
 
 
 def save_h_revote_data(last_stock_code=None):
@@ -118,8 +118,8 @@ def save_h_revote_data(last_stock_code=None):
     if last_stock_code:
         last_stock = last_stock_code
     else:
-        last_stock = max_stock
-    logger.info("Max stock code is: %s" % last_stock)
+        last_stock = base_service.get_max_stock()
+    logger.info("Last stock code is: %s" % last_stock)
     while True:
         if h_revote_data_queue.empty():
             time.sleep(0.01)
@@ -130,13 +130,16 @@ def save_h_revote_data(last_stock_code=None):
             autype = h_revote_data[1]
             data = h_revote_data[2]
             logger.info('Get h revode data from h_revote_data_queue, stock code is: %s.' % code)
+            data_dicts = [{'code': code, 'autype': autype, 'date': row[6], 'open': row[0], 'hign': row[1],
+                           'close': row[2], 'low': row[3], 'volume': row[4], 'amount': row[5]} for row in data]
+            logger.info('Begin save history revote data, stock is: %s.' % code)
             try:
-                data_dicts = [{'code': code, 'autype': autype, 'date': row[6], 'open': row[0], 'hign': row[1],
-                               'close': row[2], 'low': row[3], 'volume': row[4], 'amount': row[5]} for row in data]
                 RevoteHistoryData.insert_many(data_dicts).execute()
             except Exception as e:
-                logger.exception('Save data error. Code is %s.' % code)
-                logger.error(data)
+                logger.exception('Error save history revote data, stock is: %s.' % code)
+                logger.error('Error data is: %s.' % data)
+            else:
+                logger.info('Success save history revote data, stock is: %s.' % code)
 
             if code == last_stock:
                 break
@@ -153,27 +156,29 @@ def get_h_revote_data(code, start_date=None, end_date=None, autype='qfp', index=
     try:
         data_df = ts.get_h_data(code, start_date, end_date, autype,
                                 index, retry_count, pause, drop_factor)
+    except Exception as e:
+        if start_date is None or end_date is None:
+            logger.exception('Error get sotck h revote data, code is: %s start date is: %s, end date is: %s.'
+                             % (code, start_date, end_date))
+        else:
+            logger.exception('Error get stock h revote data, all date, the code is: %s.' % code)
+    else:
         if data_df is not None and not data_df.empty:
             data_df['date'] = pd.Series(data_df.index, index=data_df.index)
+            data_df['date'] = data_df['date'].astype(str)
             data = data_df.values
             h_revote_data_queue.put((code, autype, data))
             if start_date is None or end_date is None:
-                logger.info('End get sotck %s h revote data, start date is: %s, end date is: %s.'
+                logger.info('End get sotck h revote data, code is: %s, start date is: %s, end date is: %s.'
                             % (code, start_date, end_date))
             else:
-                logger.info('End get stock %s h revote data, all date.' % code)
+                logger.info('End get stock h revote data, all date, code is: %s.' % code)
         else:
             if start_date is None or end_date is None:
-                logger.info('Empty get sotck %s h revote data, start date is: %s, end date is: %s.'
+                logger.warn('Empty get sotck h revote data, code is: %s, start date is: %s, end date is: %s.'
                             % (code, start_date, end_date))
             else:
-                logger.info('Empty get stock %s h revote data, all date.' % code)
-    except Exception as e:
-        if start_date is None or end_date is None:
-            logger.exception('Error get sotck %s h revote data, start date is: %s, end date is: %s.'
-                             % (code, start_date, end_date))
-        else:
-            logger.exception('Error get stock %s h revote data, all date.' % code)
+                logger.warn('Empty get stock h revote data, all date, code is: %s.' % code)
 
 
 def save_his_data(last_stock_code=None):
@@ -186,7 +191,7 @@ def save_his_data(last_stock_code=None):
     if last_stock_code:
         last_stock = last_stock_code
     else:
-        last_stock = max_stock
+        last_stock = base_service.get_max_stock()
 
     logger.info("Max stock code is: %s" % last_stock)
 
@@ -199,7 +204,7 @@ def save_his_data(last_stock_code=None):
             code = his_data[0]
             ktype = his_data[1]
             data = his_data[2]
-            logger.info('Get code: %s, ktype: %s from his_data_queue' % (code, ktype))
+            logger.info('Get history data from his_data_queue, code: %s, ktype: %s.' % (code, ktype))
             data_dicts = [{'code': code, 'date': row[14],
                            'open': row[0], 'hign': row[1], 'close': row[2],
                            'low': row[3], 'volume': row[4],
@@ -208,6 +213,7 @@ def save_his_data(last_stock_code=None):
                            'v_ma5': row[10], 'v_ma10': row[11],
                            'v_ma20': row[12], 'turnover': row[13]}
                           for row in data]
+            logger.info('Begin save history data from his_data_queue, code: %s, ktype: %s.' % (code, ktype))
             try:
                 # logger.info(data_dicts)
                 # TODO: 添加5分钟, 15分钟.. 代码
@@ -218,8 +224,10 @@ def save_his_data(last_stock_code=None):
                 if ktype.upper() == 'M':
                     HistoryDataM.insert_many(data_dicts).execute()
             except Exception as e:
-                logger.exception('Save data error. Code is %s, ktype is %s' % (code, ktype))
-                logger.error(data)
+                logger.exception('Error save history data from his_data_queue, code: %s, ktype: %s.' % (code, ktype))
+                logger.error('Error data is: %s' % data)
+            else:
+                logger.warn('Success save history data from his_data_queue, code: %s, ktype: %s.' % (code, ktype))
 
             if code == last_stock:
                 break
@@ -229,30 +237,26 @@ def get_his_data(code, start_date=None, end_date=None, ktype=None, retry_count=R
     """获取个股历史交易数据（包括均线数据），可以通过参数设置获取日k线、周k线、月k线数据。
     本接口只能获取近3年的日线数据，
     适合搭配均线数据进行选股和分析，如果需要全部历史数据，请调用下一个接口get_h_data()。"""
-    ktypes = list(['D', 'W', 'M'])
-
-    def _deal_data(code, start, end, ktype, retry_count, pause):
-        logger.info('Begin get data, code is: %s, start is: %s, end is: %s,ktype is: %s' % (code, start, end, ktype))
-        try:
-            data_df = ts.get_hist_data(code, start, end, ktype, retry_count, pause)
-            if data_df is not None and not data_df.empty:
-                data_df['date'] = pd.Series(data_df.axes[0], index=data_df.index)
-                data = data_df.values
-                his_data_queue.put((code, ktype, data))
-                logger.info('End get hist data: %s,%s,%s,%s' % (code, start, end, ktype))
-            else:
-                logger.info('Empty get hist data: %s,%s,%s,%s' % (code, start, end, ktype))
-
-        except Exception as e:
-            logger.exception('Get hist data error: %s,%s,%s,%s' % (code, start, end, ktype))
-
     if ktype is None:
-        for ktype in ktypes:
-            # threading.Thread(target=_deal_data, args=(code, start, end, ktype, retry_count, pause)).start()
-            _deal_data(code, start_date, end_date, ktype, retry_count, pause)
+        ktype = 'D'
+
+    logger.info('Begin get data, code is: %s, start_date is: %s, end_date is: %s,ktype is: %s'
+                % (code, start_date, end_date, ktype))
+    try:
+        data_df = ts.get_hist_data(code, start_date, end_date, ktype, retry_count, pause)
+    except Exception as e:
+        logger.exception('Error get data, code is: %s, start_date is: %s, end_date is: %s,ktype is: %s'
+                         % (code, start_date, end_date, ktype))
     else:
-        # threading.Thread(target=_deal_data, args=(code, start, end, ktype, retry_count, pause)).start()
-        _deal_data(code, start_date, end_date, ktype, retry_count, pause)
+        if data_df is not None and not data_df.empty:
+            data_df['date'] = pd.Series(data_df.axes[0], index=data_df.index)
+            data = data_df.values
+            his_data_queue.put((code, ktype, data))
+            logger.info('Success get data, code is: %s, start_date is: %s, end_date is: %s,ktype is: %s'
+                        % (code, start_date, end_date, ktype))
+        else:
+            logger.warn('Empty get data, code is: %s, start_date is: %s, end_date is: %s,ktype is: %s'
+                        % (code, start_date, end_date, ktype))
 
 
 # def get_his_data_scd(code, start_date=None, end=None,

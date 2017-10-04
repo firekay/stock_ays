@@ -10,7 +10,7 @@ import pandas as pd
 import tushare as ts
 from utils import util
 
-
+logger = logging.getLogger(__name__)
 today = util.get_today()
 today_line = util.get_today_line()
 
@@ -20,7 +20,6 @@ yesterday_line = util.get_yesterday_line()
 tomorrow = util.get_tomorrow()
 tomorrow_line = util.get_tomorrow_line()
 
-logger = logging.getLogger(__name__)
 RETRY_COUNT = 5
 
 
@@ -31,7 +30,7 @@ def check_thread_alive(thread):
 
 
 def save_stocks_k_data(stocks=None, start_date='', end_date='', autype='qfq', index=False,
-                       ktype=None, retry_count=RETRY_COUNT, pause=0.00):
+                       ktype=None):
     """获取k线数据的历史复权数据
     
     新接口融合了get_hist_data和get_h_data两个接口的功能，即能方便获取日周月的低频数据，
@@ -39,104 +38,81 @@ def save_stocks_k_data(stocks=None, start_date='', end_date='', autype='qfq', in
     同时，上市以来的前后复权数据也能在一行代码中轻松获得，当然，您也可以选择不复权。
     
     Args:
-        stocks:list,股票代码 e.g. ['600848', '000001']
+        stocks:list,股票代码 e.g. ['600848', '000001'], 为None, 则取stock_basic中所有的股票
         start_date:string,开始日期 format：YYYY-MM-DD 为空时取当前日期
         end_date:string,结束日期 format：YYYY-MM-DD 为空时取去年今日
         autype:string,复权类型，qfq-前复权 hfq-后复权 None-不复权，默认为qfq
         index:Boolean，是否是大盘指数，默认为False
-        ktype: 数据类型: D, W M, 默认为
-        retry_count: 重试次数
-        pause: 重试间隔
+        ktype: 数据类型: D, W M, 默认为D
     """
-    last_stock_code = None
+    ktypes = ['D', 'W', 'M']
     log_save_type = 'all'
 
-    if stocks is None:
-        stocks = [stock.code for stock in base_service.get_stocks()]
-    else:
+    if stocks:
         assert isinstance(stocks, list), 'stocks must be a list type.'
-        last_stock_code = stocks[-1]
         log_save_type = 'select'
-    logger.info('Last stock code is: ' + str(last_stock_code))
-    if not start_date or not end_date:
-        logger.info('Begin save %s stocks history k data, start date is: %s, end date is: %s.' %
-                    (log_save_type, start_date, end_date))
     else:
-        logger.info('Begin save %s stocks history k data.' % log_save_type)
+        stocks = [stock.code for stock in base_service.get_stocks()]
+    last_stock_code = stocks[-1]
+    logger.info('Last stock code is: %s' % last_stock_code)
     save_stock_k_data_thread = threading.Thread(name='save_stock_k_data', target=transaction_dal.save_stock_k_data,
                                                 args=(last_stock_code,))
     save_stock_k_data_thread.start()
     # threading.Timer(1, check_thread_alive, args=(save_stock_k_data_thread,)).start()
-    for stock in stocks:
-        transaction_dal.get_stock_k_data(stock, start_date, end_date, autype, index, ktype, retry_count, pause)
     if not start_date or not end_date:
-        logger.info('End save %s stocks history k data, start date is: %s, end date is: %s.' %
-                    (log_save_type, start_date, end_date))
+        logger.info('Begin save %s stocks history k data, start date is: %s, end date is: %s, ktype is: %s.' %
+                    (log_save_type, start_date, end_date, ktype))
     else:
-        logger.info('End save %s stocks history k data.' % log_save_type)
+        logger.info('Begin save %s stocks history k data, all date, ktype is: %s.' % (log_save_type, ktype))
+    for stock in stocks:
+        if ktype:
+            transaction_dal.get_stock_k_data(stock, start_date, end_date, autype, index, ktype)
+        else:
+            for ktype in ktypes:
+                transaction_dal.get_stock_k_data(stock, start_date, end_date, autype, index, ktype)
+    if not start_date or not end_date:
+        logger.info('End save %s stocks history k data, start date is: %s, end date is: %s, ktype is: %s.' %
+                    (log_save_type, start_date, end_date, ktype))
+    else:
+        logger.info('End save %s stocks history k data, all date, ktype is: %s.' % (log_save_type, ktype))
 
 
-def save_select_stocks_hist_data(stocks, start_date=None, end_date=None, ktype=None,
-                                 retry_count=RETRY_COUNT, pause=0.00):
+def save_stocks_hist_data(stocks=None, start_date=None, end_date=None, ktype=None):
     """获取个股历史交易数据（包括均线数据），可以通过参数设置获取日k线、周k线、月k线数据。
     本接口只能获取近3年的日线数据
     """
-    if not start_date or not end_date:
-        logger.info('Begin save select stocks history data, start date is: %s, end date is: %s.'
-                    % (start_date, end_date))
-    else:
-        logger.info('Begin save select stocks history data.')
+    log_save_type = 'all'
     ktypes = list(['D', 'W', 'M'])
+    if stocks:
+        assert isinstance(stocks, list), 'stocks must be list.'
+        log_save_type = 'select'
+    else:
+        stocks = [stock.code for stock in base_service.get_stocks()]
     last_stock_code = stocks[-1]
-    logger.info(last_stock_code)
+    logger.info('last_stock_code is: %s' % last_stock_code)
     save_his_data_thread = threading.Thread(name='save_his_data',
                                             target=transaction_dal.save_his_data, args=(last_stock_code,))
     save_his_data_thread.start()
-
-    def _deal_data(code, start_date, end_date, ktype, retry_count, pause):
-        logger.info('Begin get data: %s,%s,%s' % (code, start_date, ktype))
-        try:
-            data_df = ts.get_hist_data(code, start_date, end_date, ktype, retry_count, pause)
-            if data_df is not None and not data_df.empty:
-                data_df['date'] = pd.Series(data_df.axes[0], index=data_df.index)
-                data = data_df.values
-                transaction_dal.his_data_queue.put((code, ktype, data))
-                logger.info('End get data: %s,%s,%s' % (code, start_date, ktype))
-            else:
-                logger.info('Empty get data: %s,%s,%s,%s' % (code, start_date, end_date, ktype))
-        except Exception:
-            logger.exception('Get data error: %s,%s,%s' % (code, start_date, ktype))
+    if start_date is not None or end_date is not None:
+        logger.info('Begin save %s stocks history data, start date is: %s, end date is: %s, ktype is: %s.'
+                    % (log_save_type, start_date, end_date, ktype))
+    else:
+        logger.info('Begin save %s stocks history data, all date, ktype is: %s.'
+                    % (log_save_type, ktype))
 
     for stock in stocks:
         if ktype is None:
             for ktype in ktypes:
-                _deal_data(stock, start_date, end_date, ktype, retry_count, pause)
+                transaction_dal.get_his_data(stock, start_date=start_date, end_date=end_date, ktype=ktype)
         else:
-            _deal_data(stock, start_date, end_date, ktype, retry_count, pause)
+            transaction_dal.get_his_data(stock, start_date=start_date, end_date=end_date, ktype=ktype)
 
-    if not start_date or not end_date:
-        logger.info('End save select stocks history data, start date is: %s, end date is: %s.' % (start_date, end_date))
+    if start_date is not None or end_date is not None:
+        logger.info('End save %s stocks history data, start date is: %s, end date is: %s, ktype is: %s.'
+                    % (log_save_type, start_date, end_date, ktype))
     else:
-        logger.info('End save select stocks history data.')
-
-
-def save_all_stocks_hist_data(start_date=None, end_date=None, ktype=None):
-    """下载并保持所有的股票的数据：D, W, M"""
-    if not start_date or not end_date:
-        logger.info('Begin save all stocks history data, start date is: %s, end date is: %s.' % (start_date, end_date))
-    else:
-        logger.info('Begin save all stocks history data.')
-    save_his_data_thread = threading.Thread(name='save_his_data', target=transaction_dal.save_his_data)
-    save_his_data_thread.start()
-    threading.Timer(1, check_thread_alive, args=(save_his_data_thread,)).start()
-
-    stocks = base_service.get_stocks()
-    for stock in stocks:
-        transaction_dal.get_his_data(stock.code, start_date, end_date, ktype)
-    if not start_date or not end_date:
-        logger.info('End save all stocks history data, start date is: %s, end date is: %s.' % (start_date, end_date))
-    else:
-        logger.info('End save all stocks history data.')
+        logger.info('End save %s stocks history data, all date, ktype is: %s.'
+                    % (log_save_type, ktype))
 
 
 # def save_stock_k_data(code, start=None, end=None, autype='qfp', index=False, retry_count=RETRY_COUNT, pause=0):
@@ -164,11 +140,12 @@ def save_all_stocks_hist_data(start_date=None, end_date=None, ktype=None):
 #     logger.info('End save all stock k data, start is: %s, end is %s.' % (start, end))
 
 
-def save_all_stock_h_data_revote(start_date=None, end_date=None, autype='qfp', index=False,
+def save_stock_h_data_revote(stocks=None, start_date=None, end_date=None, autype='qfp', index=False,
                                  retry_count=RETRY_COUNT, pause=0):
     """获取B{所有}历史复权数据
     
     Args:
+        stocks:list,股票代码 e.g. ['600848', '000001'], 为None, 则取stock_basic中所有的股票
         start_date:string,开始日期 format：YYYY-MM-DD 为空时取当前日期
         end_date:string,结束日期 format：YYYY-MM-DD 为空时取去年今日
         autype:string,复权类型，qfq-前复权 hfq-后复权 None-不复权，默认为qfq
@@ -176,56 +153,42 @@ def save_all_stock_h_data_revote(start_date=None, end_date=None, autype='qfp', i
         retry_count : int, 默认3,如遇网络等问题重复执行的次数
         pause : int, 默认 0,重复请求数据过程中暂停的秒数，防止请求间隔时间太短出现的问题
     """
-    logger.info('Begin save all stock history data revote, start is: %s, end is %s.' % (start_date, end_date))
-    save_h_revote_data_thread = threading.Thread(name='save_h_revote_data', target=transaction_dal.save_h_revote_data)
-    save_h_revote_data_thread.start()
-    threading.Timer(1, check_thread_alive, args=(save_h_revote_data_thread,)).start()
-    stocks = base_service.get_stocks()
-    for stock in stocks:
-        transaction_dal.get_h_revote_data(stock, start_date, end_date, autype, index, retry_count, pause)
-    logger.info('End save all stock history data revote, start is: %s, end is %s.' % (start_date, end_date))
+    ktypes = ['D', 'W', 'M']
+    log_save_type = 'all'
 
-
-def save_select_stocks_h_data_revote(stocks, start_date=None, end_date=None, autype='qfp', index=False,
-                                     retry_count=RETRY_COUNT, pause=0):
-    """获取B{选择的}历史复权数据
-    
-    Args:
-        stocks:list, e.g. ['000001', '000002']
-        start_date:string,开始日期 format：YYYY-MM-DD 为空时取当前日期
-        end_date:string,结束日期 format：YYYY-MM-DD 为空时取去年今日
-        autype:string,复权类型，qfq-前复权 hfq-后复权 None-不复权，默认为qfq
-        index:Boolean，是否是大盘指数，默认为False
-        retry_count : int, 默认3,如遇网络等问题重复执行的次数
-        pause : int, 默认 0,重复请求数据过程中暂停的秒数，防止请求间隔时间太短出现的问题
-    """
-    if not start_date or not end_date:
-        logger.info('Begin save select stocks h revote data, start date is: %s, end date is: %s.'
-                    % (start_date, end_date))
+    if stocks:
+        assert isinstance(stocks, list), 'stocks must be a list type.'
+        log_save_type = 'select'
     else:
-        logger.info('Begin save all days select stocks h revote data.')
+        stocks = [stock.code for stock in base_service.get_stocks()]
     last_stock_code = stocks[-1]
-    save_h_revote_data_thread = threading.Thread(name='save_h_revote_data', target=transaction_dal.save_h_revote_data,
-                                                 args=(last_stock_code,))
+    logger.info('Last stock code is: %s' % last_stock_code)
+    save_h_revote_data_thread = threading.Thread(name='save_h_revote_data',
+                                                 target=transaction_dal.save_h_revote_data, args=(last_stock_code,))
     save_h_revote_data_thread.start()
-    threading.Timer(1, check_thread_alive, args=(save_h_revote_data_thread,)).start()
+    # threading.Timer(1, check_thread_alive, args=(save_h_revote_data_thread,)).start()
+    if not start_date or not end_date:
+        logger.info('Begin save %s stocks history h revote data, start date is: %s, end date is: %s.' %
+                    (log_save_type, start_date, end_date))
+    else:
+        logger.info('Begin save %s stocks history k data, all date.' % log_save_type)
     for stock in stocks:
         transaction_dal.get_h_revote_data(stock, start_date, end_date, autype, index, retry_count, pause)
     if not start_date or not end_date:
-        logger.info('End save select stocks h revote data, start date is: %s, end date is: %s.'
-                    % (start_date, end_date))
+        logger.info('End save %s stocks history h revote data, start date is: %s, end date is: %s.' %
+                    (log_save_type, start_date, end_date))
     else:
-        logger.info('End save all days select stocks h revote data.')
+        logger.info('End save %s stocks history k data, all date.' % log_save_type)
 
 
 def save_yesterday_all_stocks_hist_data(ktype=None):
     """下载并保存昨天数据"""
-    save_all_stocks_hist_data(yesterday_line, yesterday_line, ktype=ktype)
+    save_stocks_hist_data(yesterday_line, yesterday_line, ktype=ktype)
 
 
 def save_today_all_stocks_hist_data(ktype=None):
     """下载并保存当天数据"""
-    save_all_stocks_hist_data(today_line, today_line, ktype=ktype)
+    save_stocks_hist_data(today_line, today_line, ktype=ktype)
 
 #
 # def save_realtime_quetes2file(codes):
