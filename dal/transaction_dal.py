@@ -17,6 +17,7 @@ his_data_queue = Queue()
 h_revote_data_queue = Queue()
 stock_k_data_queue = Queue()
 tick_data_queue = Queue()
+today_tick_data_queue = Queue()
 big_trade_data_queue = Queue()
 
 
@@ -347,7 +348,6 @@ def save_today_all_data():
             except Exception as e:
                 logger.exception('Error save today all stock data, the date is: %s' % today_line)
                 logger.error('Error data is: %s' % data)
-
             else:
                 logger.info('Success get and save today all stock data, the date is: %s' % today_line)
         else:
@@ -406,6 +406,60 @@ def get_tick_data(code, date, retry_count=RETRY_COUNT, pause=PAUSE):
             logger.info('Success get tick data,  code is :%s, date is %s.' % (code, date))
         else:
             logger.warn('Empty get tick data,  code is :%s, date is %s.' % (code, date))
+
+
+def save_today_tick_data():
+    """获取个股以往交易历史的分笔数据明细，通过分析分笔数据，可以大致判断资金的进出情况。
+    
+    在使用过程中，对于获取股票某一阶段的历史分笔数据，需要通过参入交易日参数并append到一个DataFrame
+      或者直接append到本地同一个文件里。历史分笔接口只能获取当前交易日之前的数据，
+      当日分笔历史数据请调用get_today_ticks()接口或者在当日18点后通过本接口获取.
+    """
+    logger.info('Begin save today tick data thread.')
+
+    while True:
+        if today_tick_data_queue.empty():
+            time.sleep(0.01)
+        else:
+            today_tick_data = today_tick_data_queue.get()
+            logger.info('today_tick_data_queue\'s size is: %s' % today_tick_data_queue.qsize())
+            code = today_tick_data[0]
+            date = today_tick_data[1]
+            data = today_tick_data[2]
+            # when date is stop, stop this thread. (control in transaction_service)
+            if date == 'stop':
+                logger.info('Last today tick data stock code is: %s.' % code)
+                logger.info('Stop save today tick data thread.')
+                break
+            logger.info('Get today tick data from tick_data_queue, stock code is: %s, data is: %s'
+                        % (code, date))
+            data_dicts = [{'code': code, 'date': date, 'time': row[0], 'price': row[1], 'pchange': row[2],
+                           'change': row[3], 'volume': row[4], 'amount': row[5], 'type': row[6]}
+                          for row in data]
+            logger.info('Begin save today tick data, code is: %s, date is: %s.' % (code, date))
+            try:
+                TickData.insert_many(data_dicts).execute()
+            except Exception as e:
+                logger.exception('Error save today tick data, code is: %s, date is: %s.' % (code, date))
+                logger.error('Error data is: %s' % data)
+            else:
+                logger.info('Success save today tick data, code is: %s, date is: %s.' % (code, date))
+
+
+def get_today_tick_data(code, retry_count=RETRY_COUNT, pause=PAUSE):
+    """获取个股以往交易历史的分笔数据明细，通过分析分笔数据，可以大致判断资金的进出情况。"""
+    logger.info('Begin get today tick data, code is: %s, date is: %s.' % (code, today_line))
+    try:
+        data_df = ts.get_today_ticks(code, retry_count, pause)
+    except Exception as e:
+        logger.exception('Error get today tick data, code is :%s, date is %s.' % (code, today_line))
+    else:
+        if data_df is not None and not data_df.empty:
+            data = data_df.values
+            today_tick_data_queue.put((code, today_line, data))
+            logger.info('Success get today tick data,  code is :%s, date is %s.' % (code, today_line))
+        else:
+            logger.warn('Empty get today tick data,  code is :%s, date is %s.' % (code, today_line))
 
 
 def save_big_index_data():
