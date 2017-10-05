@@ -58,6 +58,66 @@ class HistoryKDataM(BaseModel):
     volume = DecimalField(max_digits=12, decimal_places=2)
 
 
+class HistoryKData5(BaseModel):
+    """历史行情: D"""
+    class Meta:
+        db_table = 'history_k_data_d'
+
+    code = CharField(8)
+    date = DateField('%Y-%m-%d')
+    autype = CharField(5)  # 复权类型: qfq-前复权 hfq-后复权 None-不复权，默认为qfq
+    open = DecimalField(max_digits=8, decimal_places=3)
+    close = DecimalField(max_digits=8, decimal_places=3)
+    high = DecimalField(max_digits=8, decimal_places=3)
+    low = DecimalField(max_digits=8, decimal_places=3)
+    volume = DecimalField(max_digits=12, decimal_places=2)
+
+
+class HistoryKData15(BaseModel):
+    """历史行情: D"""
+    class Meta:
+        db_table = 'history_k_data_d'
+
+    code = CharField(8)
+    date = DateField('%Y-%m-%d')
+    autype = CharField(5)  # 复权类型: qfq-前复权 hfq-后复权 None-不复权，默认为qfq
+    open = DecimalField(max_digits=8, decimal_places=3)
+    close = DecimalField(max_digits=8, decimal_places=3)
+    high = DecimalField(max_digits=8, decimal_places=3)
+    low = DecimalField(max_digits=8, decimal_places=3)
+    volume = DecimalField(max_digits=12, decimal_places=2)
+
+
+class HistoryKData30(BaseModel):
+    """历史行情: D"""
+    class Meta:
+        db_table = 'history_k_data_d'
+
+    code = CharField(8)
+    date = DateField('%Y-%m-%d')
+    autype = CharField(5)  # 复权类型: qfq-前复权 hfq-后复权 None-不复权，默认为qfq
+    open = DecimalField(max_digits=8, decimal_places=3)
+    close = DecimalField(max_digits=8, decimal_places=3)
+    high = DecimalField(max_digits=8, decimal_places=3)
+    low = DecimalField(max_digits=8, decimal_places=3)
+    volume = DecimalField(max_digits=12, decimal_places=2)
+
+
+class HistoryKData60(BaseModel):
+    """历史行情: D"""
+    class Meta:
+        db_table = 'history_k_data_d'
+
+    code = CharField(8)
+    date = DateField('%Y-%m-%d')
+    autype = CharField(5)  # 复权类型: qfq-前复权 hfq-后复权 None-不复权，默认为qfq
+    open = DecimalField(max_digits=8, decimal_places=3)
+    close = DecimalField(max_digits=8, decimal_places=3)
+    high = DecimalField(max_digits=8, decimal_places=3)
+    low = DecimalField(max_digits=8, decimal_places=3)
+    volume = DecimalField(max_digits=12, decimal_places=2)
+
+
 class HistoryDataD(BaseModel):
     """历史行情: D"""
     class Meta:
@@ -110,6 +170,98 @@ class HistoryDataM(BaseModel):
     """历史行情:  M"""
     class Meta:
         db_table = 'history_data_m'
+
+    code = CharField(8)
+    date = DateField('%Y-%m-%d')
+    open = DecimalField(max_digits=8, decimal_places=3)
+    hign = DecimalField(max_digits=8, decimal_places=3)
+    close = DecimalField(max_digits=8, decimal_places=3)
+    low = DecimalField(max_digits=8, decimal_places=3)
+    volume = DecimalField(max_digits=12, decimal_places=2)
+    price_change = DecimalField(max_digits=10, decimal_places=3)
+    p_change = DecimalField(max_digits=10, decimal_places=3)
+    ma5 = DecimalField(max_digits=10, decimal_places=4)
+    ma10 = DecimalField(max_digits=10, decimal_places=4)
+    ma20 = DecimalField(max_digits=10, decimal_places=4)
+    v_ma5 = DecimalField(max_digits=12, decimal_places=3)
+    v_ma10 = DecimalField(max_digits=12, decimal_places=3)
+    v_ma20 = DecimalField(max_digits=12, decimal_places=3)
+    turnover = DecimalField(max_digits=10, decimal_places=2)
+
+
+class HistoryData5(BaseModel):
+    """历史行情: D"""
+    class Meta:
+        db_table = 'history_data_d'
+
+    code = CharField(8)
+    date = DateField('%Y-%m-%d')
+    open = DecimalField(max_digits=8, decimal_places=3)
+    hign = DecimalField(max_digits=8, decimal_places=3)
+    close = DecimalField(max_digits=8, decimal_places=3)
+    low = DecimalField(max_digits=8, decimal_places=3)
+    volume = DecimalField(max_digits=12, decimal_places=2)
+    price_change = DecimalField(max_digits=10, decimal_places=3)
+    p_change = DecimalField(max_digits=10, decimal_places=3)
+    ma5 = DecimalField(max_digits=10, decimal_places=4)
+    ma10 = DecimalField(max_digits=10, decimal_places=4)
+    ma20 = DecimalField(max_digits=10, decimal_places=4)
+    v_ma5 = DecimalField(max_digits=12, decimal_places=3)
+    v_ma10 = DecimalField(max_digits=12, decimal_places=3)
+    v_ma20 = DecimalField(max_digits=12, decimal_places=3)
+    turnover = DecimalField(max_digits=10, decimal_places=2)
+
+
+class HistoryData15(BaseModel):
+    """历史行情: D"""
+    class Meta:
+        db_table = 'history_data_d'
+
+    code = CharField(8)
+    date = DateField('%Y-%m-%d')
+    open = DecimalField(max_digits=8, decimal_places=3)
+    hign = DecimalField(max_digits=8, decimal_places=3)
+    close = DecimalField(max_digits=8, decimal_places=3)
+    low = DecimalField(max_digits=8, decimal_places=3)
+    volume = DecimalField(max_digits=12, decimal_places=2)
+    price_change = DecimalField(max_digits=10, decimal_places=3)
+    p_change = DecimalField(max_digits=10, decimal_places=3)
+    ma5 = DecimalField(max_digits=10, decimal_places=4)
+    ma10 = DecimalField(max_digits=10, decimal_places=4)
+    ma20 = DecimalField(max_digits=10, decimal_places=4)
+    v_ma5 = DecimalField(max_digits=12, decimal_places=3)
+    v_ma10 = DecimalField(max_digits=12, decimal_places=3)
+    v_ma20 = DecimalField(max_digits=12, decimal_places=3)
+    turnover = DecimalField(max_digits=10, decimal_places=2)
+
+
+class HistoryData30(BaseModel):
+    """历史行情: D"""
+    class Meta:
+        db_table = 'history_data_d'
+
+    code = CharField(8)
+    date = DateField('%Y-%m-%d')
+    open = DecimalField(max_digits=8, decimal_places=3)
+    hign = DecimalField(max_digits=8, decimal_places=3)
+    close = DecimalField(max_digits=8, decimal_places=3)
+    low = DecimalField(max_digits=8, decimal_places=3)
+    volume = DecimalField(max_digits=12, decimal_places=2)
+    price_change = DecimalField(max_digits=10, decimal_places=3)
+    p_change = DecimalField(max_digits=10, decimal_places=3)
+    ma5 = DecimalField(max_digits=10, decimal_places=4)
+    ma10 = DecimalField(max_digits=10, decimal_places=4)
+    ma20 = DecimalField(max_digits=10, decimal_places=4)
+    v_ma5 = DecimalField(max_digits=12, decimal_places=3)
+    v_ma10 = DecimalField(max_digits=12, decimal_places=3)
+    v_ma20 = DecimalField(max_digits=12, decimal_places=3)
+    turnover = DecimalField(max_digits=10, decimal_places=2)
+
+
+class HistoryData60(BaseModel):
+    """历史行情: D"""
+    class Meta:
+        db_table = 'history_data_d'
 
     code = CharField(8)
     date = DateField('%Y-%m-%d')

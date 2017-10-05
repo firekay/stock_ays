@@ -102,13 +102,22 @@ def save_stock_k_data(last_stock_code=None):
             logging.info('Begin save stock k data, code is: %s, ktype is %s.' % (code, ktype))
 
             try:
-                # TODO: 添加5分钟, 15分钟.. 代码
                 if ktype.upper() == 'D':
                     HistoryKDataD.insert_many(data_dicts).execute()
-                if ktype.upper() == 'W':
+                elif ktype.upper() == 'W':
                     HistoryKDataW.insert_many(data_dicts).execute()
-                if ktype.upper() == 'M':
+                elif ktype.upper() == 'M':
                     HistoryKDataM.insert_many(data_dicts).execute()
+                elif ktype == '5':
+                    HistoryKData5.insert_many(data_dicts).execute()
+                elif ktype == '15':
+                    HistoryKData15.insert_many(data_dicts).execute()
+                elif ktype == '30':
+                    HistoryKData30.insert_many(data_dicts).execute()
+                elif ktype == '60':
+                    HistoryKData60.insert_many(data_dicts).execute()
+                else:
+                    pass
             except Exception as e:
                 logger.exception('Error save stock k data, code is: %s, ktype is: %s.' % (code, ktype))
                 logger.error('Error data is: %s' % data)
@@ -222,14 +231,22 @@ def save_his_data(last_stock_code=None):
                           for row in data]
             logger.info('Begin save history data from his_data_queue, code: %s, ktype: %s.' % (code, ktype))
             try:
-                # logger.info(data_dicts)
-                # TODO: 添加5分钟, 15分钟.. 代码
                 if ktype.upper() == 'D':
                     HistoryDataD.insert_many(data_dicts).execute()
                 if ktype.upper() == 'W':
                     HistoryDataW.insert_many(data_dicts).execute()
                 if ktype.upper() == 'M':
                     HistoryDataM.insert_many(data_dicts).execute()
+                elif ktype == '5':
+                    HistoryData5.insert_many(data_dicts).execute()
+                elif ktype == '15':
+                    HistoryData15.insert_many(data_dicts).execute()
+                elif ktype == '30':
+                    HistoryData30.insert_many(data_dicts).execute()
+                elif ktype == '60':
+                    HistoryData60.insert_many(data_dicts).execute()
+                else:
+                    pass
             except Exception as e:
                 logger.exception('Error save history data from his_data_queue, code: %s, ktype: %s.' % (code, ktype))
                 logger.error('Error data is: %s' % data)

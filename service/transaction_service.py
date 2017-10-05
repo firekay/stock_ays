@@ -2,13 +2,9 @@
 import logging
 import threading
 from models.model import *
-from dal import classification_dal
 from dal import util_dal
 from dal import transaction_dal
 from service import base_service
-from service import table_service
-import pandas as pd
-import tushare as ts
 from utils import util
 
 logger = logging.getLogger(__name__)
@@ -46,15 +42,25 @@ def save_stocks_k_data(stocks=None, start_date='', end_date='', autype='qfq', in
         index:Boolean，是否是大盘指数，默认为False
         ktype: 数据类型: D, W M, 默认为D
     """
-    ktypes = ['D', 'W', 'M']
+    ktypes = ['D', 'W', 'M', '5', '15', '30', '60']
     log_save_type = 'all'
     assert ktype in ktypes, 'ktype must be one of %s' % ktypes
     if ktype.upper() == 'D':
-        model = HistoryDataD
+        model = HistoryKDataD
     elif ktype.upper() == 'W':
-        model = HistoryDataW
+        model = HistoryKDataW
     elif ktype.upper() == 'M':
-        model = HistoryDataM
+        model = HistoryKDataM
+    elif ktype == '5':
+        model = HistoryKData5
+    elif ktype == '15':
+        model = HistoryKData15
+    elif ktype == '30':
+        model = HistoryKData30
+    elif ktype == '60':
+        model = HistoryKData60
+    else:
+        pass
 
     if stocks:
         assert isinstance(stocks, list), 'stocks must be a list type.'
@@ -108,7 +114,7 @@ def save_stocks_hist_data(stocks=None, start_date=None, end_date=None, ktype=Non
     本接口只能获取近3年的日线数据
     """
     log_save_type = 'all'
-    ktypes = list(['D', 'W', 'M'])
+    ktypes = ['D', 'W', 'M', '5', '15', '30', '60']
     assert ktype in ktypes, 'ktype must be one of %s' % ktypes
     if ktype.upper() == 'D':
         model = HistoryDataD
@@ -116,8 +122,16 @@ def save_stocks_hist_data(stocks=None, start_date=None, end_date=None, ktype=Non
         model = HistoryDataW
     elif ktype.upper() == 'M':
         model = HistoryDataM
-    # elif ktype == '5':
-    #     model = HistoryData5
+    elif ktype == '5':
+        model = HistoryData5
+    elif ktype == '15':
+        model = HistoryData15
+    elif ktype == '30':
+        model = HistoryData30
+    elif ktype == '60':
+        model = HistoryData60
+    else:
+        pass
 
     if stocks:
         assert isinstance(stocks, list), 'stocks must be list.'
@@ -155,7 +169,7 @@ def save_stocks_hist_data(stocks=None, start_date=None, end_date=None, ktype=Non
                 deleted = util_dal.delete_code_data(model, stock)
             else:
                 deleted = util_dal.delete_code_start_date_end_date_data(model, stock,
-                                                                              start_date, end_date)
+                                                                        start_date, end_date)
             if deleted:
                 transaction_dal.get_his_data(stock, start_date=start_date, end_date=end_date, ktype=ktype)
 
@@ -177,10 +191,7 @@ def save_stock_h_data_revote(stocks=None, start_date=None, end_date=None, autype
         end_date:string,结束日期 format：YYYY-MM-DD 为空时取去年今日
         autype:string,复权类型，qfq-前复权 hfq-后复权 None-不复权，默认为qfq
         index:Boolean，是否是大盘指数，默认为False
-        retry_count : int, 默认3,如遇网络等问题重复执行的次数
-        pause : int, 默认 0,重复请求数据过程中暂停的秒数，防止请求间隔时间太短出现的问题
     """
-    ktypes = ['D', 'W', 'M']
     log_save_type = 'all'
 
     if stocks:
