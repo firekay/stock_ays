@@ -140,6 +140,29 @@ def delete_insert_date_data(model, insert_date):
         return True
 
 
+def delete_code_date_data(model, code, date):
+    """删除给定股票代码的数据
+    
+    Args:
+        model: peewee定义的model, models.model.py中定义的
+        code: 股票代码
+    Returns:
+        bool: if success delete, return True, else return False
+    """
+    logger.info('Begin delete %s data, code is: %s, date is: %s.'
+                % (model.__name__, code, date))
+    try:
+        model.delete().where(model.code == code, model.date == date).execute()
+    except Exception:
+        logger.exception('Error delete %s data, code is: %s, date is: %s.'
+                    % (model.__name__, code, date))
+        return False
+    else:
+        logger.info('Success delete %s data, code is: %s, date is: %s.'
+                    % (model.__name__, code, date))
+        return True
+
+
 def delete_code_data(model, code):
     """删除给定股票代码的数据
     
