@@ -286,6 +286,7 @@ def save_tick_data_today():
 
 def save_big_index_data():
     """获取大盘指数实时行情列表，以表格的形式展示大盘指数实时行情。"""
+    util_dal.delete_date_data(BigIndexData, today_line)
     transaction_dal.save_big_index_data()
 
 
