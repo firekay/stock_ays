@@ -61,10 +61,10 @@ class HistoryKDataM(BaseModel):
 class HistoryKData5(BaseModel):
     """历史行情: D"""
     class Meta:
-        db_table = 'history_k_data_d'
+        db_table = 'history_k_data_5'
 
     code = CharField(8)
-    date = DateField('%Y-%m-%d')
+    date = CharField(32)
     autype = CharField(5)  # 复权类型: qfq-前复权 hfq-后复权 None-不复权，默认为qfq
     open = DecimalField(max_digits=8, decimal_places=3)
     close = DecimalField(max_digits=8, decimal_places=3)
@@ -76,10 +76,10 @@ class HistoryKData5(BaseModel):
 class HistoryKData15(BaseModel):
     """历史行情: D"""
     class Meta:
-        db_table = 'history_k_data_d'
+        db_table = 'history_k_data_15'
 
     code = CharField(8)
-    date = DateField('%Y-%m-%d')
+    date = CharField(32)
     autype = CharField(5)  # 复权类型: qfq-前复权 hfq-后复权 None-不复权，默认为qfq
     open = DecimalField(max_digits=8, decimal_places=3)
     close = DecimalField(max_digits=8, decimal_places=3)
@@ -91,10 +91,10 @@ class HistoryKData15(BaseModel):
 class HistoryKData30(BaseModel):
     """历史行情: D"""
     class Meta:
-        db_table = 'history_k_data_d'
+        db_table = 'history_k_data_30'
 
     code = CharField(8)
-    date = DateField('%Y-%m-%d')
+    date = CharField(32)
     autype = CharField(5)  # 复权类型: qfq-前复权 hfq-后复权 None-不复权，默认为qfq
     open = DecimalField(max_digits=8, decimal_places=3)
     close = DecimalField(max_digits=8, decimal_places=3)
@@ -106,10 +106,10 @@ class HistoryKData30(BaseModel):
 class HistoryKData60(BaseModel):
     """历史行情: D"""
     class Meta:
-        db_table = 'history_k_data_d'
+        db_table = 'history_k_data_60'
 
     code = CharField(8)
-    date = DateField('%Y-%m-%d')
+    date = CharField(32)
     autype = CharField(5)  # 复权类型: qfq-前复权 hfq-后复权 None-不复权，默认为qfq
     open = DecimalField(max_digits=8, decimal_places=3)
     close = DecimalField(max_digits=8, decimal_places=3)
@@ -192,10 +192,10 @@ class HistoryDataM(BaseModel):
 class HistoryData5(BaseModel):
     """历史行情: D"""
     class Meta:
-        db_table = 'history_data_d'
+        db_table = 'history_data_5'
 
     code = CharField(8)
-    date = DateField('%Y-%m-%d')
+    date = CharField(32)
     open = DecimalField(max_digits=8, decimal_places=3)
     hign = DecimalField(max_digits=8, decimal_places=3)
     close = DecimalField(max_digits=8, decimal_places=3)
@@ -215,10 +215,10 @@ class HistoryData5(BaseModel):
 class HistoryData15(BaseModel):
     """历史行情: D"""
     class Meta:
-        db_table = 'history_data_d'
+        db_table = 'history_data_15'
 
     code = CharField(8)
-    date = DateField('%Y-%m-%d')
+    date = CharField(32)
     open = DecimalField(max_digits=8, decimal_places=3)
     hign = DecimalField(max_digits=8, decimal_places=3)
     close = DecimalField(max_digits=8, decimal_places=3)
@@ -238,10 +238,10 @@ class HistoryData15(BaseModel):
 class HistoryData30(BaseModel):
     """历史行情: D"""
     class Meta:
-        db_table = 'history_data_d'
+        db_table = 'history_data_30'
 
     code = CharField(8)
-    date = DateField('%Y-%m-%d')
+    date = CharField(32)
     open = DecimalField(max_digits=8, decimal_places=3)
     hign = DecimalField(max_digits=8, decimal_places=3)
     close = DecimalField(max_digits=8, decimal_places=3)
@@ -261,10 +261,10 @@ class HistoryData30(BaseModel):
 class HistoryData60(BaseModel):
     """历史行情: D"""
     class Meta:
-        db_table = 'history_data_d'
+        db_table = 'history_data_60'
 
     code = CharField(8)
-    date = DateField('%Y-%m-%d')
+    date = CharField(32)
     open = DecimalField(max_digits=8, decimal_places=3)
     hign = DecimalField(max_digits=8, decimal_places=3)
     close = DecimalField(max_digits=8, decimal_places=3)
