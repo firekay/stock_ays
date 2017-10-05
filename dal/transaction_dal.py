@@ -330,62 +330,82 @@ def save_revote_his_data(code, start=None, end=None, autype='qfq',
 
 def save_today_all_data():
     """一次性获取当前交易所有股票的行情数据（如果是节假日，即为上一交易日，结果显示速度取决于网速）"""
-    logger.info('Begin get %s\'s all stock data.' % today_line)
+    logger.info('Begin get and save today all stock data, the date is: %s' % today_line)
     try:
         data_df = ts.get_today_all()
-        data = data_df.values
-        data_dicts = [{'code': row[0], 'name': row[1], 'date': today_line, 'changepercent': row[2], 'trade': row[3],
-                       'open': row[4], 'hign': row[5], 'low': row[6], 'settlement': row[7], 'volume': row[8],
-                       'turnoverratio': row[9], 'amount': row[10], 'per': row[11], 'pb': row[12],
-                       'mktcap': row[13], 'nmc': row[14]} for row in data]
-        TodayAllData.insert_many(data_dicts).execute()
     except Exception as e:
-        logger.exception('Get %s\'s all stock data.' % today_line)
-    logger.info('End get %s\'s all stock data.' % today_line)
+        logger.exception('Error get today all stock data, the date is: %s' % today_line)
+    else:
+        if data_df is not None and not data_df.empty:
+            data = data_df.values
+            data_dicts = [{'code': row[0], 'name': row[1], 'date': today_line, 'changepercent': row[2], 'trade': row[3],
+                           'open': row[4], 'hign': row[5], 'low': row[6], 'settlement': row[7], 'volume': row[8],
+                           'turnoverratio': row[9], 'amount': row[10], 'per': row[11], 'pb': row[12],
+                           'mktcap': row[13], 'nmc': row[14]} for row in data]
+            try:
+                TodayAllData.insert_many(data_dicts).execute()
+            except Exception as e:
+                logger.exception('Error save today all stock data, the date is: %s' % today_line)
+                logger.error('Error data is: %s' % data)
+
+            else:
+                logger.info('Success get and save today all stock data, the date is: %s' % today_line)
+        else:
+            logger.warn('Empty get and save today all stock data, the date is: %s' % today_line)
 
 
-def save_tick_data(code=None, date=None, retry_count=RETRY_COUNT):
+def save_tick_data():
     """获取个股以往交易历史的分笔数据明细，通过分析分笔数据，可以大致判断资金的进出情况。
     
     在使用过程中，对于获取股票某一阶段的历史分笔数据，需要通过参入交易日参数并append到一个DataFrame
       或者直接append到本地同一个文件里。历史分笔接口只能获取当前交易日之前的数据，
       当日分笔历史数据请调用get_today_ticks()接口或者在当日18点后通过本接口获取.
+    """
+    logger.info('Begin save tick data thread.')
 
-    当code为None,或者code长度不为6,或者date为None时直接返回None"""
-    if code is None or date is None:
-        logger.error('Get tick data. But code or date is None.')
-        return
-    logger.info('Begin get %s\'s tick data in %s.' % (code, date))
-    try:
-        data_df = ts.get_tick_data(code, date,retry_count)
-        if data_df is not None and not data_df.empty:
-            data = data_df.values
+    while True:
+        if tick_data_queue.empty():
+            time.sleep(0.01)
+        else:
+            tick_data = tick_data_queue.get()
+            logger.info('tick_data_queue\'s size is: %s' % tick_data_queue.qsize())
+            code = tick_data[0]
+            date = tick_data[1]
+            data = tick_data[2]
+            # when date is stop, stop this thread. (control in transaction_service)
+            if date == 'stop':
+                logger.info('Last tick data stock code is: %s.' % code)
+                logger.info('Stop save tick data thread.')
+                break
+            logger.info('Get tick data from tick_data_queue, stock code is: %s, data is: %s'
+                        % (code, date))
             data_dicts = [{'code': code, 'date': date, 'time': row[0], 'price': row[1], 'pchange': '',
                            'change': row[2], 'volume': row[3], 'amount': row[4], 'type': row[5]}
                           for row in data]
-            TickData.insert_many(data_dicts).execute()
-            logger.info('End get %s\'s tick data in %s.' % (code, date))
-        else:
-            logger.info('Empty get %s\'s tick data in %s.' % (code, date))
-    except Exception as e:
-        logger.exception('Error Get %s\'s tick data in %s.' % (code, date))
+            logger.info('Begin save tick data, code is: %s, date is: %s.' % (code, date))
+            try:
+                TickData.insert_many(data_dicts).execute()
+            except Exception as e:
+                logger.exception('Error save tick data, code is: %s, date is: %s.' % (code, date))
+                logger.error('Error data is: %s' % data)
+            else:
+                logger.info('Success save tick data, code is: %s, date is: %s.' % (code, date))
 
 
-def get_tick_data(code, date, retry_count=RETRY_COUNT, pause=PAUSE, src='sn'):
-    if code is None or date is None:
-        logger.error('Get tick data. But code or date is None.')
-        return
-    logger.info('Begin get %s\'s tick data in %s.' % (code, date))
+def get_tick_data(code, date, retry_count=RETRY_COUNT, pause=PAUSE):
+    """获取个股以往交易历史的分笔数据明细，通过分析分笔数据，可以大致判断资金的进出情况。"""
+    logger.info('Begin get tick data, code is: %s, date is: %s.' % (code, date))
     try:
-        data_df = ts.get_tick_data(code, date, retry_count)
+        data_df = ts.get_tick_data(code, date, retry_count, pause)
+    except Exception as e:
+        logger.exception('Error get tick data, code is :%s, date is %s.' % (code, date))
+    else:
         if data_df is not None and not data_df.empty:
             data = data_df.values
-            tick_data_queue.put(code, data)
-            logger.info('End get %s\'s tick data in %s.' % (code, date))
+            tick_data_queue.put((code, date, data))
+            logger.info('Success get tick data,  code is :%s, date is %s.' % (code, date))
         else:
-            logger.info('Empty get %s\'s tick data in %s.' % (code, date))
-    except Exception as e:
-        logger.exception('Error Get %s\'s tick data in %s.' % (code, date))
+            logger.warn('Empty get tick data,  code is :%s, date is %s.' % (code, date))
 
 
 def save_big_index_data():
@@ -398,36 +418,56 @@ def save_big_index_data():
                        'preclose': row[4], 'close': row[5], 'high': row[6], 'low': row[7],
                        'volume': row[8], 'amount': row[9]} for row in data]
         BigIndexData.insert_many(data_dicts).execute()
-        logger.info('End get and save %s\'s big index data.' % today_line)
     except Exception as e:
         logger.exception('Error get and save %s\'s big index data.' % today_line)
+    else:
+        logger.info('Success get and save %s\'s big index data.' % today_line)
 
 
-def save_big_trade_data(code=None, date=None, vol=400, retry_count=RETRY_COUNT, pause=PAUSE):
-    logger.info('Begin save %s\'s big trade data in %s.' % (code, date))
-    try:
-        data_df = ts.get_sina_dd(code, date, vol, retry_count, pause)
-        data = data_df.values
-        data_dicts = [{'date': date, 'code': row[0], 'name': row[1], 'time': row[2], 'price': row[3],
-                       'volume': row[4], 'preprice': row[5], 'type': row[6]} for row in data]
-        BigTradeData.insert_many(data_dicts).execute()
-        logger.info('End save %s\'s big trade data in %s.' % (code, date))
-    except Exception as e:
-        logger.exception('Error save %s\'s big trade data in %s.' % (code, date))
+def save_big_trade_data():
+    logger.info('Begin save big trade data thread.')
+    while True:
+        if big_trade_data_queue.empty():
+            time.sleep(0.01)
+        else:
+            big_trade_data = big_trade_data_queue.get()
+            logger.info('big_trade_data_queue\'s size is: %s' % big_trade_data_queue.qsize())
+            code = big_trade_data[0]
+            date = big_trade_data[1]
+            data = big_trade_data[2]
+            # when date is stop, stop this thread. (control in transaction_service)
+            if date == 'stop':
+                logger.info('Last big trade data stock code is: %s.' % code)
+                logger.info('Stop save big trade data thread.')
+                break
+            logger.info('Get big trade data from big_trade_data_queue, stock code is: %s, data is: %s'
+                        % (code, date))
+            data_dicts = [{'date': date, 'code': row[0], 'name': row[1], 'time': row[2], 'price': row[3],
+                           'volume': row[4], 'preprice': row[5], 'type': row[6]} for row in data]
+            logger.info('Begin save big trade data, code is: %s, date is: %s.' % (code, date))
+            try:
+                BigTradeData.insert_many(data_dicts).execute()
+            except Exception as e:
+                logger.exception('Error save big trade data, code is: %s, date is: %s.' % (code, date))
+                logger.error('Error data is: %s' % data)
+            else:
+                logger.info('Success save big trade data, code is: %s, date is: %s.' % (code, date))
 
 
 def get_big_trade_data(code, date, vol=400, retry_count=RETRY_COUNT, pause=PAUSE):
-    logger.info('Begin get %s\'s big trade data in %s.' % (code, date))
+    """获取大单交易数据，默认为大于等于400手，数据来源于新浪财经。"""
+    logger.info('Begin get big trade data, code is: %s, date is: %s.' % (code, date))
     try:
         data_df = ts.get_sina_dd(code, date, vol, retry_count, pause)
-        if not data_df:
-            logger.info('Empty get %s\'s big trade data in %s.' % (code, date))
-        else:
+    except Exception as e:
+        logger.exception('Error get big trade data, code is: %s, date is: %s.' % (code, date))
+    else:
+        if data_df is not None and not data_df.empty:
             data = data_df.values
             big_trade_data_queue.put((code, date, data))
-            logger.info('End get %s\'s big trade data in %s.' % (code, date))
-    except Exception as e:
-        logger.exception('Error get %s\'s big trade data in %s.' % (code, date))
+            logger.info('Success get big trade data, code is: %s, date is: %s.' % (code, date))
+        else:
+            logger.warn('Empty get big trade data, code is: %s, date is: %s.' % (code, date))
 
 
 def get_news(top=None, show_content=True):

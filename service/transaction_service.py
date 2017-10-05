@@ -235,10 +235,11 @@ def save_today_all_stocks_hist_data(ktype=None):
 
 def save_today_all_data():
     """一次性获取当前交易所有股票的行情数据（如果是节假日，即为上一交易日，结果显示速度取决于网速）"""
+    util_dal.delete_date_data(TodayAllData, today_line)
     transaction_dal.save_today_all_data()
 
 
-def save_tick_data(stocks, date):
+def save_tick_data(date, stocks=None):
     """获取给定日期的交易历史的分笔数据明细.
 
     通过分析分笔数据，可以大致判断资金的进出情况。在使用过程中，对于获取股票某一阶段的历史分笔数据，需要通过参入交易日参数并append到一个DataFrame或者直接append到本地同一个文件里。历史分笔接口只能获取当前交易日之前的数据，当日分笔历史数据请调用get_today_ticks()接口或者在当日18点后通过本接口获取.
@@ -253,31 +254,30 @@ def save_tick_data(stocks, date):
         assert isinstance(stocks, list), 'stocks must be a list type.'
         last_stock_code = stocks[-1]
         log_save_type = 'select'
-    logger.info('Last stock code is: ' + last_stock_code)
-    logger.info('Begin save %s tick data, date is: %s' % (log_save_type, date))
-    for stock in stocks:
-        transaction_dal.save_tick_data(stock.code, date)
-    save_tick_data_thread = threading.Thread(name='save_tick_data', target=transaction_dal.save_tick_data,
-                                             args=(last_stock_code,))
+    logger.info('Last stock code is: %s, save_tick_data.' % last_stock_code)
+    logger.info('Begin save %s tick datas, date is: %s' % (log_save_type, date))
+    save_tick_data_thread = threading.Thread(name='save_tick_data', target=transaction_dal.save_tick_data)
     save_tick_data_thread.start()
-    threading.Timer(1, check_thread_alive, args=(save_tick_data_thread,)).start()
+    # threading.Timer(1, check_thread_alive, args=(save_tick_data_thread,)).start()
     for stock in stocks:
-        transaction_dal.get_tick_data(stock, date)
-    logger.info('End save %s tick data, date is: %s' % (log_save_type, date))
+        if util_dal.delete_code_date_data(TickData, stock, date):
+            transaction_dal.get_tick_data(stock, date)
+    logger.info('End save %s tick datas, date is: %s' % (log_save_type, date))
+    transaction_dal.tick_data_queue.put((last_stock_code, 'stop', 'stop'))
 
 
-def save_tick_data(stocks, start_date, end_date):
+def save_tick_data_range(stocks, start_date, end_date):
     """获取给定日期范围的交易历史的分笔数据明细."""
     for date_mid in util.range_date(start_date, end_date):
         save_tick_data(stocks, date_mid)
 
 
 # TODO: Add get_today_ticks method
-# def save_tick_data_today():
-#     """获取今日交易的历史分笔数据"""
-#     save_tick_data(today_line)
-#
-#
+def save_tick_data_today():
+    """获取今日交易的历史分笔数据, 交易进行中使用"""
+    save_tick_data(today_line)
+
+
 # def save_one_years_tick_data():
 #     """获取近一年交易的历史分笔数据"""
 #     for date in [ date for date in (datetime.datetime.now() + datetime.timedelta(-n) for n in range(365))]:
@@ -289,52 +289,45 @@ def save_big_index_data():
     transaction_dal.save_big_index_data()
 
 
-def save_big_trade_data(stocks=None, start_date=None, end_date=None):
+def save_big_trade_data(date, stocks=None):
     """获取大单交易数据，默认为大于等于400手，数据来源于新浪财经。
     
     Args:
         stocks: 股票列表, 为空则代表全部
-        start_date: 开始时间, 为空代表当天
-        end_date: 结束时间. 为空则表示只有start_date启动用, 
-                        并且如果开始时间为空则end_date无意义,
-                        否则, 得到的是start_date与end_date之间的数据.
+        date: 日期，格式YYYY-MM-DD
         """
     last_stock_code = None
     log_save_type = 'all'
 
-    if not stocks:
+    if stocks is None:
         stocks = base_service.get_stocks()
     else:
         assert isinstance(stocks, list), 'stocks must be a list type.'
         last_stock_code = stocks[-1]
         log_save_type = 'select'
-    logger.info('Last stock code is: ' + last_stock_code)
-    if start_date:
-        # 没有end_date的时候, 得到的是start_date这一天的, 否则调用start到end(不包括)之间的数据
-        if end_date:
-            logger.info('Begin save %s big trade data, start date is: %s, end date is: %s.' %
-                        (log_save_type, start_date, end_date))
-            [transaction_dal.save_big_trade_data(stock, date_mid)
-             for date_mid in util.range_date(start_date, end_date)
-             for stock in stocks]
-        else:
-            logger.info('Begin save %s big trade data, the date is: %s.' %
-                        (log_save_type, start_date))
-            [transaction_dal.save_big_trade_data(stock.code, start_date) for stock in stocks]
-    # 没有start_date, 则调用的是当天的数据
-    else:
-        start_date = util.get_today_line()
-        logger.info('Begin save %s big trade data, the date is: %s.' %
-                    (log_save_type, start_date))
-        [transaction_dal.save_big_trade_data(stock.code, start_date) for stock in stocks]
-    # for logs
-    if start_date:
-        if end_date:
-            logger.info('End save %s big trade data, start date is: %s, end date is: %s.' %
-                        (log_save_type, start_date, end_date))
-    else:
-        logger.info('End save %s big trade data, the date is: %s.' %
-                    (log_save_type, start_date))
+    logger.info('Last stock code is: %s, save_big_trade_data.' % last_stock_code)
+    logger.info('Begin save %s big trade datas, date is: %s.' % (log_save_type, date))
+    save_big_trade_data_thread = threading.Thread(name='save_big_trade_data',
+                                                  target=transaction_dal.save_big_trade_data)
+    save_big_trade_data_thread.start()
+    # threading.Timer(1, check_thread_alive, args=(save_big_trade_data_thread,)).start()
+    for stock in stocks:
+        if util_dal.delete_code_date_data(BigTradeData, stock, date):
+            transaction_dal.get_big_trade_data(stock, date)
+    logger.info('End save %s big trade datas, date is: %s.' % (log_save_type, date))
+    transaction_dal.big_trade_data_queue.put((last_stock_code, 'stop', 'stop'))
+
+
+def save_big_trade_data_range(start_date, end_date, stocks=None):
+    """获取大单交易数据，默认为大于等于400手，数据来源于新浪财经。
+    
+    Args:
+        stocks: 股票列表, 为空则代表全部
+        start_date: 开始时间
+        end_date: 结束时间., 
+    """
+    for date_mid in util.range_date(start_date, end_date):
+        save_big_trade_data(date=date_mid, stocks=stocks)
 
 
 # def save_news():
