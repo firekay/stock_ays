@@ -135,7 +135,7 @@ class RevoteHistoryData(BaseModel):
     class Meta:
         db_table = 'revote_history_data'
 
-    code = CharField()
+    code = CharField(8)
     autype = CharField(5)  # 复权类型: qfq-前复权 hfq-后复权 None-不复权，默认为qfq
     date = DateField('%Y-%m-%d')
     open = DecimalField(max_digits=8, decimal_places=3)
@@ -151,22 +151,22 @@ class TodayAllData(BaseModel):
     class Meta:
         db_table = 'today_all_data'
 
-    code = CharField()
-    name = CharField()
+    code = CharField(8)
+    name = CharField(32)
     date = DateField('%Y-%m-%d')
     changepercent = DecimalField(max_digits=8, decimal_places=3)
     trade = DecimalField(max_digits=8, decimal_places=3)
     open = DecimalField(max_digits=8, decimal_places=3)
     hign = DecimalField(max_digits=8, decimal_places=3)
-    close = DecimalField(max_digits=8, decimal_places=3)
     low = DecimalField(max_digits=8, decimal_places=3)
+    settlement = DecimalField(max_digits=8, decimal_places=3)
     volume = DecimalField(max_digits=12, decimal_places=2)
     turnoverratio = DecimalField(max_digits=8, decimal_places=5)
     amount = DecimalField(max_digits=15, decimal_places=3)
     per = DecimalField(max_digits=10, decimal_places=4)
     pb = DecimalField(max_digits=10, decimal_places=4)
-    mktcap = DecimalField(max_digits=15, decimal_places=2)
-    nmc = DecimalField(max_digits=15, decimal_places=2)
+    mktcap = DecimalField(max_digits=15, decimal_places=3)
+    nmc = DecimalField(max_digits=15, decimal_places=3)
 
 
 class TickData(BaseModel):
@@ -174,12 +174,12 @@ class TickData(BaseModel):
     class Meta:
         db_table = 'tick_data'
 
-    code = CharField()
+    code = CharField(8)
     date = DateField('%Y-%m-%d')
     time = TimeField('%H:%M:%S')
     price = DecimalField(max_digits=10, decimal_places=2)
     pchange = DecimalField(max_digits=8, decimal_places=2)
-    change = DecimalField(max_digits=8, decimal_places=2)
+    change = CharField(32)
     volume = DecimalField(max_digits=12, decimal_places=2)
     amount = DecimalField(max_digits=12, decimal_places=2)
     type = CharField()
@@ -191,15 +191,15 @@ class BigIndexData(BaseModel):
         db_table = 'big_index'
 
     date = DateField('%Y-%m-%d')
-    code = CharField()
-    name = CharField()
+    code = CharField(8)
+    name = CharField(32)
     change = DecimalField(max_digits=5, decimal_places=2)
     open = DecimalField(max_digits=12, decimal_places=4)
     preclose = DecimalField(max_digits=12, decimal_places=4)
     close = DecimalField(max_digits=12, decimal_places=4)
-    hign = DecimalField(max_digits=12, decimal_places=4)
+    high = DecimalField(max_digits=12, decimal_places=4)
     low = DecimalField(max_digits=12, decimal_places=4)
-    volume = DecimalField(max_digits=12, decimal_places=2)
+    volume = DecimalField(max_digits=16, decimal_places=0)
     amount = DecimalField(max_digits=12, decimal_places=4)
 
 
@@ -209,8 +209,8 @@ class BigTradeData(BaseModel):
         db_table = 'big_trade_data'
 
     date = DateField('%Y-%m-%d')
-    code = CharField()
-    name = CharField()
+    code = CharField(8)
+    name = CharField(32)
     time = TimeField('%H:%M:%S')
     price = DecimalField(max_digits=8, decimal_places=3)
     volume = DecimalField(max_digits=12, decimal_places=2)
@@ -371,8 +371,8 @@ class IndustryClassified(BaseModel):
     class Meta:
         db_table = 'industry_classified'
         
-    code = CharField()
-    name = CharField()    
+    code = CharField(8)
+    name = CharField(32)    
     c_name = CharField()
 
 
@@ -381,8 +381,8 @@ class ConceptClassified(BaseModel):
     class Meta:
         db_table = 'concept_classified'
  
-    code = CharField()
-    name = CharField()    
+    code = CharField(8)
+    name = CharField(32)    
     c_name = CharField()
     
     
@@ -391,8 +391,8 @@ class SmeClassified(BaseModel):
     class Meta:
         db_table = 'sme_classified'
         
-    code = CharField()
-    name = CharField()    
+    code = CharField(8)
+    name = CharField(32)    
 
 
 class AreaClassified(BaseModel):
@@ -400,8 +400,8 @@ class AreaClassified(BaseModel):
     class Meta:
         db_table = 'area_classified'
  
-    code = CharField()
-    name = CharField()    
+    code = CharField(8)
+    name = CharField(32)    
     area = CharField()    
 
     
@@ -410,8 +410,8 @@ class GemClassified(BaseModel):
     class Meta:
         db_table = 'gem_classified'
         
-    code = CharField()
-    name = CharField()    
+    code = CharField(8)
+    name = CharField(32)    
 
     
 class StClassified(BaseModel):
@@ -419,8 +419,8 @@ class StClassified(BaseModel):
     class Meta:
         db_table = 'st_classified'
         
-    code = CharField()
-    name = CharField()    
+    code = CharField(8)
+    name = CharField(32)    
 
 
 class Hs300(BaseModel):
@@ -428,8 +428,8 @@ class Hs300(BaseModel):
     class Meta:
         db_table = 'hs300'
         
-    code = CharField()
-    name = CharField()    
+    code = CharField(8)
+    name = CharField(32)    
     date = CharField()    
     weight = CharField()    
 
@@ -439,8 +439,8 @@ class Sz50(BaseModel):
     class Meta:
         db_table = 'sz50'
         
-    code = CharField()
-    name = CharField()    
+    code = CharField(8)
+    name = CharField(32)    
  
 
 class Zz500(BaseModel):
@@ -457,8 +457,8 @@ class Terminated(BaseModel):
     class Meta:
         db_table = 'terminated'
         
-    code = CharField()
-    name = CharField()    
+    code = CharField(8)
+    name = CharField(32)    
     o_date = CharField()    
     t_date = CharField()    
     insert_date = CharField()    
@@ -469,8 +469,8 @@ class Suspend(BaseModel):
     class Meta:
         db_table = 'suspend'
         
-    code = CharField()
-    name = CharField()    
+    code = CharField(8)
+    name = CharField(32)    
     o_date = CharField()    
     t_date = CharField()    
     insert_date = CharField()    
@@ -485,7 +485,7 @@ class StockBasic(BaseModel):
         db_table = 'stock_basic'
 
     code = CharField(8)
-    name = CharField()
+    name = CharField(32)
     industry = CharField()
     area = CharField()
     pe = DecimalField(max_digits=12, decimal_places=2)
