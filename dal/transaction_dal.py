@@ -417,7 +417,8 @@ def get_tick_data(code, date, retry_count=RETRY_COUNT, pause=PAUSE):
     except Exception as e:
         logger.exception('Error get tick data, code is :%s, date is %s.' % (code, date))
     else:
-        if data_df is not None and not data_df.empty:
+        # 当当天没有数据的时候, 返回的都是NaN
+        if data_df is not None and not data_df.empty and data_df.price.any():
             data = data_df.values
             tick_data_queue.put((code, date, data))
             logger.info('Success get tick data,  code is :%s, date is %s.' % (code, date))
