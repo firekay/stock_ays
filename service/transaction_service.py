@@ -110,6 +110,16 @@ def save_stocks_k_data(stocks=None, start_date='', end_date='', autype='qfq', in
     transaction_dal.stock_k_data_queue.put((last_stock_code, 'stop', 'stop', 'stop'))
 
 
+def save_yesterday_stocks_k_data(stocks=None, ktype=None):
+    """下载并保存昨天stocks k数据"""
+    save_stocks_k_data(stocks=stocks, start_date=yesterday_line, end_date=yesterday_line, ktype=ktype)
+
+
+def save_today_stocks_k_data(stocks=None, ktype=None):
+    """下载并保存当天stocks k数据"""
+    save_stocks_k_data(stocks=stocks, start_date=today_line, end_date=today_line, ktype=ktype)
+
+
 def save_stocks_hist_data(stocks=None, start_date=None, end_date=None, ktype=None):
     """获取个股历史交易数据（包括均线数据），可以通过参数设置获取日k线、周k线、月k线数据。
     本接口只能获取近3年的日线数据
@@ -230,14 +240,15 @@ def save_stock_h_data_revote(stocks=None, start_date=None, end_date=None, autype
     transaction_dal.h_revote_data_queue.put((last_stock_code, 'stop', 'stop', 'stop'))
 
 
-def save_yesterday_all_stocks_hist_data(ktype=None):
-    """下载并保存昨天数据"""
-    save_stocks_hist_data(yesterday_line, yesterday_line, ktype=ktype)
+def save_yesterday_stocks_hist_data(stocks=None, ktype=None):
+    """下载并保存昨天stocks hist数据"""
+    save_stocks_hist_data(stocks=stocks, start_date=yesterday_line, end_date=yesterday_line, ktype=ktype)
 
 
-def save_today_all_stocks_hist_data(ktype=None):
-    """下载并保存当天数据"""
-    save_stocks_hist_data(today_line, today_line, ktype=ktype)
+def save_today_stocks_hist_data(stocks=None, ktype=None):
+    """下载并保存当天 stocks hist数据"""
+    save_stocks_hist_data(stocks=stocks, start_date=today_line, end_date=today_line, ktype=ktype)
+
 
 #
 # def save_realtime_quetes2file(codes):
@@ -332,7 +343,7 @@ def save_big_trade_data_range(start_date, end_date, stocks=None):
         start_date: 开始时间
         end_date: 结束时间., 
     """
-    for date_mid in util.range_date(start_date, end_date):
+    for date_mid in util.range_date_all_include(start_date, end_date):
         save_big_trade_data(date=date_mid, stocks=stocks)
 
 
