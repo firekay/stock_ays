@@ -6,6 +6,7 @@ import tushare as ts
 from dal.constants import *
 from models.model import *
 from utils import util
+from dal import util_dal
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +36,7 @@ def get_distribution_plans_data(year, top=25, retry_count=RETRY_COUNT, pause=PAU
     """
     logger.info('Begin get distribution plans, the year is %s' % year)
     try:
-        data_df = ts.profit_data(year, top, retry_count, pause)
+        data_df = ts.profit_data(year=year, top=top, retry_count=retry_count, pause=pause)
     except Exception as e:
         logger.exception('Error get distribution plans, the year is %s' % year)
         return None
@@ -80,7 +81,7 @@ def get_performance_forecast(year, quarter):
     logger.info('Begin get performance forecast data, the year is: %s, quarter is: %s'
                 % (year, quarter))
     try:
-        data_df = ts.forecast_data(year, quarter)
+        data_df = ts.forecast_data(year=year, quarter=quarter)
     except Exception as e:
         logging.exception('Error get performance forecast data, the year is: %s, quarter is: %s'
                           % (year, quarter))
@@ -116,7 +117,7 @@ def get_restricted_stock(year=None, month=None, retry_count=RETRY_COUNT, pause=P
     logger.info('Begin get restricted stock data, the year is: %s, month is: %s'
                 % (year, month))
     try:
-        data_df = ts.xsg_data(year, month, retry_count, pause)
+        data_df = ts.xsg_data(year=year, month=month, retry_count=retry_count, pause=pause)
     except Exception as e:
         logging.exception('Error get restricted stock data, the year is: %s, month is: %s'
                 % (year, month))
@@ -151,26 +152,12 @@ def save_restricted_stock(data_dicts, year, month):
         return False
 
 
-def delete_restricted_stock(year, month):
-    logger.info('Begin delete restricted stock data, the year is: %s, month is: %s'
-                % (year, month))
-    try:
-        RestrictedStock.delete().where(RestrictedStock.year == year, RestrictedStock.month == month).execute()
-        logger.info('Success delete restricted stock data, the year is: %s, month is: %s'
-                    % (year, month))
-        return True
-    except:
-        logger.exception('Error delete restricted stock data, the year is: %s, month is: %s'
-                         % (year, month))
-        return False
-
-
-def get_fund_holdings(year, quarter):
+def get_fund_holdings(year, quarter, retry_count=RETRY_COUNT, pause=PAUSE):
     _check_input(year, quarter)
     logger.info('Begin get fund holdings data, the year is: %s, quarter is: %s'
                 % (year, quarter))
     try:
-        data_df = ts.fund_holdings(year, quarter)
+        data_df = ts.fund_holdings(year=year, quarter=quarter, retry_count=retry_count, pause=pause)
     except Exception:
         logging.exception('Error get fund holdings data, the year is: %s, quarter is: %s'
                           % (year, quarter))
@@ -295,7 +282,7 @@ class FinancingSecuritiesDetailShDal(object):
     def delete_some_days_data(self, date=None, start_date=None, end_date=None):
         # date must be not None, or start_date and end_date must not None.
         delete_ok = True
-        if date:
+        if date is not None:
             logger.info('Begin delete financing securities details sh data. Date is %s' % date)
             try:
                 FinancingSecuritiesDetailSh.delete()\
@@ -306,7 +293,7 @@ class FinancingSecuritiesDetailShDal(object):
                 delete_ok = False
                 logger.exception('Error delete financing securities details sh data. Date is %s'
                                  % date)
-        elif start_date and end_date:
+        elif start_date is not None and end_date is not None:
             logger.info('Begin delete financing securities details sh data. Start_date is %s,'
                         ' end_date is %s' % (start_date, end_date))
             try:
@@ -323,31 +310,33 @@ class FinancingSecuritiesDetailShDal(object):
             raise TypeError('date must be not None, or start_date and end_date must not None.')
         return delete_ok
 
-    def get_financing_securities_detail_sh(self, date='', start_date='', end_date='',
+    def get_financing_securities_detail_sh(self, date=None, start_date=None, end_date=None,
                                            retry_count=RETRY_COUNT, pause = PAUSE):
         # 1. 参数全为空; 2. 只有date 3. 只有start_date和end_date
         # logger.info('Begin get financing securities details sh data. Date is %s,'
         #             ' start_date is %s, end_date is %s' % (date, start_date, end_date))
-        if date:
+        if date is not None:
             logger.info('Begin get financing securities details sh data. Date is %s' % date)
             try:
                 data_df = ts.sh_margin_details(date=date, retry_count=retry_count, pause=pause)
             except Exception:
                 logger.exception('Begin get financing securities details sh data. Date is %s' % date)
                 return None
-        elif start_date and end_date:
+        elif start_date is not None and end_date is not None:
             logger.info('Begin get financing securities details sh data.'
                         ' Start_date is %s, end_date is %s.' % (start_date, end_date))
             try:
-                data_df = ts.sh_margin_details(start=start_date, end=end_date)
+                data_df = ts.sh_margin_details(start=start_date, end=end_date,
+                                               retry_count=retry_count, pause=pause)
             except Exception:
-                logger.exception('Begin get financing securities details sh data.'
+                logger.exception('Error get financing securities details sh data.'
                                  ' Start_date is %s, end_date is %s.' % (start_date, end_date))
                 return None
         elif not date and not start_date and not end_date:
             logger.info('Begin get financing securities details sh data.')
             try:
-                data_df = ts.sh_margin_details()
+                data_df = ts.sh_margin_details(date='', start='', end='',
+                                               retry_count=retry_count, pause=pause)
             except Exception:
                 logger.exception('Begin get financing securities details sh data.')
                 return None
@@ -355,12 +344,14 @@ class FinancingSecuritiesDetailShDal(object):
             raise TypeError('1. 参数全为空; 2. 只有date 3. 只有start_date和end_date')
         data_dicts = []
         if data_df.empty:
-            logger.warn('Empty financing securities details sh data.')
+            logger.warn('Empty get financing securities details sh data. date is: %s, '
+                        'start_date is %s, end_date is: %s' % (date, start_date, end_date))
         else:
-            data_dicts = [{'op_date': row[0], 'stockCode': row[1], 'security_abbr': row[2], 'rzye': row[3],
+            data_dicts = [{'op_date': row[0], 'stock_code': row[1], 'security_abbr': row[2], 'rzye': row[3],
                            'rzmre': row[4], 'rzche': row[5], 'rqyl': row[6], 'rqmcl': row[7],
                            'rqchl': row[8]} for row in data_df.values]
-            logger.info('Success financing securities details sh data.')
+            logger.info('Success get financing securities details sh data. date is %s,'
+                        'start_date is %s, end_date is: %s' % (date, start_date, end_date))
         return data_dicts
 
     def save_financing_securities_detail_sh(self, data_dicts, date=None, start_date=None, end_date=None):
@@ -440,97 +431,37 @@ class FinancingSecuritiesSzDal(object):
     
 class FinancingSecuritiesDetailSzDal(object):
 
-    def delete_some_days_data(self, date=None, start_date=None, end_date=None):
-        # date must be not None, or start_date and end_date must not None.
+    def delete_some_day_data(self, date):
+        # date must be not None
+        assert date is not None, 'date must be not None or \'\''
         delete_ok = True
         logger.info('Begin delete financing securities details sz data. Date is %s' % date)
-        if date:
-            try:
-                FinancingSecuritiesDetailSz.delete()\
-                    .where(FinancingSecuritiesDetailSz.op_date == date).execute()
-                logger.info('Success delete financing securities details sz data. Date is %s'
-                            % date)
-            except Exception:
-                delete_ok = False
-                logger.exception('Error delete financing securities details sz data. Date is %s'
-                                 % date)
-        elif start_date and end_date:
-            try:
-                FinancingSecuritiesDetailSz.delete()\
-                    .where(FinancingSecuritiesDetailSz.op_date >= start_date,
-                           FinancingSecuritiesDetailSz.op_date <= end_date).execute()
-                logger.info('Success delete financing securities details sz data. Start_date is %s,'
-                            ' end_date is %s' % (start_date, end_date))
-            except Exception:
-                delete_ok = False
-                logger.exception('Error delete financing securities details sz data. Start_date is %s,'
-                                 ' end_date is %s' % (start_date, end_date))
-        else:
-            raise TypeError('date must be not None, or start_date and end_date must not None.')
+        try:
+            FinancingSecuritiesDetailSz.delete()\
+                .where(FinancingSecuritiesDetailSz.op_date == date).execute()
+            logger.info('Success delete financing securities details sz data. Date is %s' % date)
+        except Exception:
+            delete_ok = False
+            logger.exception('Error delete financing securities details sz data. Date is %s' % date)
         return delete_ok
 
-    def get_financing_securities_detail_sz(self, date='', start_date='', end_date='',
+    def get_financing_securities_detail_sz(self, date,
                                            retry_count=RETRY_COUNT, pause=PAUSE):
-        # 1. 参数全为空; 2. 只有date 3. 只有start_date和end_date
-        logger.info('Begin get financing securities details sz data. Date is %s,'
-                    ' start_date is %s, end_date is %s' % (date, start_date, end_date))
-        if date:
-            logger.info('Begin get financing securities details sz data. Date is %s' % date)
-            try:
-                data_df = ts.sz_margin_details(date=date, retry_count=retry_count, pause=pause)
-            except Exception:
-                logger.exception('Begin get financing securities details sz data. Date is %s' % date)
-                return None
-        elif start_date and end_date:
-            logger.info('Begin get financing securities details sz data.'
-                        ' Start_date is %s, end_date is %s.' % (start_date, end_date))
-            try:
-                data_df = ts.sz_margin_details(start=start_date, end=end_date)
-            except Exception:
-                logger.exception('Begin get financing securities details sz data.'
-                                 ' Start_date is %s, end_date is %s.' % (start_date, end_date))
-                return None
-        elif not date and not start_date and not end_date:
-            logger.info('Begin get financing securities details sz data.')
-            try:
-                data_df = ts.sz_margin_details()
-            except Exception:
-                logger.exception('Begin get financing securities details sz data.')
-                return None
-        else:
-            raise TypeError('1. 参数全为空; 2. 只有date 3. 只有start_date和end_date')
+        assert date is not None, 'date must be not None or \'\''
+        logger.info('Begin get financing securities details sz data. Date is %s.' % date)
+        try:
+            data_df = ts.sz_margin_details(date=date, retry_count=retry_count, pause=pause)
+        except Exception:
+            logger.exception('Begin get financing securities details sz data. Date is %s' % date)
         data_dicts = []
-        if data_df.empty:
-            logger.warn('Empty financing securities details sz data.')
+        if data_df is None or data_df.empty:
+            logger.warn('Empty get financing securities details sz data date, date is %s.' % date)
         else:
-            data_dicts = [{'op_date': row[0], 'stockCode': row[1], 'security_abbr': row[2], 'rzye': row[3],
-                           'rzmre': row[4], 'rzche': row[5], 'rqyl': row[6], 'rqmcl': row[7],
-                           'rqchl': row[8]} for row in data_df.values]
-            logger.info('Success financing securities details sz data.')
+            data_dicts = [{'stock_code': row[0], 'security_abbr': row[1], 'rzmre': row[2], 'rzye': row[3],
+                           'rqmcl': row[4], 'rqyl': row[5], 'rqye': row[6], 'rzrqye': row[7],
+                           'op_date': row[8]} for row in data_df.values]
+            logger.info('Success get financing securities details sz data, date is: %s.' % date)
         return data_dicts
 
-    def save_financing_securities_detail_sz(self, data_dicts, date=None, start_date=None, end_date=None):
-        save_ok = True
-        assert data_dicts, 'data_dict must not empty and data_dict must not None'
-        assert date or (start_date and end_date), 'date not None, or start_date and end_date not None.'
-        if date:
-            logger.info('Begin save financing security details sz, date is %s' % date)
-        else:
-            logger.info('Begin save financing security details sz, start_date is %s,'
-                        ' end_date is %s.' % (start_date, end_date))
-        try:
-            FinancingSecuritiesDetailSz.insert_many(data_dicts).execute()
-            if date:
-                logger.info('Success save financing security details sz, date is %s' % date)
-            else:
-                logger.info('Success save financing security details sz, start_date is %s,'
-                            ' end_date is %s.' % (start_date, end_date))
-        except Exception:
-            save_ok = False
-            if date:
-                logger.exception('Error save financing security details sz, date is %s' % date)
-            else:
-                logger.exception('Error save financing security details sz, start_date is %s,'
-                                 ' end_date is %s.' % (start_date, end_date))
-        return save_ok
-
+    def save_financing_securities_detail_sz(self, data_dicts, date=None):
+        return util_dal.save_date_data(FinancingSecuritiesDetailSz, data_dicts, date)
