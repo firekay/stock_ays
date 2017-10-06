@@ -20,7 +20,16 @@ def date2str(date_s):
     return date_s.strftime('%Y-%m-%d')
 
 
-def range_date(start_str, end_str):
+def range_date_all_include(start_str, end_str):
+    """循环给定的时间字符串(包含开头和结尾)"""
+    start_d = str2date(start_str)
+    end_d = str2date(end_str)
+    while start_d <= end_d:
+        yield date2str(start_d)
+        start_d += delta1
+
+
+def range_date_exclude_end(start_str, end_str):
     """循环给定的时间字符串(包含开头, 不包含结尾)"""
     start_d = str2date(start_str)
     end_d = str2date(end_str)
@@ -95,7 +104,7 @@ def get_ndays_before_line(n):
 if __name__ == '__main__':
     start = '2016-01-01'
     end = '2016-02-02'
-    for date in range_date(start, end):
+    for date in range_date_exclude_end(start, end):
         print(date)
 
         # print(get_today())
