@@ -55,7 +55,7 @@ def save_lpr(year=None):
 
 
 def save_lpr_ma(year=None):
-    """上海银行间同业拆放利率（Shanghai Interbank Offered Rate，简称Shibor）
+    """贷款基础利率均值数据，目前只提供2013年以来的数据。
 
     Args:
         year: 年份(YYYY),默认为当前年份
