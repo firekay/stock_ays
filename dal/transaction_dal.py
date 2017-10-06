@@ -39,6 +39,11 @@ def get_stock_k_data(code, start_date='', end_date='', autype='qfq', index=False
         retry_count: 重试次数
         pause: 重试间隔
     """
+    def filter_start_and_end(obj,):
+        date_str = str(obj).split(' ')[0]
+        print(date_str)
+        return start_date <= date_str <= end_date
+
     if ktype is None:
         ktype = 'D'
     if start_date != '' or end_date != '':
@@ -58,16 +63,25 @@ def get_stock_k_data(code, start_date='', end_date='', autype='qfq', index=False
     else:
         if data_df is not None and not data_df.empty:
             # data_df['date'] = pd.Series(data_df.axes[0], index=data_df.index)
-            data = data_df.values
-            stock_k_data_queue.put((code, ktype, autype, data))
-            if start_date != '' or end_date != '':
-                logger.info('End get sotck %s history k data, start date is: %s, end date is: %s, ktype is: %s.'
-                            % (code, start_date, end_date, ktype))
+            # get one day data with result lots of days data, so filter only have between start_date and end_data.
+            if start_date != '' or start_date is not None:
+                data_df = data_df[data_df.date.map(lambda d: filter_start_and_end(d))]
+                if data_df is not None and not data_df.empty:
+                    data = data_df.values
+                    stock_k_data_queue.put((code, ktype, autype, data))
+                    logger.info('Success get sotck %s history k data, start date is: %s, end date is: %s, ktype is: %s.'
+                                % (code, start_date, end_date, ktype))
+                else:
+                    logger.warn('Empty get sotck %s history k data, start date is: %s, end date is: %s, ktype is %s.'
+                                % (code, start_date, end_date, ktype))
+
             else:
-                logger.info('End get stock %s history k data, all date, ktype is %s.' % (code, ktype))
+                data = data_df.values
+                stock_k_data_queue.put((code, ktype, autype, data))
+                logger.info('Success get stock %s history k data, all date, ktype is %s.' % (code, ktype))
         else:
             if start_date != '' or end_date != '':
-                logger.info('Empty get sotck %s history k data, start date is: %s, end date is: %s, ktype is %s.'
+                logger.warn('Empty get sotck %s history k data, start date is: %s, end date is: %s, ktype is %s.'
                             % (code, start_date, end_date, ktype))
             else:
                 logger.info('Empty get stock %s history k data, all date, ktype is: %s.' % (code, ktype))
