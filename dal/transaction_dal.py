@@ -21,7 +21,7 @@ today_tick_data_queue = Queue()
 big_trade_data_queue = Queue()
 
 
-def get_stock_k_data(code, start_date='', end_date='', autype='qfq', index=False,
+def get_stock_k_data(code, start_date=None, end_date=None, autype='qfq', index=False,
                      ktype=None, retry_count=RETRY_COUNT, pause=PAUSE):
     """获取k线数据的历史复权数据
     
@@ -48,11 +48,14 @@ def get_stock_k_data(code, start_date='', end_date='', autype='qfq', index=False
         ktype = 'D'
     ktypes = ['D', 'W', 'M', '5', '15', '30', '60']
     assert ktype in ktypes, 'ktype must be one of %s' % ktypes
-    if start_date != '' or end_date != '':
+    if start_date is not None or end_date is not None:
         logger.info('Begin get sotck %s history k data, start date is: %s, end date is: %s, ktype is %s.'
                     % (code, start_date, end_date, ktype))
     else:
         logger.info('Begin get stock %s history k data, all date, ktype is %s.' % (code, ktype))
+    # get_k_data must transmit '' not None
+    start_date = '' if start_date is None else start_date
+    end_date = '' if end_date is None else end_date
     try:
         data_df = ts.get_k_data(code, start=start_date, end=end_date, ktype=ktype, index=index,
                                 retry_count=retry_count, pause=pause)

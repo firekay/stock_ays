@@ -26,7 +26,7 @@ def check_thread_alive(thread):
         logger.warn('Thread %s not alive.' % thread.getName())
 
 
-def save_stocks_k_data(stocks=None, start_date='', end_date='', autype='qfq', index=False,
+def save_stocks_k_data(stocks=None, start_date=None, end_date=None, autype='qfq', index=False,
                        ktype=None):
     """获取k线数据的历史复权数据
     
@@ -73,11 +73,10 @@ def save_stocks_k_data(stocks=None, start_date='', end_date='', autype='qfq', in
                                                 args=(last_stock_code,))
     save_stock_k_data_thread.start()
     # threading.Timer(1, check_thread_alive, args=(save_stock_k_data_thread,)).start()
-    if end_date != '' or end_date is not None:
-        assert start_date != '' or end_date is not None, ('start_date must be not None or "", '
-                                                          'when end_date is not None or "".')
-    if start_date != '' or end_date is not None:
-        if end_date == '' or end_date is None:
+    if end_date is not None:
+        assert start_date is not None, 'start_date must be not None, when end_date is not None.'
+    if start_date is not None:
+        if end_date is None:
             end_date = today_line
         logger.info('Begin save %s stocks history k data, start date is: %s, end date is: %s, ktype is: %s.' %
                     (log_save_type, start_date, end_date, ktype))
@@ -85,7 +84,7 @@ def save_stocks_k_data(stocks=None, start_date='', end_date='', autype='qfq', in
         logger.info('Begin save %s stocks history k data, all date, ktype is: %s.' % (log_save_type, ktype))
     for stock in stocks:
         if ktype:
-            if start_date == '' or start_date is None:
+            if start_date is None:
                 deleted = util_dal.delete_code_data(model, stock)
             else:
                 deleted = util_dal.delete_code_start_date_end_date_data(model, stock,
@@ -94,14 +93,14 @@ def save_stocks_k_data(stocks=None, start_date='', end_date='', autype='qfq', in
                 transaction_dal.get_stock_k_data(stock, start_date, end_date, autype, index, ktype)
         else:
             for ktype in ktypes:
-                if start_date == '' or start_date is None:
+                if start_date is None:
                     deleted = util_dal.delete_code_data(model, stock)
                 else:
                     deleted = util_dal.delete_code_start_date_end_date_data(model, stock,
                                                                             start_date, end_date)
                 if deleted:
                     transaction_dal.get_stock_k_data(stock, start_date, end_date, autype, index, ktype)
-    if start_date != '':
+    if start_date is not None:
         logger.info('End save %s stocks history k data, start date is: %s, end date is: %s, ktype is: %s.' %
                     (log_save_type, start_date, end_date, ktype))
     else:
