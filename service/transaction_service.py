@@ -296,8 +296,33 @@ def save_tick_data_range(start_date, end_date, stocks=None):
 
 
 def save_today_tick_data(stocks=None):
-    """获取今日交易的历史分笔数据, 交易进行中使用"""
+    """获取今日交易的历史分笔数据, 当天六点后使用"""
     save_tick_data_range(start_date=today_line, end_date=today_line, stocks=stocks)
+
+
+def save_today_tick_data_while_trading(stocks=None):
+    """获取今日交易的历史分笔数据, 交易进行中使用"""
+    date = today_line
+    last_stock_code = None
+    log_save_type = 'all'
+
+    if stocks is None:
+        stocks = base_service.get_stocks()
+    else:
+        assert isinstance(stocks, list), 'stocks must be a list type.'
+        last_stock_code = stocks[-1]
+        log_save_type = 'select'
+    logger.info('Last stock code is: %s, save_today_tick_data.' % last_stock_code)
+    logger.info('Begin save %s today tick datas, date is: %s' % (log_save_type, date))
+    save_today_tick_data_thread = threading.Thread(name='save_today_tick_data',
+                                                   target=transaction_dal.save_today_tick_data)
+    save_today_tick_data_thread.start()
+    # threading.Timer(1, check_thread_alive, args=(save_today_tick_data_thread,)).start()
+    for stock in stocks:
+        if util_dal.delete_code_date_data(TickData, stock, date):
+            transaction_dal.get_today_tick_data(stock)
+    logger.info('End save %s today tick datas, date is: %s' % (log_save_type, date))
+    transaction_dal.today_tick_data_queue.put((last_stock_code, 'stop', 'stop'))
 
 
 def save_big_index_data():
