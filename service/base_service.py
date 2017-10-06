@@ -6,6 +6,7 @@ from models.model import *
 from service import table_service
 from dal import base_dal
 from dal import util_dal
+from utils import util
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +37,7 @@ def save_performance_report(year, quarter):
         year: 年份, YYYY格式数字
         quarter: 季度, 只能是1, 2, 3, 4的数字
     """
+    year = util.get_year() if year is None else year
     data_dicts = base_dal.get_performance_report(year, quarter)
     if data_dicts:
         if util_dal.delete_year_quarter_data(PerformanceReport, year, quarter):
@@ -49,6 +51,7 @@ def save_profit_ability(year, quarter):
         year: 年份, YYYY格式数字
         quarter: 季度, 只能是1, 2, 3, 4的数字
     """
+    year = util.get_year() if year is None else year
     data_dicts = base_dal.get_profit_ability(year, quarter)
     if data_dicts:
         if util_dal.delete_year_quarter_data(ProfitAbility, year, quarter):
@@ -62,6 +65,7 @@ def save_operation_ability(year, quarter):
         year: 年份, YYYY格式数字
         quarter: 季度, 只能是1, 2, 3, 4的数字
     """
+    year = util.get_year() if year is None else year
     data_dicts = base_dal.get_operation_ability(year, quarter)
     if data_dicts:
         if util_dal.delete_year_quarter_data(OperationAbility, year, quarter):
@@ -75,6 +79,7 @@ def save_growth_ability(year, quarter):
         year: 年份, YYYY格式数字
         quarter: 季度, 只能是1, 2, 3, 4的数字
     """
+    year = util.get_year() if year is None else year
     data_dicts = base_dal.get_growth_ability(year, quarter)
     if data_dicts:
         if util_dal.delete_year_quarter_data(GrowthAbility, year, quarter):
@@ -88,6 +93,7 @@ def save_pay_debt_ability(year, quarter):
         year: 年份, YYYY格式数字
         quarter: 季度, 只能是1, 2, 3, 4的数字
     """
+    year = util.get_year() if year is None else year
     data_dicts = base_dal.get_pay_debt_ability(year, quarter)
     if data_dicts:
         if util_dal.delete_year_quarter_data(PayDebtAbility, year, quarter):
@@ -103,6 +109,7 @@ def save_cash_flow(year, quarter):
      Returns:
          data_dicts: 字段的列表, return None if have exception, return empty if no data
      """
+    year = util.get_year() if year is None else year
     data_dicts = base_dal.get_cash_flow(year, quarter)
     if data_dicts:
         if util_dal.delete_year_quarter_data(CashFlow, year, quarter):
