@@ -176,40 +176,66 @@ def main():
 
         # transaction parser
         transaction_parser = top_sub_parsers.add_parser('t', help='transaction service')
-        tran_sub_parsers = transaction_parser.add_subparsers()
-        hist_parser = tran_sub_parsers.add_parser('h', help='hist data service')
-        hist_parser.add_argument('-hi', action='store_true',
+        transaction_parser.add_argument('-hk', action='store_true',
+                                 dest='save_stocks_k_data',
+                                 help='save stocks history k data, use with [--stocks, --start, --end, --ktype]')
+        transaction_parser.add_argument('-hky', action='store_true',
+                                 dest='save_yesterday_stocks_k_data',
+                                 help='save yesterday stocks history k data, use with [--stocks, --ktype]')
+        transaction_parser.add_argument('-hkt', action='store_true',
+                                 dest='save_today_stocks_k_data',
+                                 help='save today stocks history k data, use with [--stocks, --ktype]')
+        transaction_parser.add_argument('-hi', action='store_true',
                                  dest='save_stocks_hist_data',
-                                 help='save stocks history data')
-        hist_parser.add_argument('-r', action='store_true',
+                                 help='save stocks history data, use with [--stocks, --start, --end, --ktype]')
+        transaction_parser.add_argument('-hiy', action='store_true',
+                                 dest='save_yesterday_stocks_history_data',
+                                 help='save yesterday stocks history data, use with [--stocks, --ktype]')
+        transaction_parser.add_argument('-hit', action='store_true',
+                                 dest='save_today_stocks_history_data',
+                                 help='save today stocks history data, use with [--stocks, --ktype]')
+        transaction_parser.add_argument('-r', action='store_true',
                                  dest='save_stocks_revote_hist_data',
-                                 help='save stocks revote history data')
-        hist_parser.add_argument('-tick', action='store_true',
+                                 help='save stocks revote history data, use with [--stocks, --start, --end]')
+        transaction_parser.add_argument('-tad', action='store_true',
+                                 dest='save_today_all_data',
+                                 help='save today all stocks transaction data, if holidays, '
+                                      'this is the last trade day data.')
+        transaction_parser.add_argument('-tk', action='store_true',
                                  dest='save_tick_data',
                                  help='save tick data(获取历史的分笔数据明细)')
-        hist_parser.add_argument('-ttick', action='store_true',
+        transaction_parser.add_argument('-tkr', action='store_true',
+                                 dest='save_tick_data_range',
+                                 help='save tick data date range(获取历史的分笔数据明细),  '
+                                      'use with [--stocks, --start, --end]')
+        transaction_parser.add_argument('-ttk', action='store_true',
                                  dest='save_today_tick_data',
-                                 help='save today tick data(获取当前交易日（交易进行中使用))')
-        hist_parser.add_argument('-bt', action='store_true',
-                                 dest='save_big_trade_data',
-                                 help='save big trade data(获取大单交易数据)')
-        hist_parser.add_argument('-bi', action='store_true',
+                                 help='save today tick data(获取当前交易日（当天六点后使用)), use with [--stocks]')
+        transaction_parser.add_argument('-ttkt', action='store_true',
+                                 dest='save_today_tick_data_while_trading',
+                                 help='save today tick data while trading(获取当前交易日（交易中使用)), '
+                                      'use with [--stocks]')
+        transaction_parser.add_argument('-bi', action='store_true',
                                  dest='save_big_index_data',
                                  help='save big index data(获取大盘指数实时行情列表)')
+        transaction_parser.add_argument('-bt', action='store_true',
+                                 dest='save_big_trade_data',
+                                 help='save big trade data(获取大单交易数据), use with [--date, --stocks]')
+        transaction_parser.add_argument('-btr', action='store_true',
+                                 dest='save_big_trade_data_range',
+                                 help='save big trade data date range(获取大单交易数据), '
+                                      'use with [--stocks, --start, --end]')
 
-        transaction_parser.add_argument('-t', action='store_true',
-                                        dest='today_data',
-                                        help='save today stocks history data')
-        transaction_parser.add_argument('-y', action='store_true',
-                                        dest='yesterday_data',
-                                        help='save yesterday stocks history data')
         transaction_parser.add_argument('--start', dest='start_date', help='start date')
         transaction_parser.add_argument('--end', dest='end_date', help='end date')
+        transaction_parser.add_argument('--date', dest='date', help='date, the date wanted to be save')
+        transaction_parser.add_argument('--stocks', dest='stocks', nargs='+',
+                                        help='stock codes which want to be deal.')
         transaction_parser.add_argument('--ktype', dest='ktype',
                                         help='数据类型: D=日k线 W=周 M=月 5=5分钟 15=15分钟 30=30分钟 60=60分钟',
                                         choices=['D', 'W', 'M', '5', '15', '30', '60'])
-        transaction_parser.add_argument('-a', action='store_true', dest='all_stocks', help='get all stocks data.')
-        transaction_parser.add_argument('-s', action='store_true', dest='select_stocks', help='get select stocks data.')
+        # transaction_parser.add_argument('-a', action='store_true', dest='all_stocks', help='get all stocks data.')
+        # transaction_parser.add_argument('-s', action='store_true', dest='select_stocks', help='get select stocks data.')
 
         # fundamentals, basic parser
         fundamentals_parser = top_sub_parsers.add_parser('f', help='fundamentals service(include stock list)')
