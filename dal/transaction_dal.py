@@ -46,6 +46,8 @@ def get_stock_k_data(code, start_date='', end_date='', autype='qfq', index=False
 
     if ktype is None:
         ktype = 'D'
+    ktypes = ['D', 'W', 'M', '5', '15', '30', '60']
+    assert ktype in ktypes, 'ktype must be one of %s' % ktypes
     if start_date != '' or end_date != '':
         logger.info('Begin get sotck %s history k data, start date is: %s, end date is: %s, ktype is %s.'
                     % (code, start_date, end_date, ktype))
@@ -274,6 +276,8 @@ def get_his_data(code, start_date=None, end_date=None, ktype=None, retry_count=R
     适合搭配均线数据进行选股和分析，如果需要全部历史数据，请调用下一个接口get_h_data()。"""
     if ktype is None:
         ktype = 'D'
+    ktypes = ['D', 'W', 'M', '5', '15', '30', '60']
+    assert ktype in ktypes, 'ktype must be one of %s' % ktypes
     if start_date is not None:
         logger.info('Begin get data, code is: %s, start_date is: %s, end_date is: %s,ktype is: %s'
                     % (code, start_date, end_date, ktype))
