@@ -30,10 +30,14 @@ def save_industry_classified(source='sina'):
     logger.info('Begin get and save industry classified行业信息.')
     try:
         data_df = ts.get_industry_classified(standard=source)
-        data = data_df.values
-        data_dicts = [{'code': row[0], 'name': row[1], 'c_name': row[2]} for row in data]
-        IndustryClassified.insert_many(data_dicts).execute()
-        logger.info('End get and save industry classified行业信息.')
+        if data_df is not None and not data_df.empty:
+            data = data_df.values
+            data_dicts = [{'code': row[0], 'name': row[1], 'c_name': row[2]} for row in data]
+
+            IndustryClassified.insert_many(data_dicts).execute()
+            logger.info('Success get and save industry classified行业信息.')
+        else:
+            logger.warn('Empty get and save industry classified行业信息.')
     except Exception as e:
         logger.exception('Error get and save industry classified行业信息.')
 
@@ -43,10 +47,13 @@ def save_concept_classified():
     logger.info('Begin get and save concept clssified股票概念的分类数据.')
     try:
         data_df = ts.get_concept_classified()
-        data = data_df
-        data_dicts = [{'code': row[0], 'name': row[1], 'c_name': row[2]} for row in data]
-        ConceptClassified.insert_many(data_dicts).execute()
-        logger.info('End get and save concept clssified股票概念的分类数据.')
+        if data_df is not None and not data_df.empty:
+            data = data_df.values
+            data_dicts = [{'code': row[0], 'name': row[1], 'c_name': row[2]} for row in data]
+            ConceptClassified.insert_many(data_dicts).execute()
+            logger.info('Success get and save concept clssified股票概念的分类数据.')
+        else:
+            logger.warn('Empty get and save concept clssified股票概念的分类数据.')
     except Exception as e:
         logger.exception('Error get and save concept clssified股票概念的分类数据.')
 
@@ -56,10 +63,13 @@ def save_area_classified():
     logger.info('Begin get and save area clssified.')
     try:
         data_df = ts.get_area_classified()
-        data = data_df.values
-        data_dicts = [{'code': row[0], 'name': row[1], 'area': row[2]} for row in data]
-        AreaClassified.insert_many(data_dicts).execute()
-        logger.info('End get and save area clssified.')
+        if data_df is not None and not data_df.empty:
+            data = data_df.values
+            data_dicts = [{'code': row[0], 'name': row[1], 'area': row[2]} for row in data]
+            AreaClassified.insert_many(data_dicts).execute()
+            logger.info('Success get and save area clssified.')
+        else:
+            logger.warn('Empty get and save area clssified.')
     except Exception as e:
         logger.exception('Error get and save area clssified.')
 
@@ -69,10 +79,13 @@ def save_sme_classified():
     logger.info('Begin get and save sme中小板 clssified.')
     try:
         data_df = ts.get_sme_classified()
-        data = data_df.values
-        data_dicts = [{'code': row[0], 'name': row[1]} for row in data]
-        SmeClassified.insert_many(data_dicts).execute()
-        logger.info('End get and save sme中小板 classified.')
+        if data_df is not None and not data_df.empty:
+            data = data_df.values
+            data_dicts = [{'code': row[0], 'name': row[1]} for row in data]
+            SmeClassified.insert_many(data_dicts).execute()
+            logger.info('Success get and save sme中小板 classified.')
+        else:
+            logger.warn('Empty get and save sme中小板 classified.')
     except Exception as e:
         logger.exception('Error get and save sme中小板 classified.')
 
@@ -82,10 +95,13 @@ def save_gem_classified():
     logger.info('Begin get and save gem 创业板股票数据clssified.')
     try:
         data_df = ts.get_gem_classified()
-        data = data_df.values
-        data_dicts = [{'code': row[0], 'name': row[1]} for row in data]
-        GemClassified.insert_many(data_dicts).execute()
-        logger.info('End get and save gem 创业板股票数据classified.')
+        if data_df is not None and not data_df.empty:
+            data = data_df.values
+            data_dicts = [{'code': row[0], 'name': row[1]} for row in data]
+            GemClassified.insert_many(data_dicts).execute()
+            logger.info('Success get and save gem 创业板股票数据classified.')
+        else:
+            logger.warn('Empty get and save gem 创业板股票数据classified.')
     except Exception as e:
         logger.exception('Error get and save gem 创业板股票数据classified.')
 
@@ -95,10 +111,13 @@ def save_st_classified():
     logger.info('Begin get and save st clssified.')
     try:
         data_df = ts.get_st_classified()
-        data = data_df.values
-        data_dicts = [{'code': row[0], 'name': row[1]} for row in data]
-        StClassified.insert_many(data_dicts).execute()
-        logger.info('End get and save st classified.')
+        if data_df is not None and not data_df.empty:
+            data = data_df.values
+            data_dicts = [{'code': row[0], 'name': row[1]} for row in data]
+            StClassified.insert_many(data_dicts).execute()
+            logger.info('Success get and save st classified.')
+        else:
+            logger.warn('Empty get and save st classified.')
     except Exception as e:
         logger.exception('Error get and save st classified.')
 
@@ -108,10 +127,13 @@ def save_hs300s():
     logger.info('Begin get and save hs300 clssified.')
     try:
         data_df = ts.get_hs300s()
-        data = data_df.values
-        data_dicts = [{'code': row[0], 'name': row[1], 'date': row[2], 'weight': row[3]} for row in data]
-        Hs300.insert_many(data_dicts).execute()
-        logger.info('End get and save hs300 classified.')
+        if data_df is not None and not data_df.empty:
+            data = data_df.values
+            data_dicts = [{'code': row[0], 'name': row[1], 'date': row[2], 'weight': row[3]} for row in data]
+            Hs300.insert_many(data_dicts).execute()
+            logger.info('Success get and save hs300 classified.')
+        else:
+            logger.warn('Empty get and save hs300 classified.')
     except Exception as e:
         logger.exception('Error get and save hs300 classified.')
 
@@ -121,10 +143,13 @@ def save_sz50s():
     logger.info('Begin get and save sz50 clssified.')
     try:
         data_df = ts.get_sz50s()
-        data = data_df.values
-        data_dicts = [{'code': row[0], 'name': row[1]} for row in data]
-        Sz50.insert_many(data_dicts).execute()
-        logger.info('End get and save sz50 classified.')
+        if data_df is not None and not data_df.empty:
+            data = data_df.values
+            data_dicts = [{'code': row[0], 'name': row[1]} for row in data]
+            Sz50.insert_many(data_dicts).execute()
+            logger.info('Success get and save sz50 classified.')
+        else:
+            logger.warn('Empty get and save sz50 classified.')
     except Exception as e:
         logger.exception('Error get and save sz50 classified.')
 
@@ -134,10 +159,13 @@ def save_zz500s():
     logger.info('Begin get and save zz500 clssified.')
     try:
         data_df = ts.get_zz500s()
-        data = data_df.values
-        data_dicts = [{'code': row[0], 'name': row[1]} for row in data]
-        Zz500.insert_many(data_dicts).execute()
-        logger.info('End get and save zz500 classified.')
+        if data_df is not None and not data_df.empty:
+            data = data_df.values
+            data_dicts = [{'code': row[0], 'name': row[1]} for row in data]
+            Zz500.insert_many(data_dicts).execute()
+            logger.info('Success get and save zz500 classified.')
+        else:
+            logger.warn('Empty get and save zz500 classified.')
     except Exception as e:
         logger.exception('Error get and save zz500 classified.')
 
@@ -147,11 +175,14 @@ def save_terminated():
     logger.info('Begin get and save terminated clssified.')
     try:
         data_df = ts.get_terminated()
-        data = data_df.values
-        data_dicts = [{'code': row[0], 'name': row[1], 'o_date': row[2], 't_date': row[3],
-                       'insert_date': today_line} for row in data]
-        Terminated.insert_many(data_dicts).execute()
-        logger.info('End get and save terminated classified.')
+        if data_df is not None and not data_df.empty:
+            data = data_df.values
+            data_dicts = [{'code': row[0], 'name': row[1], 'o_date': row[2], 't_date': row[3],
+                           'insert_date': today_line} for row in data]
+            Terminated.insert_many(data_dicts).execute()
+            logger.info('Success get and save terminated classified.')
+        else:
+            logger.warn('Empty get and save terminated classified.')
     except Exception as e:
         logger.exception('Error get and save terminated classified.')
 
@@ -160,11 +191,14 @@ def save_suspend():
     """获取被暂停上市的股票列表，数据从上交所获取，目前只有在上海证券交易所交易被终止的股票。"""
     logger.info('Begin get and save suspend clssified.')
     try:
-        data_df = ts.get_terminated()
-        data = data_df.values
-        data_dicts = [{'code': row[0], 'name': row[1], 'o_date': row[2], 't_date': row[3],
-                       'insert_date': today_line} for row in data]
-        Suspend.insert_many(data_dicts).execute()
-        logger.info('End get and save suspend classified.')
+        data_df = ts.get_suspended()
+        if data_df is not None and not data_df.empty:
+            data = data_df.values
+            data_dicts = [{'code': row[0], 'name': row[1], 'o_date': row[2], 't_date': row[3],
+                           'insert_date': today_line} for row in data]
+            Suspend.insert_many(data_dicts).execute()
+            logger.info('Success get and save suspend classified.')
+        else:
+            logger.warn('Empty get and save suspend classified.')
     except Exception as e:
         logger.exception('Error get and save suspend classified.')
