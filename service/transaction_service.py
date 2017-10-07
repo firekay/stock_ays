@@ -44,23 +44,24 @@ def save_stocks_k_data(stocks=None, start_date=None, end_date=None, autype='qfq'
     """
     ktypes = ['D', 'W', 'M', '5', '15', '30', '60']
     log_save_type = 'all'
-    assert ktype in ktypes, 'ktype must be one of %s' % ktypes
-    if ktype.upper() == 'D':
-        model = HistoryKDataD
-    elif ktype.upper() == 'W':
-        model = HistoryKDataW
-    elif ktype.upper() == 'M':
-        model = HistoryKDataM
-    elif ktype == '5':
-        model = HistoryKData5
-    elif ktype == '15':
-        model = HistoryKData15
-    elif ktype == '30':
-        model = HistoryKData30
-    elif ktype == '60':
-        model = HistoryKData60
-    else:
-        pass
+    if ktype is not None:
+        assert ktype in ktypes, 'ktype must be one of %s' % ktypes
+        if ktype.upper() == 'D':
+            model = HistoryKDataD
+        elif ktype.upper() == 'W':
+            model = HistoryKDataW
+        elif ktype.upper() == 'M':
+            model = HistoryKDataM
+        elif ktype == '5':
+            model = HistoryKData5
+        elif ktype == '15':
+            model = HistoryKData15
+        elif ktype == '30':
+            model = HistoryKData30
+        elif ktype == '60':
+            model = HistoryKData60
+        else:
+            pass
 
     if stocks:
         assert isinstance(stocks, list), 'stocks must be a list type.'
@@ -69,7 +70,7 @@ def save_stocks_k_data(stocks=None, start_date=None, end_date=None, autype='qfq'
         stocks = [stock.code for stock in base_service.get_stocks()]
     last_stock_code = stocks[-1]
     logger.info('Last stock code is: %s' % last_stock_code)
-    save_stock_k_data_thread = threading.Thread(name='save_stock_k_data', target=transaction_dal.save_stock_k_data,
+    save_stock_k_data_thread = threading.Thread(name='save_stock_k_data_thread', target=transaction_dal.save_stock_k_data,
                                                 args=(last_stock_code,))
     save_stock_k_data_thread.start()
     # threading.Timer(1, check_thread_alive, args=(save_stock_k_data_thread,)).start()
@@ -93,6 +94,22 @@ def save_stocks_k_data(stocks=None, start_date=None, end_date=None, autype='qfq'
                 transaction_dal.get_stock_k_data(stock, start_date, end_date, autype, index, ktype)
         else:
             for ktype in ktypes:
+                if ktype.upper() == 'D':
+                    model = HistoryKDataD
+                elif ktype.upper() == 'W':
+                    model = HistoryKDataW
+                elif ktype.upper() == 'M':
+                    model = HistoryKDataM
+                elif ktype == '5':
+                    model = HistoryKData5
+                elif ktype == '15':
+                    model = HistoryKData15
+                elif ktype == '30':
+                    model = HistoryKData30
+                elif ktype == '60':
+                    model = HistoryKData60
+                else:
+                    pass
                 if start_date is None:
                     deleted = util_dal.delete_code_data(model, stock)
                 else:
@@ -125,23 +142,24 @@ def save_stocks_hist_data(stocks=None, start_date=None, end_date=None, ktype=Non
     """
     log_save_type = 'all'
     ktypes = ['D', 'W', 'M', '5', '15', '30', '60']
-    assert ktype in ktypes, 'ktype must be one of %s' % ktypes
-    if ktype.upper() == 'D':
-        model = HistoryDataD
-    elif ktype.upper() == 'W':
-        model = HistoryDataW
-    elif ktype.upper() == 'M':
-        model = HistoryDataM
-    elif ktype == '5':
-        model = HistoryData5
-    elif ktype == '15':
-        model = HistoryData15
-    elif ktype == '30':
-        model = HistoryData30
-    elif ktype == '60':
-        model = HistoryData60
-    else:
-        pass
+    if ktype is not None:
+        assert ktype in ktypes, 'ktype must be one of %s' % ktypes
+        if ktype.upper() == 'D':
+            model = HistoryDataD
+        elif ktype.upper() == 'W':
+            model = HistoryDataW
+        elif ktype.upper() == 'M':
+            model = HistoryDataM
+        elif ktype == '5':
+            model = HistoryData5
+        elif ktype == '15':
+            model = HistoryData15
+        elif ktype == '30':
+            model = HistoryData30
+        elif ktype == '60':
+            model = HistoryData60
+        else:
+            pass
 
     if stocks:
         assert isinstance(stocks, list), 'stocks must be list.'
@@ -150,7 +168,7 @@ def save_stocks_hist_data(stocks=None, start_date=None, end_date=None, ktype=Non
         stocks = [stock.code for stock in base_service.get_stocks()]
     last_stock_code = stocks[-1]
     logger.info('last_stock_code is: %s' % last_stock_code)
-    save_his_data_thread = threading.Thread(name='save_his_data',
+    save_his_data_thread = threading.Thread(name='save_his_data_thread',
                                             target=transaction_dal.save_his_data, args=(last_stock_code,))
     save_his_data_thread.start()
     if end_date is not None:
@@ -167,6 +185,22 @@ def save_stocks_hist_data(stocks=None, start_date=None, end_date=None, ktype=Non
     for stock in stocks:
         if ktype is None:
             for ktype in ktypes:
+                if ktype.upper() == 'D':
+                    model = HistoryDataD
+                elif ktype.upper() == 'W':
+                    model = HistoryDataW
+                elif ktype.upper() == 'M':
+                    model = HistoryDataM
+                elif ktype == '5':
+                    model = HistoryData5
+                elif ktype == '15':
+                    model = HistoryData15
+                elif ktype == '30':
+                    model = HistoryData30
+                elif ktype == '60':
+                    model = HistoryData60
+                else:
+                    pass
                 if start_date is None:
                     deleted = util_dal.delete_code_data(model, stock)
                 else:
@@ -211,7 +245,7 @@ def save_stock_h_data_revote(stocks=None, start_date=None, end_date=None, autype
         stocks = [stock.code for stock in base_service.get_stocks()]
     last_stock_code = stocks[-1]
     logger.info('Last stock code is: %s' % last_stock_code)
-    save_h_revote_data_thread = threading.Thread(name='save_h_revote_data',
+    save_h_revote_data_thread = threading.Thread(name='save_h_revote_data_thread',
                                                  target=transaction_dal.save_h_revote_data, args=(last_stock_code,))
     save_h_revote_data_thread.start()
     # threading.Timer(1, check_thread_alive, args=(save_h_revote_data_thread,)).start()
@@ -271,14 +305,14 @@ def save_tick_data(date, stocks=None):
     log_save_type = 'all'
 
     if stocks is None:
-        stocks = base_service.get_stocks()
+        stocks = [stock.code for stock in base_service.get_stocks()]
     else:
         assert isinstance(stocks, list), 'stocks must be a list type.'
         last_stock_code = stocks[-1]
         log_save_type = 'select'
     logger.info('Last stock code is: %s, save_tick_data.' % last_stock_code)
     logger.info('Begin save %s tick datas, date is: %s' % (log_save_type, date))
-    save_tick_data_thread = threading.Thread(name='save_tick_data', target=transaction_dal.save_tick_data)
+    save_tick_data_thread = threading.Thread(name='save_tick_data_thread', target=transaction_dal.save_tick_data)
     save_tick_data_thread.start()
     # threading.Timer(1, check_thread_alive, args=(save_tick_data_thread,)).start()
     for stock in stocks:
@@ -306,7 +340,7 @@ def save_today_tick_data_while_trading(stocks=None):
     log_save_type = 'all'
 
     if stocks is None:
-        stocks = base_service.get_stocks()
+        stocks = [stock.code for stock in base_service.get_stocks()]
     else:
         assert isinstance(stocks, list), 'stocks must be a list type.'
         last_stock_code = stocks[-1]
@@ -341,7 +375,7 @@ def save_big_trade_data(date, stocks=None):
     log_save_type = 'all'
 
     if stocks is None:
-        stocks = base_service.get_stocks()
+        stocks = [stock.code for stock in base_service.get_stocks()]
     else:
         assert isinstance(stocks, list), 'stocks must be a list type.'
         last_stock_code = stocks[-1]
