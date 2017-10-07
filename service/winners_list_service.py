@@ -27,7 +27,7 @@ def save_individual_statistics_tops(days_type=None):
         if data_dicts:
             if util_dal.delete_insert_date_days_type_data(IndividualStatisticsTops, today_line, day_type):
                 util_dal.save_date_day_type_data(IndividualStatisticsTops, data_dicts, today_line, day_type)
-    if not days_type:
+    if days_type is None:
         for d in DAYS_TYPE:
             _save_individual_statistics_tops(d)
     elif isinstance(days_type, list):
@@ -44,7 +44,7 @@ def save_broker_tops(days_type=None):
         if data_dicts:
             if util_dal.delete_insert_date_days_type_data(BrokerTops, today_line, day_type):
                 util_dal.save_date_day_type_data(BrokerTops, data_dicts, today_line,day_type)
-    if not days_type:
+    if days_type is None:
         for d in DAYS_TYPE:
             _save_broker_tops(d)
     elif isinstance(days_type, list):
@@ -61,7 +61,7 @@ def save_institution_tops(days_type=None):
         if data_dicts:
             if util_dal.delete_insert_date_days_type_data(InstitutionTops, today_line, day_type):
                 util_dal.save_date_day_type_data(InstitutionTops, data_dicts, today_line, day_type)
-    if not days_type:
+    if days_type is None:
         for d in DAYS_TYPE:
             _save_institution_tops(d)
     elif isinstance(days_type, list):
