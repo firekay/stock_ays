@@ -128,6 +128,8 @@ def args_parse():
 
     parser = argparse.ArgumentParser(description='Get stock data with tushare')
     top_sub_parsers = parser.add_subparsers()
+    parser.add_argument('-o', action='store_false', dest='need_open_date',
+                        help='if need to judge whth open data, default is true')
 
     # database table parser
     db_parser = top_sub_parsers.add_parser('d', help='database and table service')
@@ -176,7 +178,8 @@ def args_parse():
                                          'use with [--stocks, --start, --end]')
     transaction_parser.add_argument('-ttk', action='store_true',
                                     dest='save_today_tick_data',
-                                    help='save today tick data(获取当前交易日（当天六点后使用)), use with [--stocks]')
+                                    help='save today tick data(获取当前交易日（当天六点后使用)), '
+                                         'save_tick_data_range function be used, use with [--stocks]')
     transaction_parser.add_argument('-ttkt', action='store_true',
                                     dest='save_today_tick_data_while_trading',
                                     help='save today tick data while trading(获取当前交易日（交易中使用)), '
@@ -376,7 +379,16 @@ def args_parse():
 
 
 def main():
+    import tushare as ts
+
     args = args_parse()
+    print args
+    if args.need_open_date:
+        dates = ts.trade_cal()
+        is_open = dates[dates.calendarDate == today_line].query('isOpen==0').empty
+        if not is_open:
+            logger.warn('Today is not open date, so do nothing.')
+            sys.exit(-1)
 
     # transaction 交易数据
     if hasattr(args, 'save_stocks_k_data') and args.save_stocks_k_data:
