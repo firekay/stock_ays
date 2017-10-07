@@ -21,41 +21,41 @@ handlers:
 
         level: DEBUG
 
-        formatter: simple
+        formatter: whole
 
         stream: ext://sys.stdout
 
 
     info_file_handler:
 
-        class: logging.handlers.RotatingFileHandler
+        class: logging.handlers.TimedRotatingFileHandler
 
         level: INFO
 
         formatter: whole
 
+        when: D
+
         filename: logs/info.log
 
-        maxBytes: 10485760 # 10MB
-
-        backupCount: 10
+        backupCount: 8
 
         encoding: utf8
 
 
     error_file_handler:
 
-        class: logging.handlers.RotatingFileHandler
+        class: logging.handlers.TimedRotatingFileHandler
 
-        level: ERROR
+        level: WARNING
 
         formatter: whole
 
+        when: D
+
         filename: logs/errors.log
 
-        maxBytes: 10485760 # 10MB
-
-        backupCount: 10
+        backupCount: 8
 
         encoding: utf8
 
