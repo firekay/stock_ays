@@ -30,7 +30,7 @@ def get_stock_k_data(code, start_date=None, end_date=None, autype='qfq', index=F
     同时，上市以来的前后复权数据也能在一行代码中轻松获得，当然，您也可以选择不复权。
     
     Args:
-        stocks:list,股票代码 e.g. ['600848', '000001']
+        code: 股票代码 e.g. '600848'
         start_date:string,开始日期 format：YYYY-MM-DD 为空时取当前日期
         end_date:string,结束日期 format：YYYY-MM-DD 为空时取去年今日
         autype:string,复权类型，qfq-前复权 hfq-后复权 None-不复权，默认为qfq
@@ -41,7 +41,6 @@ def get_stock_k_data(code, start_date=None, end_date=None, autype='qfq', index=F
     """
     def filter_start_and_end(obj,):
         date_str = str(obj).split(' ')[0]
-        print(date_str)
         return start_date <= date_str <= end_date
 
     if ktype is None:
@@ -54,8 +53,10 @@ def get_stock_k_data(code, start_date=None, end_date=None, autype='qfq', index=F
     else:
         logger.info('Begin get stock %s history k data, all date, ktype is %s.' % (code, ktype))
     # get_k_data must transmit '' not None
-    start_date = '' if start_date is None else start_date
-    end_date = '' if end_date is None else end_date
+    if start_date is None:
+        start_date = ''
+    if end_date is None:
+        end_date = ''
     try:
         data_df = ts.get_k_data(code, start=start_date, end=end_date, ktype=ktype, index=index,
                                 retry_count=retry_count, pause=pause)
@@ -69,7 +70,7 @@ def get_stock_k_data(code, start_date=None, end_date=None, autype='qfq', index=F
         if data_df is not None and not data_df.empty:
             # data_df['date'] = pd.Series(data_df.axes[0], index=data_df.index)
             # get one day data with result lots of days data, so filter only have between start_date and end_data.
-            if start_date != '' or start_date is not None:
+            if start_date != '':
                 data_df = data_df[data_df.date.map(lambda d: filter_start_and_end(d))]
                 if data_df is not None and not data_df.empty:
                     data = data_df.values
@@ -270,7 +271,7 @@ def save_his_data(last_stock_code=None):
                 logger.exception('Error save history data from his_data_queue, code: %s, ktype: %s.' % (code, ktype))
                 logger.error('Error data is: %s' % data)
             else:
-                logger.warn('Success save history data from his_data_queue, code: %s, ktype: %s.' % (code, ktype))
+                logger.info('Success save history data from his_data_queue, code: %s, ktype: %s.' % (code, ktype))
 
 
 def get_his_data(code, start_date=None, end_date=None, ktype=None, retry_count=RETRY_COUNT, pause=PAUSE):
