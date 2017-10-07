@@ -2,6 +2,7 @@
 
 import datetime
 import time
+import tushare as ts
 
 delta1 = datetime.timedelta(days=1)
 
@@ -21,12 +22,12 @@ def date2str(date_s):
 
 
 def range_date_all_include(start_str, end_str):
-    """循环给定的时间字符串(包含开头和结尾)"""
-    start_d = str2date(start_str)
-    end_d = str2date(end_str)
-    while start_d <= end_d:
-        yield date2str(start_d)
-        start_d += delta1
+    """得到给定日期内的开盘日期"""
+    dates = ts.trade_cal()
+    filter_dates = dates[(dates.calendarDate >= start_str) & (dates.calendarDate <= end_str)]
+    open_dates = filter_dates.query('isOpen==1')
+    for _, date in open_dates['calendarDate'].iteritems():
+        yield date
 
 
 def range_date_exclude_end(start_str, end_str):
@@ -102,9 +103,9 @@ def get_ndays_before_line(n):
 
 
 if __name__ == '__main__':
-    start = '2016-01-01'
-    end = '2016-02-02'
-    for date in range_date_exclude_end(start, end):
+    start = '2017-09-04'
+    end = '2017-09-27'
+    for date in range_date_all_include(start, end):
         print(date)
 
         # print(get_today())
