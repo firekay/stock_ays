@@ -6,6 +6,7 @@ from dal import util_dal
 from utils import util
 
 logger = logging.getLogger(__name__)
+QUARTERS = [1, 2, 3, 4]
 
 
 def save_distribution_plans(year=None, top=5000):
@@ -30,10 +31,17 @@ def save_performance_forecast(year, quarter):
         quarter: 季度, 默认删除给定年份的所有季度数据
     """
     year = util.get_year() if year is None else year
-    data_dicts = irdal.get_performance_forecast(year, quarter)
-    if data_dicts:
-        if util_dal.delete_year_quarter_data(PerformanceForecast, year, quarter):
-            util_dal.save_year_quarter_data(PerformanceForecast, data_dicts, year, quarter)
+    if quarter is None:
+        for quarter in QUARTERS:
+            data_dicts = irdal.get_performance_forecast(year, quarter)
+            if data_dicts:
+                if util_dal.delete_year_quarter_data(PerformanceForecast, year, quarter):
+                    util_dal.save_year_quarter_data(PerformanceForecast, data_dicts, year, quarter)
+    else:
+        data_dicts = irdal.get_performance_forecast(year, quarter)
+        if data_dicts:
+            if util_dal.delete_year_quarter_data(PerformanceForecast, year, quarter):
+                util_dal.save_year_quarter_data(PerformanceForecast, data_dicts, year, quarter)
 
 
 def save_restricted_stock(year=None, month=None):
@@ -58,10 +66,17 @@ def save_fund_holdings(year, quarter):
         quarter: 季度, 默认删除给定年份的所有季度数据
     """
     year = util.get_year() if year is None else year
-    data_dicts = irdal.get_fund_holdings(year, quarter)
-    if data_dicts:
-        if util_dal.delete_year_quarter_data(FundHoldings, year, quarter):
-            util_dal.save_year_quarter_data(FundHoldings, data_dicts, year, quarter)
+    if quarter is None:
+        for quarter in QUARTERS:
+            data_dicts = irdal.get_fund_holdings(year, quarter)
+            if data_dicts:
+                if util_dal.delete_year_quarter_data(FundHoldings, year, quarter):
+                    util_dal.save_year_quarter_data(FundHoldings, data_dicts, year, quarter)
+    else:
+        data_dicts = irdal.get_fund_holdings(year, quarter)
+        if data_dicts:
+            if util_dal.delete_year_quarter_data(FundHoldings, year, quarter):
+                util_dal.save_year_quarter_data(FundHoldings, data_dicts, year, quarter)
 
 
 def save_new_stocks():
