@@ -26,7 +26,7 @@ def __get_db(threadlocals=True, autocommit=True,
     db = config.get('mysqld', 'database')
     user = config.get('mysqld', 'user')
     passwd = config.get('mysqld', 'passwd')
-    return MySQLDatabase(db, host='localhost', user=user, passwd=passwd)    
+    return MySQLDatabase(db, host=host, port=port, user=user, passwd=passwd)
 
 
 def __get_pooled_db():
