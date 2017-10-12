@@ -5,10 +5,10 @@ import tushare as ts
 import pandas as pd
 from queue import Queue
 import json
+import time
 from dal.constants import *
 from utils import mongo_utils
 from models.model import *
-from service import base_service
 
 logger = logging.getLogger(__name__)
 today_line = get_today_line()
@@ -39,7 +39,7 @@ def get_stock_k_data(code, start_date=None, end_date=None, autype='qfq', index=F
         retry_count: 重试次数
         pause: 重试间隔
     """
-    def filter_start_and_end(obj,):
+    def filter_start_and_end(obj):
         date_str = str(obj).split(' ')[0]
         return start_date <= date_str <= end_date
 
@@ -93,14 +93,9 @@ def get_stock_k_data(code, start_date=None, end_date=None, autype='qfq', index=F
                 logger.info('Empty get stock %s history k data, all date, ktype is: %s.' % (code, ktype))
 
 
-def save_stock_k_data(last_stock_code=None):
+def save_stock_k_data():
     """保存k线数据的历史复权数据"""
     logger.info('Begin save stock k data thread.')
-    if last_stock_code:
-        last_stock = last_stock_code
-    else:
-        last_stock = base_service.get_max_stock()
-    logger.info("Last stock code is: %s" % last_stock)
     while True:
         if stock_k_data_queue.empty():
             time.sleep(0.01)
@@ -145,13 +140,8 @@ def save_stock_k_data(last_stock_code=None):
                 logging.info('Success save stock k data, code is: %s, ktype is %s.' % (code, ktype))
 
 
-def save_h_revote_data(last_stock_code=None):
+def save_h_revote_data():
     logger.info('Begin save h revote data thread.')
-    if last_stock_code:
-        last_stock = last_stock_code
-    else:
-        last_stock = base_service.get_max_stock()
-    logger.info("Last stock code is: %s" % last_stock)
     while True:
         if h_revote_data_queue.empty():
             time.sleep(0.01)
@@ -214,20 +204,10 @@ def get_h_revote_data(code, start_date=None, end_date=None, autype='qfp', index=
                 logger.warn('Empty get stock h revote data, all date, code is: %s.' % code)
 
 
-def save_his_data(last_stock_code=None):
+def save_his_data():
     """保存个股历史交易数据到mysql, 周线
-
-    Args:
-        last_stock_code: 最后一个股票的代码, 用来结束线程
     """
     logger.info('Begin save his data thread.')
-    if last_stock_code:
-        last_stock = last_stock_code
-    else:
-        last_stock = base_service.get_max_stock()
-
-    logger.info("Last stock code is: %s" % last_stock)
-
     while True:
         if his_data_queue.empty():
             time.sleep(0.01)
@@ -436,6 +416,10 @@ def get_tick_data(code, date, retry_count=RETRY_COUNT, pause=PAUSE):
     logger.info('Begin get tick data, code is: %s, date is: %s.' % (code, date))
     try:
         data_df = ts.get_tick_data(code, date, retry_count, pause)
+    except IOError as e:
+        logger.exception('Error get tick data, sleep 5m, then try again. code is: %s.' % code)
+        time.sleep(5 * 60)
+        get_tick_data(code, date, retry_count, pause)
     except Exception as e:
         logger.exception('Error get tick data, code is :%s, date is %s.' % (code, date))
     else:
@@ -446,6 +430,7 @@ def get_tick_data(code, date, retry_count=RETRY_COUNT, pause=PAUSE):
             logger.info('Success get tick data,  code is :%s, date is %s.' % (code, date))
         else:
             logger.warn('Empty get tick data,  code is :%s, date is %s.' % (code, date))
+    time.sleep(0.5)
 
 
 def save_today_tick_data():
