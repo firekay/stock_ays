@@ -5,6 +5,7 @@ from models.model import *
 from dal import util_dal
 from dal import transaction_dal
 from service import base_service
+from service import table_service
 from utils import util
 
 logger = logging.getLogger(__name__)
@@ -44,8 +45,34 @@ def save_stocks_k_data(stocks=None, start_date=None, end_date=None, autype='qfq'
     """
     ktypes = ['D', 'W', 'M', '5', '15', '30', '60']
     log_save_type = 'all'
+    is_delete = False
+    if stocks:
+        assert isinstance(stocks, list), 'stocks must be a list type.'
+        log_save_type = 'select'
+    else:
+        is_delete = True
+        d = today_line
+        if end_date is not None:
+            d = end_date
+        stocks = [stock.code for stock in base_service.get_stocks(d)]
+    last_stock_code = stocks[-1]
+    logger.info('Last stock code is: %s' % last_stock_code)
+    save_stock_k_data_thread = threading.Thread(name='save_stock_k_data_thread',
+                                                target=transaction_dal.save_stock_k_data)
+    save_stock_k_data_thread.start()
+    # threading.Timer(1, check_thread_alive, args=(save_stock_k_data_thread,)).start()
+    if end_date is not None:
+        assert start_date is not None, 'start_date must be not None, when end_date is not None.'
+    if start_date is not None:
+        if end_date is None:
+            end_date = today_line
+        logger.info('Begin save %s stocks history k data, start date is: %s, end date is: %s, ktype is: %s.' %
+                    (log_save_type, start_date, end_date, ktype))
+    else:
+        logger.info('Begin save %s stocks history k data, all date, ktype is: %s.' % (log_save_type, ktype))
     if ktype is not None:
         assert ktype in ktypes, 'ktype must be one of %s' % ktypes
+        model = HistoryKDataD
         if ktype.upper() == 'D':
             model = HistoryKDataD
         elif ktype.upper() == 'W':
@@ -62,61 +89,47 @@ def save_stocks_k_data(stocks=None, start_date=None, end_date=None, autype='qfq'
             model = HistoryKData60
         else:
             pass
-
-    if stocks:
-        assert isinstance(stocks, list), 'stocks must be a list type.'
-        log_save_type = 'select'
-    else:
-        stocks = [stock.code for stock in base_service.get_stocks()]
-    last_stock_code = stocks[-1]
-    logger.info('Last stock code is: %s' % last_stock_code)
-    save_stock_k_data_thread = threading.Thread(name='save_stock_k_data_thread', target=transaction_dal.save_stock_k_data,
-                                                args=(last_stock_code,))
-    save_stock_k_data_thread.start()
-    # threading.Timer(1, check_thread_alive, args=(save_stock_k_data_thread,)).start()
-    if end_date is not None:
-        assert start_date is not None, 'start_date must be not None, when end_date is not None.'
-    if start_date is not None:
-        if end_date is None:
-            end_date = today_line
-        logger.info('Begin save %s stocks history k data, start date is: %s, end date is: %s, ktype is: %s.' %
-                    (log_save_type, start_date, end_date, ktype))
-    else:
-        logger.info('Begin save %s stocks history k data, all date, ktype is: %s.' % (log_save_type, ktype))
-    for stock in stocks:
-        if ktype:
+        deleted = True
+        if is_delete:
             if start_date is None:
-                deleted = util_dal.delete_code_data(model, stock)
+                deleted = table_service.truncate_table(model)
             else:
-                deleted = util_dal.delete_code_start_date_end_date_data(model, stock,
-                                                                        start_date, end_date)
-            if deleted:
+                deleted = util_dal.delete_start_date_end_date_data(model, start_date, end_date)
+        if deleted:
+            for stock in stocks:
                 transaction_dal.get_stock_k_data(stock, start_date, end_date, autype, index, ktype)
-        else:
-            for ktype in ktypes:
-                if ktype.upper() == 'D':
-                    model = HistoryKDataD
-                elif ktype.upper() == 'W':
-                    model = HistoryKDataW
-                elif ktype.upper() == 'M':
-                    model = HistoryKDataM
-                elif ktype == '5':
-                    model = HistoryKData5
-                elif ktype == '15':
-                    model = HistoryKData15
-                elif ktype == '30':
-                    model = HistoryKData30
-                elif ktype == '60':
-                    model = HistoryKData60
-                else:
-                    pass
+        if is_delete and not deleted:
+            logger.error('删除表数据错误. Model is %s.' % model)
+    else:
+        for _ktype in ktypes:
+            if _ktype.upper() == 'D':
+                model = HistoryKDataD
+            elif _ktype.upper() == 'W':
+                model = HistoryKDataW
+            elif _ktype.upper() == 'M':
+                model = HistoryKDataM
+            elif _ktype == '5':
+                model = HistoryKData5
+            elif _ktype == '15':
+                model = HistoryKData15
+            elif _ktype == '30':
+                model = HistoryKData30
+            elif _ktype == '60':
+                model = HistoryKData60
+            else:
+                pass
+            deleted = True
+            if is_delete:
                 if start_date is None:
-                    deleted = util_dal.delete_code_data(model, stock)
+                    deleted = table_service.truncate_table(model)
                 else:
-                    deleted = util_dal.delete_code_start_date_end_date_data(model, stock,
-                                                                            start_date, end_date)
-                if deleted:
-                    transaction_dal.get_stock_k_data(stock, start_date, end_date, autype, index, ktype)
+                    deleted = util_dal.delete_start_date_end_date_data(model, start_date, end_date)
+            if deleted:
+                for stock in stocks:
+                    transaction_dal.get_stock_k_data(stock, start_date, end_date, autype, index, _ktype)
+            if is_delete and not deleted:
+                logger.error('删除表数据错误. Model is %s.' % model)
+
     if start_date is not None:
         logger.info('End save %s stocks history k data, start date is: %s, end date is: %s, ktype is: %s.' %
                     (log_save_type, start_date, end_date, ktype))
@@ -142,8 +155,64 @@ def save_stocks_hist_data(stocks=None, start_date=None, end_date=None, ktype=Non
     """
     log_save_type = 'all'
     ktypes = ['D', 'W', 'M', '5', '15', '30', '60']
-    if ktype is not None:
+    is_delete = False
+    if stocks:
+        assert isinstance(stocks, list), 'stocks must be list.'
+        log_save_type = 'select'
+    else:
+        is_delete = True
+        d = today_line
+        if end_date is not None:
+            d = end_date
+        stocks = [stock.code for stock in base_service.get_stocks(d)]
+    last_stock_code = stocks[-1]
+    logger.info('last_stock_code is: %s' % last_stock_code)
+    save_his_data_thread = threading.Thread(name='save_his_data_thread',
+                                            target=transaction_dal.save_his_data)
+    save_his_data_thread.start()
+    if end_date is not None:
+        assert start_date is not None, 'start_date must be not None, when end_date is not None.'
+    if start_date is not None:
+        if end_date is None:
+            end_date = today_line
+        logger.info('Begin save %s stocks history data, start date is: %s, end date is: %s, ktype is: %s.'
+                    % (log_save_type, start_date, end_date, ktype))
+    else:
+        logger.info('Begin save %s stocks history data, all date, ktype is: %s.'
+                    % (log_save_type, ktype))
+
+    if ktype is None:
+        for _ktype in ktypes:
+            if _ktype.upper() == 'D':
+                model = HistoryKDataD
+            elif _ktype.upper() == 'W':
+                model = HistoryKDataW
+            elif _ktype.upper() == 'M':
+                model = HistoryKDataM
+            elif _ktype == '5':
+                model = HistoryKData5
+            elif _ktype == '15':
+                model = HistoryKData15
+            elif _ktype == '30':
+                model = HistoryKData30
+            elif _ktype == '60':
+                model = HistoryKData60
+            else:
+                pass
+            deleted = True
+            if is_delete:
+                if start_date is None:
+                    deleted = table_service.truncate_table(model)
+                else:
+                    deleted = util_dal.delete_start_date_end_date_data(model, start_date, end_date)
+            if deleted:
+                for stock in stocks:
+                        transaction_dal.get_his_data(stock, start_date=start_date, end_date=end_date, ktype=_ktype)
+            if is_delete and not deleted:
+                logger.error('删除表数据错误. Model is %s.' % model)
+    else:
         assert ktype in ktypes, 'ktype must be one of %s' % ktypes
+        model = HistoryDataD
         if ktype.upper() == 'D':
             model = HistoryDataD
         elif ktype.upper() == 'W':
@@ -160,62 +229,17 @@ def save_stocks_hist_data(stocks=None, start_date=None, end_date=None, ktype=Non
             model = HistoryData60
         else:
             pass
-
-    if stocks:
-        assert isinstance(stocks, list), 'stocks must be list.'
-        log_save_type = 'select'
-    else:
-        stocks = [stock.code for stock in base_service.get_stocks()]
-    last_stock_code = stocks[-1]
-    logger.info('last_stock_code is: %s' % last_stock_code)
-    save_his_data_thread = threading.Thread(name='save_his_data_thread',
-                                            target=transaction_dal.save_his_data, args=(last_stock_code,))
-    save_his_data_thread.start()
-    if end_date is not None:
-        assert start_date is not None, 'start_date must be not None, when end_date is not None.'
-    if start_date is not None:
-        if end_date is None:
-            end_date = today_line
-        logger.info('Begin save %s stocks history data, start date is: %s, end date is: %s, ktype is: %s.'
-                    % (log_save_type, start_date, end_date, ktype))
-    else:
-        logger.info('Begin save %s stocks history data, all date, ktype is: %s.'
-                    % (log_save_type, ktype))
-
-    for stock in stocks:
-        if ktype is None:
-            for ktype in ktypes:
-                if ktype.upper() == 'D':
-                    model = HistoryDataD
-                elif ktype.upper() == 'W':
-                    model = HistoryDataW
-                elif ktype.upper() == 'M':
-                    model = HistoryDataM
-                elif ktype == '5':
-                    model = HistoryData5
-                elif ktype == '15':
-                    model = HistoryData15
-                elif ktype == '30':
-                    model = HistoryData30
-                elif ktype == '60':
-                    model = HistoryData60
-                else:
-                    pass
-                if start_date is None:
-                    deleted = util_dal.delete_code_data(model, stock)
-                else:
-                    deleted = util_dal.delete_code_start_date_end_date_data(model, stock,
-                                                                            start_date, end_date)
-                if deleted:
-                    transaction_dal.get_his_data(stock, start_date=start_date, end_date=end_date, ktype=ktype)
-        else:
+        deleted = True
+        if is_delete:
             if start_date is None:
-                deleted = util_dal.delete_code_data(model, stock)
+                deleted = table_service.truncate_table(model)
             else:
-                deleted = util_dal.delete_code_start_date_end_date_data(model, stock,
-                                                                        start_date, end_date)
-            if deleted:
+                deleted = util_dal.delete_start_date_end_date_data(model, start_date, end_date)
+        if deleted:
+            for stock in stocks:
                 transaction_dal.get_his_data(stock, start_date=start_date, end_date=end_date, ktype=ktype)
+        if is_delete and not deleted:
+            logger.error('删除表数据错误. Model is %s.' % model)
 
     if start_date is not None:
         logger.info('End save %s stocks history data, start date is: %s, end date is: %s, ktype is: %s.'
@@ -237,16 +261,21 @@ def save_stock_h_data_revote(stocks=None, start_date=None, end_date=None, autype
         index:Boolean，是否是大盘指数，默认为False
     """
     log_save_type = 'all'
+    is_delete = False
 
     if stocks:
         assert isinstance(stocks, list), 'stocks must be a list type.'
         log_save_type = 'select'
     else:
-        stocks = [stock.code for stock in base_service.get_stocks()]
+        is_delete = True
+        d = today_line
+        if end_date is not None:
+            d = end_date
+        stocks = [stock.code for stock in base_service.get_stocks(d)]
     last_stock_code = stocks[-1]
     logger.info('Last stock code is: %s' % last_stock_code)
     save_h_revote_data_thread = threading.Thread(name='save_h_revote_data_thread',
-                                                 target=transaction_dal.save_h_revote_data, args=(last_stock_code,))
+                                                 target=transaction_dal.save_h_revote_data)
     save_h_revote_data_thread.start()
     # threading.Timer(1, check_thread_alive, args=(save_h_revote_data_thread,)).start()
     if end_date is not None:
@@ -258,13 +287,17 @@ def save_stock_h_data_revote(stocks=None, start_date=None, end_date=None, autype
                     (log_save_type, start_date, end_date))
     else:
         logger.info('Begin save %s stocks history k data, all date.' % log_save_type)
-    for stock in stocks:
+    deleted = True
+    if is_delete:
         if start_date is None:
-            deleted = util_dal.delete_code_data(RevoteHistoryData, stock)
+            deleted = table_service.truncate_table(RevoteHistoryData)
         else:
-            deleted = util_dal.delete_code_start_date_end_date_data(RevoteHistoryData, stock, start_date, end_date)
-        if deleted:
+            deleted = util_dal.delete_start_date_end_date_data(RevoteHistoryData, start_date, end_date)
+    if deleted:
+        for stock in stocks:
             transaction_dal.get_h_revote_data(stock, start_date, end_date, autype, index)
+    if is_delete and not deleted:
+        logger.error('删除表数据错误. Model is %s.' % RevoteHistoryData)
     if start_date is not None:
         logger.info('End save %s stocks history h revote data, start date is: %s, end date is: %s.' %
                     (log_save_type, start_date, end_date))
@@ -303,9 +336,12 @@ def save_tick_data(date, stocks=None):
 
     last_stock_code = None
     log_save_type = 'all'
+    is_delete = False
 
     if stocks is None:
-        stocks = [stock.code for stock in base_service.get_stocks()]
+        is_delete = True
+        d = '2017-10-10' if date < '2017-10-10' else date
+        stocks = [stock.code for stock in base_service.get_stocks(d)]
     else:
         assert isinstance(stocks, list), 'stocks must be a list type.'
         last_stock_code = stocks[-1]
@@ -315,9 +351,15 @@ def save_tick_data(date, stocks=None):
     save_tick_data_thread = threading.Thread(name='save_tick_data_thread', target=transaction_dal.save_tick_data)
     save_tick_data_thread.start()
     # threading.Timer(1, check_thread_alive, args=(save_tick_data_thread,)).start()
-    for stock in stocks:
-        if util_dal.delete_code_date_data(TickData, stock, date):
+    deleted = True
+    if is_delete:
+        deleted = util_dal.delete_date_data(TickData, date)
+    if deleted:
+        for stock in stocks:
             transaction_dal.get_tick_data(stock, date)
+    if is_delete and not deleted:
+        logger.error('删除表数据错误. Model is %s.' % TickData)
+
     logger.info('End save %s tick datas, date is: %s' % (log_save_type, date))
     transaction_dal.tick_data_queue.put((last_stock_code, 'stop', 'stop'))
 
@@ -338,8 +380,10 @@ def save_today_tick_data_while_trading(stocks=None):
     date = today_line
     last_stock_code = None
     log_save_type = 'all'
+    is_delete = False
 
     if stocks is None:
+        is_delete = True
         stocks = [stock.code for stock in base_service.get_stocks()]
     else:
         assert isinstance(stocks, list), 'stocks must be a list type.'
@@ -351,9 +395,15 @@ def save_today_tick_data_while_trading(stocks=None):
                                                    target=transaction_dal.save_today_tick_data)
     save_today_tick_data_thread.start()
     # threading.Timer(1, check_thread_alive, args=(save_today_tick_data_thread,)).start()
-    for stock in stocks:
-        if util_dal.delete_code_date_data(TickData, stock, date):
+    deleted = True
+    if is_delete:
+        deleted = util_dal.delete_date_data(TickData, date)
+    if deleted:
+        for stock in stocks:
             transaction_dal.get_today_tick_data(stock)
+    if is_delete and not deleted:
+        logger.error('删除表数据错误. Model is %s.' % TickData)
+
     logger.info('End save %s today tick datas, date is: %s' % (log_save_type, date))
     transaction_dal.today_tick_data_queue.put((last_stock_code, 'stop', 'stop'))
 
@@ -373,8 +423,12 @@ def save_big_trade_data(date, stocks=None):
         """
     last_stock_code = None
     log_save_type = 'all'
+    is_delete = False
+    if date is None:
+        date = today_line
 
     if stocks is None:
+        is_delete = True
         stocks = [stock.code for stock in base_service.get_stocks()]
     else:
         assert isinstance(stocks, list), 'stocks must be a list type.'
@@ -386,9 +440,14 @@ def save_big_trade_data(date, stocks=None):
                                                   target=transaction_dal.save_big_trade_data)
     save_big_trade_data_thread.start()
     # threading.Timer(1, check_thread_alive, args=(save_big_trade_data_thread,)).start()
-    for stock in stocks:
-        if util_dal.delete_code_date_data(BigTradeData, stock, date):
+    deleted = True
+    if is_delete:
+        deleted = util_dal.delete_date_data(BigTradeData, date)
+    if deleted:
+        for stock in stocks:
             transaction_dal.get_big_trade_data(stock, date)
+    if is_delete and not deleted:
+        logger.error('删除表数据错误. Model is %s.' % BigTradeData)
     logger.info('End save %s big trade datas, date is: %s.' % (log_save_type, date))
     transaction_dal.big_trade_data_queue.put((last_stock_code, 'stop', 'stop'))
 
