@@ -20,8 +20,10 @@ def _check_input(year, quarter):
         return True
 
 
-def save_stock_basic():
+def save_stock_basic(day=None):
     logger.info('Begin get and save StockBasic.')
+    insert_date = day if day else today_line
+
     try:
         data_df = ts.get_stock_basics()
         data_df['code'] = pd.Series(data_df.axes[0], index=data_df.index)
@@ -31,7 +33,7 @@ def save_stock_basic():
                        'fixedAssets': row[8], 'reserved': row[9], 'reservedPerShare': row[10], 'eps': row[11],
                        'bvps': row[12], 'pb': row[13], 'timeToMarket': row[14], 'undp': row[15],
                        'perundp':row[16], 'rev': row[17], 'profit': row[18], 'gpr': row[19],
-                       'npr': row[20], 'holders': row[21], 'insert_date': today_line}
+                       'npr': row[20], 'holders': row[21], 'insert_date': insert_date}
                       for row in data]
         StockBasic.insert_many(data_dicts).execute()
     except Exception:

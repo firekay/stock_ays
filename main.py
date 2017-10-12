@@ -200,7 +200,7 @@ def args_parse():
     transaction_parser.add_argument('-d', '--date', dest='date', help='date, the date wanted to be save,格式YYYY-MM-DD')
     transaction_parser.add_argument('--stocks', dest='stocks', nargs='+',
                                     help='stock codes which want to be deal.')
-    transaction_parser.add_argument('-k', '--ktype', dest='ktype',
+    transaction_parser.add_argument('-t', '--ktype', dest='ktype',
                                     help='数据类型: D=日k线 W=周 M=月 5=5分钟 15=15分钟 30=30分钟 60=60分钟',
                                     choices=['D', 'W', 'M', '5', '15', '30', '60'])
     # transaction_parser.add_argument('-a', action='store_true', dest='all_stocks', help='get all stocks data.')
@@ -306,6 +306,7 @@ def args_parse():
     base_parser.add_argument('-y', '--year', dest='year', type=int, help='年份')
     base_parser.add_argument('-q', '--quarter', dest='quarter', type=int, help='季度',
                              choices=[1, 2, 3, 4])
+    base_parser.add_argument('-d', '--date', dest='date', help='date, the date wanted to be save,格式YYYY-MM-DD')
 
     # macro parser 宏观经济数据
     macro_parser = top_sub_parsers.add_parser('m', help='macro service(宏观经济数据)')
@@ -382,7 +383,7 @@ def main():
     import tushare as ts
 
     args = args_parse()
-    print args
+    logger.info('Args is: %s.' % args)
     if args.need_open_date:
         dates = ts.trade_cal()
         is_open = dates[dates.calendarDate == today_line].query('isOpen==0').empty
@@ -474,7 +475,7 @@ def main():
 
     # base parser 基本面数据
     if hasattr(args, 'save_stocks_basic_data') and args.save_stocks_basic_data:
-        base_service.save_stocks_basic_data()
+        base_service.save_stocks_basic_data(args.date)
     if hasattr(args, 'save_performance_report') and args.save_performance_report:
         quarter = args.quarter
         if quarter is None:

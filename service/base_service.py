@@ -11,23 +11,26 @@ from utils import util
 logger = logging.getLogger(__name__)
 
 
-def save_stocks_basic_data():
+def save_stocks_basic_data(day=None):
     """股票列表"""
-    table_service.truncate_table(StockBasic)
-    base_dal.save_stock_basic()
+    insert_date = day if day else get_today_line()
+    util_dal.delete_insert_date_data(StockBasic, insert_date)
+    base_dal.save_stock_basic(insert_date)
 
 
-def get_max_stock():
+def get_max_stock(insert_date):
     """获取最大股票"""
-    stocks = StockBasic.select(StockBasic.code).order_by(StockBasic.code.desc()).limit(1)
-    max_sotck = [stock.code for stock in stocks][0]
-    return max_sotck
+    stocks = get_stocks(insert_date).order_by(StockBasic.code.desc()).limit(1)
+    max_stock = [stock.code for stock in stocks][0]
+    return max_stock
 
 
-def get_stocks():
+def get_stocks(insert_date):
     """获取股票列表"""
-    # 过滤没有上市的股票
-    return StockBasic.select(StockBasic.code).where(StockBasic.timeToMarket != 0).order_by(StockBasic.code)
+    # 过滤没有上市的股票, 没有过滤停盘的股票
+    return StockBasic.select(StockBasic.code)\
+        .where(StockBasic.insert_date == insert_date, StockBasic.timeToMarket != 0)\
+        .order_by(StockBasic.code)
 
 
 def save_performance_report(year, quarter):
