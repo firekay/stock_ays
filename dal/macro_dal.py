@@ -6,8 +6,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-ts.get_deposit_rate()
-
 
 def get_deposit_rate():
     """得到存款利率"""
