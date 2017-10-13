@@ -429,7 +429,7 @@ def save_big_trade_data(date, stocks=None):
 
     if stocks is None:
         is_delete = True
-        stocks = [stock.code for stock in base_service.get_stocks()]
+        stocks = [stock.code for stock in base_service.get_stocks(date)]
     else:
         assert isinstance(stocks, list), 'stocks must be a list type.'
         last_stock_code = stocks[-1]
