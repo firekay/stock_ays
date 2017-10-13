@@ -6,8 +6,6 @@ from utils import util
 
 logger = logging.getLogger(__name__)
 
-this_year = util.get_year()
-
 
 def get_shibor_rate(year=None):
     """上海银行间同业拆放利率（Shanghai Interbank Offered Rate，简称Shibor）
@@ -16,7 +14,7 @@ def get_shibor_rate(year=None):
         year: 年份(YYYY),默认为当前年份
     """
     if not year:
-        year = this_year
+        year = util.get_year()
     logger.info('Begin get ShiborRate, year is: %s.' % year)
     try:
         data_df = ts.shibor_data(year)
@@ -45,7 +43,7 @@ def get_shibor_quote(year=None):
         year: 年份(YYYY),默认为当前年份
     """
     if not year:
-        year = this_year
+        year = util.get_year()
     logger.info('Begin get ShiborQuote, year is: %s.' % year)
     try:
         data_df = ts.shibor_quote_data(year)
@@ -77,7 +75,7 @@ def get_shibor_ma(year=None):
         year: 年份(YYYY),默认为当前年份
     """
     if not year:
-        year = this_year
+        year = util.get_year()
     logger.info('Begin get ShiborMA, year is: %s.' % year)
     try:
         data_df = ts.shibor_ma_data(year)
@@ -111,7 +109,7 @@ def get_lpr(year=None):
         year: 年份(YYYY),默认为当前年份
     """
     if not year:
-        year = this_year
+        year = util.get_year()
     logger.info('Begin get LPR, year is: %s.' % year)
     try:
         data_df = ts.lpr_data(year)
@@ -138,7 +136,7 @@ def get_lpr_ma(year=None):
         year: 年份(YYYY),默认为当前年份
     """
     if not year:
-        year = this_year
+        year = util.get_year()
     logger.info('Begin get LprMA, year is: %s.' % year)
     try:
         data_df = ts.lpr_ma_data(year)
