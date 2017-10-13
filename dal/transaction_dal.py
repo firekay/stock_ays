@@ -147,6 +147,68 @@ def save_stock_k_data():
                 logging.info('Success save stock k data, code is: %s, ktype is %s.' % (code, ktype))
 
 
+def load_stock_k_data(model_ktype, stock=None, start_date=None, end_date=None):
+    """load stock k data from mysql
+    
+    Args:
+        model_ktype: string, 可选值'D', 'W', 'M', '5', '15', '30', '60'
+        stock: string, 股票代码
+        start_date: string, 开始时间
+        end_date: string, 结束时间
+    """
+    model_ktypes = ['D', 'W', 'M', '5', '15', '30', '60']
+    assert model_ktype in model_ktypes, 'model_ktype must be one of %s' % model_ktypes
+    model = HistoryKDataD
+    if model_ktype.upper() == 'D':
+        model = HistoryKDataD
+    elif model_ktype.upper() == 'W':
+        model = HistoryKDataW
+    elif model_ktype.upper() == 'M':
+        model = HistoryKDataM
+    elif model_ktype == '5':
+        model = HistoryKData5
+    elif model_ktype == '15':
+        model = HistoryKData15
+    elif model_ktype == '30':
+        model = HistoryKData30
+    elif model_ktype == '60':
+        model = HistoryKData60
+    else:
+        pass
+
+    if stock:
+        if start_date:
+            if end_date:
+                get_stocks = model.select().where(model.code == stock, model.date >= start_date,
+                                                  model.date <= end_date) \
+                    .order_by(model.date)
+            else:
+                get_stocks = model.select().where(model.code == stock, model.date >= start_date) \
+                    .order_by(model.date)
+        else:
+            if end_date:
+                get_stocks = model.select().where(model.code == stock, model.date <= end_date) \
+                    .order_by(model.date)
+            else:
+                get_stocks = model.select(model.code == stock) \
+                    .order_by(model.date)
+    else:
+        if start_date:
+            if end_date:
+                get_stocks = model.select().where(model.date >= start_date, model.date <= end_date)\
+                    .order_by(model.code, model.date)
+            else:
+                get_stocks = model.select().where(model.date >= start_date) \
+                    .order_by(model.code, model.date)
+        else:
+            if end_date:
+                get_stocks = model.select().where(model.date <= end_date) \
+                    .order_by(model.code, model.date)
+            else:
+                get_stocks = model.select().order_by(model.code, model.date)
+    return get_stocks
+
+
 ########################################################
 # h revote data
 ########################################################
