@@ -4,6 +4,7 @@
 from models.model import *
 from dal import bank_loan_call_rate_dal as bankl_dal
 from dal import util_dal
+from utils import util
 
 
 def save_shibor_rate(year=None):
@@ -12,6 +13,8 @@ def save_shibor_rate(year=None):
     Args:
         year: 年份(YYYY),默认为当前年份
     """
+    if not year:
+        year = util.get_year()
     data_dicts = bankl_dal.get_shibor_rate(year)
     if data_dicts:
         if util_dal.delete_year_data(ShiborRate, year):
@@ -24,6 +27,8 @@ def save_shibor_quote(year=None):
     Args:
         year: 年份(YYYY),默认为当前年份
     """
+    if not year:
+        year = util.get_year()
     data_dicts = bankl_dal.get_shibor_quote(year)
     if data_dicts:
         if util_dal.delete_year_data(ShiborQuote, year):
@@ -36,6 +41,8 @@ def save_shibor_ma(year=None):
     Args:
         year: 年份(YYYY),默认为当前年份
     """
+    if not year:
+        year = util.get_year()
     data_dicts = bankl_dal.get_shibor_ma(year)
     if data_dicts:
         if util_dal.delete_year_data(ShiborMA, year):
@@ -48,6 +55,8 @@ def save_lpr(year=None):
     Args:
         year: 年份(YYYY),默认为当前年份
     """
+    if not year:
+        year = util.get_year()
     data_dicts = bankl_dal.get_lpr(year)
     if data_dicts:
         if util_dal.delete_year_data(LPR, year):
@@ -60,6 +69,8 @@ def save_lpr_ma(year=None):
     Args:
         year: 年份(YYYY),默认为当前年份
     """
+    if not year:
+        year = util.get_year()
     data_dicts = bankl_dal.get_lpr_ma(year)
     if data_dicts:
         if util_dal.delete_year_data(LprMA, year):
