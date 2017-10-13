@@ -242,6 +242,9 @@ def args_parse():
                                    choices=xrange(1, 13))
     investment_parser.add_argument('-q', '--quarter', dest='quarter', type=int, help='季度',
                                    choices=[1, 2, 3, 4])
+    investment_parser.add_argument('-s', '--start', dest='start_date', help='start date,格式YYYY-MM-DD')
+    investment_parser.add_argument('-e', '--end', dest='end_date', help='end date,格式YYYY-MM-DD')
+    investment_parser.add_argument('--date', dest='date', help='date, the date wanted to be save,格式YYYY-MM-DD')
 
     # classified parser 股票分类数据
     classified_parser = top_sub_parsers.add_parser('c', help='classified service(股票分类数据)')
