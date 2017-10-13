@@ -29,6 +29,84 @@ winners_list_models = [TopList, IndividualStatisticsTops, BrokerTops, Institutio
 bank_loan_models = [ShiborRate, ShiborQuote, ShiborMA, LPR, LprMA]
 
 
+def table2model(table):
+    table_model = {
+        'history_k_data_d': HistoryKDataD,
+        'history_k_data_w': HistoryKDataW,
+        'history_k_data_m': HistoryKDataM,
+        'history_k_data_5': HistoryKData5,
+        'history_k_data_15': HistoryKData15,
+        'history_k_data_30': HistoryKData30,
+        'history_k_data_60': HistoryKData60,
+        'history_data_d': HistoryDataD,
+        'history_data_w': HistoryDataW,
+        'history_data_m': HistoryDataM,
+        'history_data_5': HistoryData5,
+        'history_data_15': HistoryData15,
+        'history_data_30': HistoryData30,
+        'history_data_60': HistoryData60,
+        'revote_history_data': RevoteHistoryData,
+        'today_all_data': TodayAllData,
+        'tick_data': TickData,
+        'big_index': BigIndexData,
+        'big_trade_data': BigTradeData,
+
+        'distribution_plans': DistributionPlans,
+        'performance_forecast': PerformanceForecast,
+        'restricted_stock': RestrictedStock,
+        'fund_holdings': FundHoldings,
+        'new_stocks': NewStocks,
+        'financing_securities_sh': FinancingSecuritiesSh,
+        'financing_securities_detail_sh': FinancingSecuritiesDetailSh,
+        'financing_securities_sz': FinancingSecuritiesSz,
+        'financing_securities_detail_sz': FinancingSecuritiesDetailSz,
+
+        'industry_classified': IndustryClassified,
+        'concept_classified': ConceptClassified,
+        'sme_classified': SmeClassified,
+        'area_classified': AreaClassified,
+        'gem_classified': GemClassified,
+        'st_classified': StClassified,
+        'hs300': Hs300,
+        'sz50': Sz50,
+        'zz500': Zz500,
+        'suspend': Suspend,
+
+        'stock_basic': StockBasic,
+        'performance_report': PerformanceReport,
+        'profit_ability': ProfitAbility,
+        'operation_ability': OperationAbility,
+        'growth_ability': GrowthAbility,
+        'pay_debt_ability': PayDebtAbility,
+        'cash_flow': CashFlow,
+
+        'deposits_rate': DepositsRate,
+        'loan_rate': LoanRate,
+        'required_reserves_rate': RequiredReservesRate,
+        'money_supply': MoneySupply,
+        'money_supply_bal': MoneySupplyBal,
+        'gdp_year': GrossDomesticProductYear,
+        'gdp_quarter': GrossDomesticProductQuarter,
+        'gdp_three_demands': GdpThreeDemands,
+        'gdp_three_industry_pull': GdpThreeIndustryPull,
+        'gdp_three_industry_contrib': GdpThreeIndustryContrib,
+        'cpi': CPI,
+        'ppi': PPI,
+
+        'top_list': TopList,
+        'individual_statistics_tops': IndividualStatisticsTops,
+        'broker_tops': BrokerTops,
+        'institution_tops': InstitutionTops,
+        'institution_detail': InstitutionDetail,
+
+        'shibor_rate': ShiborRate,
+        'shibor_quote': ShiborQuote,
+        'lpr': LPR,
+        'lpr_ma': LprMA
+    }
+    return table_model.get(table, None)
+
+
 def truncate_table(model):
     """清空表
     
@@ -36,6 +114,24 @@ def truncate_table(model):
     """
     logger.info('Truncate "table" %s' % model.__name__)
     model.truncate_table()
+
+
+def create_tables_from_table_name(table_names):
+    for table_name in table_names:
+        model = table2model(table_name)
+        if model:
+            create_table(model)
+        else:
+            logger.error('Error create table, table name wrong, please check it, table name is %s.' % table_name)
+
+
+def drop_tables_from_table_name(table_names):
+    for table_name in table_names:
+        model = table2model(table_name)
+        if model:
+            drop_table(model)
+        else:
+            logger.error('Error Drop table, table name wrong, please check it, table name is %s.' % table_name)
 
 
 def create_table(model):

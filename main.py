@@ -575,9 +575,9 @@ def main():
         table_service.create_all_tables()
     # database and table
     if hasattr(args, 'drop_table') and args.drop_table:
-        table_service.drop_tables(args.tables)
+        table_service.drop_tables_from_table_name(args.tables)
     if hasattr(args, 'create_table') and args.create_table:
-        table_service.create_tables(args.tables)
+        table_service.create_tables_from_table_name(args.tables)
 
 
 if __name__ == '__main__':
