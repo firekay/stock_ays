@@ -129,16 +129,16 @@ def args_parse():
     parser = argparse.ArgumentParser(description='Get stock data with tushare')
     top_sub_parsers = parser.add_subparsers()
     parser.add_argument('-o', action='store_false', dest='need_open_date',
-                        help='if need to judge whth open data, default is true')
+                        help='if need to judge with open data, default is true')
 
     # database table parser
     db_parser = top_sub_parsers.add_parser('d', help='database and table service')
     db_parser.add_argument('-da', action='store_true', dest='drop_tables', help='drop all tables')
     db_parser.add_argument('-ca', action='store_true', dest='create_tables', help='create all tables')
     db_parser.add_argument('-d', action='store_true', dest='drop_table',
-                           help='drop all tables, use with -t or --tables')
+                           help='drop tables, use with -t or --tables')
     db_parser.add_argument('-c', action='store_true', dest='create_table',
-                           help='create all tables, use with -t or --tables')
+                           help='create tables, use with -t or --tables')
     db_parser.add_argument('-t', '--talbes', dest='tables', nargs='+',
                            help='create given tables, must be peewee model.')
 
@@ -388,7 +388,7 @@ def main():
         dates = ts.trade_cal()
         is_open = dates[dates.calendarDate == today_line].query('isOpen==0').empty
         if not is_open:
-            logger.warn('Today is not open date, so do nothing.')
+            logger.info('Today is not open date, so do nothing.')
             sys.exit(-1)
 
     # transaction 交易数据
