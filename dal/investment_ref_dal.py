@@ -42,7 +42,7 @@ def get_distribution_plans_data(year, top=25, retry_count=RETRY_COUNT, pause=PAU
         return None
     else:
         data_dicts = []
-        if data_df.empty:
+        if data_df is None or data_df.empty:
             logger.warn('Empty get distribution plans, the year is %s' % year)
         else:
             data_dicts = [{'year': year, 'code': row[0], 'name': row[1], 'report_date': row[3],
@@ -88,7 +88,7 @@ def get_performance_forecast(year, quarter):
         return None
     else:
         data_dicts = []
-        if data_df.empty:
+        if data_df is None or data_df.empty:
             logger.warn('Empty get performance forecast data, the year is: %s, quarter is: %s'
                         % (year, quarter))
         else:
@@ -124,7 +124,7 @@ def get_restricted_stock(year=None, month=None, retry_count=RETRY_COUNT, pause=P
         return None
     else:
         data_dicts = []
-        if not data_df.empty:
+        if data_df is not None and not data_df.empty:
             data_dicts = [{'code': row[0], 'name': row[1], 'year': year, 'month': month,
                            'date': row[2], 'count': row[3], 'ratio': row[4], 'insert_date': today_line}
                           for row in data_df.values]
@@ -164,7 +164,7 @@ def get_fund_holdings(year, quarter, retry_count=RETRY_COUNT, pause=PAUSE):
         return None
     else:
         data_dicts = []
-        if data_df.empty:
+        if data_df is None or data_df.empty:
             logger.warn('Empty get fund holdings data, the year is: %s, quarter is: %s'
                         % (year, quarter))
         else:
@@ -188,7 +188,7 @@ class NewStocksDal(object):
             return None
         else:
             data_dicts = []
-            if data_df.empty:
+            if data_df is None or data_df.empty:
                 logger.warn('Empty get get new stocks.')
             else:
                 data_dicts = [{'code': row[0], 'xcode': row[1], 'name': row[2], 'ipo_date': row[3],
@@ -246,7 +246,7 @@ class FinancingSecuritiesShDal(object):
             logger.exception('Error get financing securities sh data, start_date is %s, '
                              'end_date is %s.' % (start_date, end_date))
         else:
-            if data_df.empty:
+            if data_df is None or data_df.empty:
                 logger.warn('Empty get financing securities sh data, start_date is %s,'
                             ' end_date is %s.' % (start_date, end_date))
             else:
@@ -343,7 +343,7 @@ class FinancingSecuritiesDetailShDal(object):
         else:
             raise TypeError('1. 参数全为空; 2. 只有date 3. 只有start_date和end_date')
         data_dicts = []
-        if data_df.empty:
+        if data_df is None or data_df.empty:
             logger.warn('Empty get financing securities details sh data. date is: %s, '
                         'start_date is %s, end_date is: %s' % (date, start_date, end_date))
         else:
@@ -398,7 +398,7 @@ class FinancingSecuritiesSzDal(object):
             logger.exception('Error get financing securities sz data, start_date is %s,'
                              ' end_date is %s.' % (start_date, end_date))
         else:
-            if data_df.empty:
+            if data_df is None or data_df.empty:
                 logger.warn('Empty get financing securities sz data, start_date is %s,'
                             ' end_date is %s.' % (start_date, end_date))
             else:
