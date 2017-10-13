@@ -242,7 +242,6 @@ def save_year_data(model, data_dicts, year):
         model: peewee定义的model, models.model.py中定义的
         data_dicts: 字典的列表, 跟model对应的数据
         year: 年份, YYYY格式
-        quarter: 季度, 只能是1, 2, 3, 4
     """
     assert data_dicts, 'data_dict must not empty and data_dict must not None'
     logger.info('Begin save %s data, the year is: %s'
