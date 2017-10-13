@@ -317,8 +317,8 @@ class TodayAllData(BaseModel):
     amount = DecimalField(max_digits=15, decimal_places=3)
     per = DecimalField(max_digits=10, decimal_places=4)
     pb = DecimalField(max_digits=10, decimal_places=4)
-    mktcap = DecimalField(max_digits=15, decimal_places=3)
-    nmc = DecimalField(max_digits=15, decimal_places=3)
+    mktcap = DecimalField(max_digits=17, decimal_places=5)
+    nmc = DecimalField(max_digits=17, decimal_places=5)
 
 
 class TickData(BaseModel):
