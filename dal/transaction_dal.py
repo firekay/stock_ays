@@ -1,5 +1,9 @@
 # encoding: UTF-8
-"""调用接口得到数据，以及存入mysql， mongodb"""
+"""调用接口得到数据，以及存入mysql， mongodb
+
+get 为从外部tushare获取数据
+load 为从mysql获取数据
+"""
 import logging
 import tushare as ts
 import pandas as pd
@@ -21,6 +25,9 @@ today_tick_data_queue = Queue()
 big_trade_data_queue = Queue()
 
 
+########################################################
+# stock k data
+########################################################
 def get_stock_k_data(code, start_date=None, end_date=None, autype='qfq', index=False,
                      ktype=None, retry_count=RETRY_COUNT, pause=PAUSE):
     """获取k线数据的历史复权数据
@@ -48,7 +55,7 @@ def get_stock_k_data(code, start_date=None, end_date=None, autype='qfq', index=F
     ktypes = ['D', 'W', 'M', '5', '15', '30', '60']
     assert ktype in ktypes, 'ktype must be one of %s' % ktypes
     if start_date is not None or end_date is not None:
-        logger.info('Begin get sotck %s history k data, start date is: %s, end date is: %s, ktype is %s.'
+        logger.info('Begin get stock %s history k data, start date is: %s, end date is: %s, ktype is %s.'
                     % (code, start_date, end_date, ktype))
     else:
         logger.info('Begin get stock %s history k data, all date, ktype is %s.' % (code, ktype))
@@ -62,7 +69,7 @@ def get_stock_k_data(code, start_date=None, end_date=None, autype='qfq', index=F
                                 retry_count=retry_count, pause=pause)
     except Exception as e:
         if start_date != '' or end_date != '':
-            logger.exception('Error get sotck %s history k data, start date is: %s, end date is: %s, ktype is: %s.'
+            logger.exception('Error get stock %s history k data, start date is: %s, end date is: %s, ktype is: %s.'
                              % (code, start_date, end_date, ktype))
         else:
             logger.exception('Error get stock %s history k data, all date, ktype is: %s.' % (code, ktype))
@@ -75,10 +82,10 @@ def get_stock_k_data(code, start_date=None, end_date=None, autype='qfq', index=F
                 if data_df is not None and not data_df.empty:
                     data = data_df.values
                     stock_k_data_queue.put((code, ktype, autype, data))
-                    logger.info('Success get sotck %s history k data, start date is: %s, end date is: %s, ktype is: %s.'
+                    logger.info('Success get stock %s history k data, start date is: %s, end date is: %s, ktype is: %s.'
                                 % (code, start_date, end_date, ktype))
                 else:
-                    logger.warn('Empty get sotck %s history k data, start date is: %s, end date is: %s, ktype is %s.'
+                    logger.warn('Empty get stock %s history k data, start date is: %s, end date is: %s, ktype is %s.'
                                 % (code, start_date, end_date, ktype))
 
             else:
@@ -87,7 +94,7 @@ def get_stock_k_data(code, start_date=None, end_date=None, autype='qfq', index=F
                 logger.info('Success get stock %s history k data, all date, ktype is %s.' % (code, ktype))
         else:
             if start_date != '' or end_date != '':
-                logger.warn('Empty get sotck %s history k data, start date is: %s, end date is: %s, ktype is %s.'
+                logger.warn('Empty get stock %s history k data, start date is: %s, end date is: %s, ktype is %s.'
                             % (code, start_date, end_date, ktype))
             else:
                 logger.info('Empty get stock %s history k data, all date, ktype is: %s.' % (code, ktype))
@@ -140,6 +147,9 @@ def save_stock_k_data():
                 logging.info('Success save stock k data, code is: %s, ktype is %s.' % (code, ktype))
 
 
+########################################################
+# h revote data
+########################################################
 def save_h_revote_data():
     logger.info('Begin save h revote data thread.')
     while True:
@@ -171,7 +181,7 @@ def save_h_revote_data():
 def get_h_revote_data(code, start_date=None, end_date=None, autype='qfp', index=False,
                       retry_count=RETRY_COUNT, pause=0, drop_factor=True):
     if start_date is not None or end_date is not None:
-        logger.info('Begin get sotck h revote data, code is: %s, start date is: %s, end date is: %s.'
+        logger.info('Begin get stock h revote data, code is: %s, start date is: %s, end date is: %s.'
                     % (code, start_date, end_date))
     else:
         logger.info('Begin get stock h revote data, all date, code is: %s.' % code)
@@ -179,9 +189,13 @@ def get_h_revote_data(code, start_date=None, end_date=None, autype='qfp', index=
     try:
         data_df = ts.get_h_data(code, start_date, end_date, autype,
                                 index, retry_count, pause, drop_factor)
+    except IOError as e:
+        logger.exception('Error get stock h revote data, sleep 5m, then try again. code is: %s.' % code)
+        time.sleep(5 * 60)
+        get_h_revote_data(code, start_date, end_date, autype, index, retry_count, pause, drop_factor)
     except Exception as e:
         if start_date is not None or end_date is not None:
-            logger.exception('Error get sotck h revote data, code is: %s start date is: %s, end date is: %s.'
+            logger.exception('Error get stock h revote data, code is: %s start date is: %s, end date is: %s.'
                              % (code, start_date, end_date))
         else:
             logger.exception('Error get stock h revote data, all date, the code is: %s.' % code)
@@ -192,18 +206,21 @@ def get_h_revote_data(code, start_date=None, end_date=None, autype='qfp', index=
             data = data_df.values
             h_revote_data_queue.put((code, autype, data))
             if start_date is not None or end_date is not None:
-                logger.info('Success get sotck h revote data, code is: %s, start date is: %s, end date is: %s.'
+                logger.info('Success get stock h revote data, code is: %s, start date is: %s, end date is: %s.'
                             % (code, start_date, end_date))
             else:
                 logger.info('Success get stock h revote data, all date, code is: %s.' % code)
         else:
             if start_date is not None or end_date is not None:
-                logger.warn('Empty get sotck h revote data, code is: %s, start date is: %s, end date is: %s.'
+                logger.warn('Empty get stock h revote data, code is: %s, start date is: %s, end date is: %s.'
                             % (code, start_date, end_date))
             else:
                 logger.warn('Empty get stock h revote data, all date, code is: %s.' % code)
 
 
+########################################################
+# his data
+########################################################
 def save_his_data():
     """保存个股历史交易数据到mysql, 周线
     """
@@ -269,7 +286,8 @@ def get_his_data(code, start_date=None, end_date=None, ktype=None, retry_count=R
         logger.info('Begin get data, all date, code is: %s, ktype is: %s'
                     % (code, ktype))
     try:
-        data_df = ts.get_hist_data(code, start_date, end_date, ktype, retry_count, pause)
+        data_df = ts.get_hist_data(code=code, start=start_date, end=end_date, ktype=ktype,
+                                   retry_count=retry_count, pause=pause)
     except Exception as e:
         if start_date is not None:
             logger.exception('Error get data, code is: %s, start_date is: %s, end_date is: %s,ktype is: %s'
@@ -278,7 +296,14 @@ def get_his_data(code, start_date=None, end_date=None, ktype=None, retry_count=R
             logger.exception('Error get data, all date, code is: %s, ktype is: %s'
                              % (code, ktype))
     else:
-        if data_df is not None and not data_df.empty:
+        if data_df.empty:
+            if start_date is not None:
+                logger.warn('Empty get data, code is: %s, start_date is: %s, end_date is: %s,ktype is: %s'
+                            % (code, start_date, end_date, ktype))
+            else:
+                logger.warn('Empty get data, all date, code is: %s, ktype is: %s'
+                            % (code, ktype))
+        else:
             data_df['date'] = pd.Series(data_df.axes[0], index=data_df.index)
             data = data_df.values
             his_data_queue.put((code, ktype, data))
@@ -287,13 +312,6 @@ def get_his_data(code, start_date=None, end_date=None, ktype=None, retry_count=R
                             % (code, start_date, end_date, ktype))
             else:
                 logger.info('Success get data, all date, code is: %s, ktype is: %s'
-                            % (code, ktype))
-        else:
-            if start_date is not None:
-                logger.warn('Empty get data, code is: %s, start_date is: %s, end_date is: %s,ktype is: %s'
-                            % (code, start_date, end_date, ktype))
-            else:
-                logger.warn('Empty get data, all date, code is: %s, ktype is: %s'
                             % (code, ktype))
 
 
@@ -329,6 +347,9 @@ def get_his_data(code, start_date=None, end_date=None, ktype=None, retry_count=R
 #         _deal_data(code, start_date, end, ktype, retry_count, pause)
 #
 
+########################################################
+# revote his data
+########################################################
 def save_revote_his_data(code, start=None, end=None, autype='qfq',
                          index=True, retry_count=RETRY_COUNT, pause=PAUSE, drop_factor=True):
     """获取历史复权数据，分为前复权和后复权数据，接口提供股票上市以来所有历史数据，默认为前复权。如果不设定开始和结束日期，则返回近一年的复权数据，从性能上考虑，推荐设定开始日期和结束日期，而且最好不要超过三年以上，获取全部历史数据，请分年段分步获取，取到数据后，请及时在本地存储。
@@ -348,6 +369,9 @@ def save_revote_his_data(code, start=None, end=None, autype='qfq',
     logger.info('End: %s,%s' % (code, start))
 
 
+########################################################
+#  today all data
+########################################################
 def save_today_all_data():
     """一次性获取当前交易所有股票的行情数据（如果是节假日，即为上一交易日，结果显示速度取决于网速）"""
     logger.info('Begin get and save today all stock data, the date is: %s' % today_line)
@@ -373,6 +397,9 @@ def save_today_all_data():
             logger.warn('Empty get and save today all stock data, the date is: %s' % today_line)
 
 
+########################################################
+#  tick data
+########################################################
 def save_tick_data():
     """获取个股以往交易历史的分笔数据明细，通过分析分笔数据，可以大致判断资金的进出情况。
     
@@ -487,6 +514,9 @@ def get_today_tick_data(code, retry_count=RETRY_COUNT, pause=PAUSE):
             logger.warn('Empty get today tick data,  code is :%s, date is %s.' % (code, today_line))
 
 
+########################################################
+# big index
+########################################################
 def save_big_index_data():
     """获取大盘指数实时行情列表，以表格的形式展示大盘指数实时行情。"""
     logger.info('Begin get and save big index data, date is: %s.' % today_line)
@@ -511,6 +541,9 @@ def save_big_index_data():
             logger.warn('Empty save big index data, date is: %s.' % today_line)
 
 
+########################################################
+# big trade data
+########################################################
 def save_big_trade_data():
     logger.info('Begin save big trade data thread.')
     while True:
