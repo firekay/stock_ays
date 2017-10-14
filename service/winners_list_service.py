@@ -20,6 +20,12 @@ def save_top_list(date):
             util_dal.save_date_data(TopList, data_dicts, date)
 
 
+def save_top_list_range(start_date, end_date):
+    """给定范围内的龙虎榜列表"""
+    for d in util_dal.range_date_all_include(start_date, end_date):
+        save_top_list(d)
+
+
 def save_individual_statistics_tops(days_type=None):
     """个股上榜统计"""
     def _save_individual_statistics_tops(day_type):

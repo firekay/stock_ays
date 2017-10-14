@@ -348,6 +348,8 @@ def args_parse():
     winners_parser = top_sub_parsers.add_parser('w', help='macro service(龙虎榜数据)')
     winners_parser.add_argument('-t', action='store_true', dest='save_top_list',
                                 help='save_top_list(每日龙虎榜列表), use with -d')
+    winners_parser.add_argument('-tr', action='store_true', dest='save_top_list_range',
+                                help='save_top_list_range(给定范围龙虎榜列表), use with -s, -e')
     winners_parser.add_argument('-is', action='store_true', dest='save_individual_statistics_tops',
                                 help='save_individual_statistics_tops(个股上榜统计), use with [-dt]')
     winners_parser.add_argument('-b', action='store_true', dest='save_broker_tops',
@@ -357,6 +359,8 @@ def args_parse():
     winners_parser.add_argument('-id', action='store_true', dest='save_institution_detail',
                                 help='save_institution_detail(机构成交明细)')
 
+    winners_parser.add_argument('-s', '--start', dest='start_date', help='start date,格式YYYY-MM-DD')
+    winners_parser.add_argument('-e', '--end', dest='end_date', help='end date,格式YYYY-MM-DD')
     winners_parser.add_argument('-d', '--date', dest='date', help='date日期,格式YYYY-MM-DD')
     winners_parser.add_argument('-dt', '--days_type', dest='days_type', type=int,
                                 nargs='+', choices=[5, 10, 30, 60],
@@ -547,6 +551,11 @@ def main():
     # winners 龙虎榜数据
     if hasattr(args, 'save_top_list') and args.save_top_list:
         wlservice.save_top_list(date=args.date)
+    if hasattr(args, 'save_top_list_range') and args.save_top_list_range:
+        if args.start_date and args.end_date:
+            wlservice.save_top_list_range(args.start_date, args.end_date)
+        else:
+            logger.error('-tr(save_top_list_range) must use with -s and -e')
     if hasattr(args, 'save_individual_statistics_tops') and args.save_individual_statistics_tops:
         wlservice.save_individual_statistics_tops(days_type=args.days_type)
     if hasattr(args, 'save_broker_tops') and args.save_broker_tops:
