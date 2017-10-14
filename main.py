@@ -286,7 +286,7 @@ def args_parse():
     base_parser = top_sub_parsers.add_parser('b', help='base service(基本面数据)')
     base_parser.add_argument('-s', action='store_true',
                              dest='save_stocks_basic_data',
-                             help='save_stocks_basic_data(股票列表)')
+                             help='save_stocks_basic_data(股票列表), use with -d')
     base_parser.add_argument('-pr', action='store_true',
                              dest='save_performance_report',
                              help='save_performance_report(业绩报告(主表)), use with --quarter [, --year]')
