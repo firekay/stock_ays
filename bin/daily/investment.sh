@@ -28,4 +28,4 @@ python main.py i -n > ${base_log_dir}/investment/save_new_stocks.log 2>&1
 python main.py i -fsh -s ${one_week_ago_line} -e ${today_line} > ${base_log_dir}/investment/save_financing_securities_sh.log 2>&1
 python main.py i -fsdh -s ${one_week_ago_line} -e ${today_line} > ${base_log_dir}/investment/save_financing_securities_detail_sh.log 2>&1
 python main.py i -fsz -s ${one_week_ago_line} -e ${today_line} > ${base_log_dir}/investment/save_financing_securities_sz.log 2>&1
-python main.py i -o -fsdz --date ${yesterday_line} > ${base_log_dir}/investment/save_financing_securities_detail_sz.log 2>&1
+python main.py -o i -fsdz --date ${yesterday_line} > ${base_log_dir}/investment/save_financing_securities_detail_sz.log 2>&1

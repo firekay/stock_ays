@@ -26,11 +26,11 @@ cd ${project_path}
 # base  基本面数据
 ##################################################
 echo "$(date +'%Y%m%d %T'), begin run ${0} file" > ${base_log_dir}/base.log 2>&1
-python main.py b -s > ${base_log_dir}/base/save_stocks_basic_data.log 2>&1
 python main.py b -pr > ${base_log_dir}/base/save_performance_report.log 2>&1
 python main.py b -pa > ${base_log_dir}/base/save_profit_ability.log 2>&1
 python main.py b -oa > ${base_log_dir}/base/save_operation_ability.log 2>&1
 python main.py b -ga > ${base_log_dir}/base/save_growth_ability.log 2>&1
 python main.py b -pd > ${base_log_dir}/base/save_pay_debt_ability.log 2>&1
 python main.py b -c > ${base_log_dir}/base/save_cash_flow.log 2>&1
+python main.py b -s > ${base_log_dir}/base/save_stocks_basic_data.log 2>&1
 
