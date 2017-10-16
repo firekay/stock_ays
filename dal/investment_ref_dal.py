@@ -2,7 +2,6 @@
 
 import logging
 import tushare as ts
-
 from dal.constants import *
 from models.model import *
 from utils import util
@@ -179,7 +178,8 @@ def get_fund_holdings(year, quarter, retry_count=RETRY_COUNT, pause=PAUSE):
 
 class NewStocksDal(object):
 
-    def get_new_stocks(self, retry_count=RETRY_COUNT, pause=PAUSE):
+    @staticmethod
+    def get_new_stocks(retry_count=RETRY_COUNT, pause=PAUSE):
         logger.info('Begin get new stocks.')
         try:
             data_df = ts.new_stocks(retry_count, pause)
@@ -198,21 +198,23 @@ class NewStocksDal(object):
                 logger.info('Success get get new stocks.')
             return data_dicts
 
-    def delete_new_stocks(self):
-        pass
+    # def delete_new_stocks(self):
+    #     pass
+    #
+    # def select_new_stock(self, code):
+    #     pass
 
-    def select_new_stock(self, code):
-        pass
-
-    def select_new_stock_all_codes(self):
+    @staticmethod
+    def select_new_stock_all_codes():
         stocks = NewStocks.select(NewStocks.code)
         return [stock.code for stock in stocks]
 
-    def save_new_stocks(self, data_dicts):
+    @staticmethod
+    def save_new_stocks(data_dicts):
         assert data_dicts, 'data_dict must not empty and data_dict must not None'
         save_ok = True
         logger.info('Begin save all new stocks.')
-        new_codes = self.select_new_stock_all_codes()
+        new_codes = NewStocksDal.select_new_stock_all_codes()
         for row in data_dicts:
             code = row.get('code')
             if code not in new_codes:
@@ -230,11 +232,13 @@ class NewStocksDal(object):
 
 class FinancingSecuritiesShDal(object):
 
-    def select_financing_securities_sh_all_days(self):
+    @staticmethod
+    def select_financing_securities_sh_all_days():
         fs_shs = FinancingSecuritiesSh.select(FinancingSecuritiesSh.op_date)
         return [util.date2str(fs_sh.op_date) for fs_sh in fs_shs]
 
-    def get_financing_securities_sh(self, start_date=None, end_date=None,
+    @staticmethod
+    def get_financing_securities_sh(start_date=None, end_date=None,
                                     retry_count=RETRY_COUNT, pause=PAUSE):
         logger.info('Begin get financing securities sh data, start_date is %s,'
                     ' end_date is %s.' % (start_date, end_date))
@@ -257,11 +261,12 @@ class FinancingSecuritiesShDal(object):
                             ' end_date is %s.' % (start_date, end_date))
         return data_dicts
 
-    def save_financing_securities_sh(self, data_dicts):
+    @staticmethod
+    def save_financing_securities_sh(data_dicts):
         assert data_dicts, 'data_dict must not empty and data_dict must not None'
         save_ok = True
         logger.info('Begin save financing securities sh data.')
-        dates = self.select_financing_securities_sh_all_days()
+        dates = FinancingSecuritiesShDal.select_financing_securities_sh_all_days()
         for row in data_dicts:
             dt = row.get('op_date')
             if dt not in dates:
@@ -279,7 +284,8 @@ class FinancingSecuritiesShDal(object):
 
 class FinancingSecuritiesDetailShDal(object):
 
-    def delete_some_days_data(self, date=None, start_date=None, end_date=None):
+    @staticmethod
+    def delete_some_days_data(date=None, start_date=None, end_date=None):
         # date must be not None, or start_date and end_date must not None.
         delete_ok = True
         if date is not None:
@@ -310,7 +316,8 @@ class FinancingSecuritiesDetailShDal(object):
             raise TypeError('date must be not None, or start_date and end_date must not None.')
         return delete_ok
 
-    def get_financing_securities_detail_sh(self, date=None, start_date=None, end_date=None,
+    @staticmethod
+    def get_financing_securities_detail_sh(date=None, start_date=None, end_date=None,
                                            retry_count=RETRY_COUNT, pause = PAUSE):
         # 1. 参数全为空; 2. 只有date 3. 只有start_date和end_date
         # logger.info('Begin get financing securities details sh data. Date is %s,'
@@ -354,7 +361,8 @@ class FinancingSecuritiesDetailShDal(object):
                         'start_date is %s, end_date is: %s' % (date, start_date, end_date))
         return data_dicts
 
-    def save_financing_securities_detail_sh(self, data_dicts, date=None, start_date=None, end_date=None):
+    @staticmethod
+    def save_financing_securities_detail_sh(data_dicts, date=None, start_date=None, end_date=None):
         save_ok = True
         assert data_dicts, 'data_dict must not empty and data_dict must not None'
         assert date or (start_date and end_date), 'date not None, or start_date and end_date not None.'
@@ -382,11 +390,13 @@ class FinancingSecuritiesDetailShDal(object):
 
 class FinancingSecuritiesSzDal(object):
 
-    def select_financing_securities_sz_all_days(self):
+    @staticmethod
+    def select_financing_securities_sz_all_days():
         fs_szs = FinancingSecuritiesSz.select(FinancingSecuritiesSz.op_date)
         return [util.date2str(fs_sz.op_date) for fs_sz in fs_szs]
 
-    def get_financing_securities_sz(self, start_date=None, end_date=None,
+    @staticmethod
+    def get_financing_securities_sz(start_date=None, end_date=None,
                                     retry_count=RETRY_COUNT, pause=PAUSE):
         logger.info('Begin get financing securities sz data, start_date is %s,'
                     ' end_date is %s.' % (start_date, end_date))
@@ -409,11 +419,12 @@ class FinancingSecuritiesSzDal(object):
                             ' end_date is %s.' % (start_date, end_date))
         return data_dicts
 
-    def save_financing_securities_sz(self, data_dicts):
+    @staticmethod
+    def save_financing_securities_sz(data_dicts):
         assert data_dicts, 'data_dict must not empty and data_dict must not None'
         save_ok = True
         logger.info('Begin save financing securities sz data.')
-        dates = self.select_financing_securities_sz_all_days()
+        dates = FinancingSecuritiesSzDal.select_financing_securities_sz_all_days()
         for row in data_dicts:
             dt = row.get('op_date')
             if dt not in dates:
@@ -431,7 +442,8 @@ class FinancingSecuritiesSzDal(object):
     
 class FinancingSecuritiesDetailSzDal(object):
 
-    def delete_some_day_data(self, date):
+    @staticmethod
+    def delete_some_day_data(date):
         # date must be not None
         assert date is not None, 'date must be not None or \'\''
         delete_ok = True
@@ -445,23 +457,26 @@ class FinancingSecuritiesDetailSzDal(object):
             logger.exception('Error delete financing securities details sz data. Date is %s' % date)
         return delete_ok
 
-    def get_financing_securities_detail_sz(self, date,
+    @staticmethod
+    def get_financing_securities_detail_sz(date,
                                            retry_count=RETRY_COUNT, pause=PAUSE):
         assert date is not None, 'date must be not None or \'\''
         logger.info('Begin get financing securities details sz data. Date is %s.' % date)
+        data_dicts = []
         try:
             data_df = ts.sz_margin_details(date=date, retry_count=retry_count, pause=pause)
         except Exception:
             logger.exception('Begin get financing securities details sz data. Date is %s' % date)
-        data_dicts = []
-        if data_df is None or data_df.empty:
-            logger.warn('Empty get financing securities details sz data date, date is %s.' % date)
         else:
-            data_dicts = [{'stock_code': row[0], 'security_abbr': row[1], 'rzmre': row[2], 'rzye': row[3],
-                           'rqmcl': row[4], 'rqyl': row[5], 'rqye': row[6], 'rzrqye': row[7],
-                           'op_date': row[8]} for row in data_df.values]
-            logger.info('Success get financing securities details sz data, date is: %s.' % date)
+            if data_df is None or data_df.empty:
+                logger.warn('Empty get financing securities details sz data date, date is %s.' % date)
+            else:
+                data_dicts = [{'stock_code': row[0], 'security_abbr': row[1], 'rzmre': row[2], 'rzye': row[3],
+                               'rqmcl': row[4], 'rqyl': row[5], 'rqye': row[6], 'rzrqye': row[7],
+                               'op_date': row[8]} for row in data_df.values]
+                logger.info('Success get financing securities details sz data, date is: %s.' % date)
         return data_dicts
 
-    def save_financing_securities_detail_sz(self, data_dicts, date=None):
+    @staticmethod
+    def save_financing_securities_detail_sz(data_dicts, date=None):
         return util_dal.save_date_data(FinancingSecuritiesDetailSz, data_dicts, date)

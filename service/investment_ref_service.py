@@ -81,10 +81,9 @@ def save_fund_holdings(year, quarter):
 
 def save_new_stocks():
     """新股数据"""
-    new_stocks_dal = irdal.NewStocksDal()
-    data_dicts = new_stocks_dal.get_new_stocks()
+    data_dicts = irdal.NewStocksDal.get_new_stocks()
     if data_dicts:
-        new_stocks_dal.save_new_stocks(data_dicts)
+        irdal.NewStocksDal.save_new_stocks()
 
 
 def save_financing_securities_sh(start_date=None, end_date=None):
@@ -94,10 +93,9 @@ def save_financing_securities_sh(start_date=None, end_date=None):
         start_date: 开始日期 format：YYYY-MM-DD 为空时取去年今日
         end_date: 结束日期 format：YYYY-MM-DD 为空时取当前日期
     """
-    fs_sh_dal = irdal.FinancingSecuritiesShDal()
-    data_dicts = fs_sh_dal.get_financing_securities_sh(start_date, end_date)
+    data_dicts = irdal.FinancingSecuritiesShDal.get_financing_securities_sh(start_date, end_date)
     if data_dicts:
-        fs_sh_dal.save_financing_securities_sh(data_dicts)
+        irdal.FinancingSecuritiesShDal.save_financing_securities_sh(data_dicts)
 
 
 def save_financing_securities_detail_sh(date=None, start_date=None, end_date=None):
@@ -109,12 +107,14 @@ def save_financing_securities_detail_sh(date=None, start_date=None, end_date=Non
         end_date: 结束日期 format：YYYY-MM-DD 默认为空’‘
     """
     # 如果end_date为None, 则只有start_date一天的的数据
-    fsd_sh_dal = irdal.FinancingSecuritiesDetailShDal()
-    data_dicts = fsd_sh_dal.get_financing_securities_detail_sh(date=date, start_date=start_date, end_date=end_date)
+    data_dicts = irdal.FinancingSecuritiesDetailShDal.get_financing_securities_detail_sh(start_date=start_date,
+                                                                                         end_date=end_date)
     if data_dicts:
-        if fsd_sh_dal.delete_some_days_data(date=date, start_date=start_date, end_date=end_date):
-            fsd_sh_dal.save_financing_securities_detail_sh(data_dicts, date=date,
-                                                           start_date=start_date, end_date=end_date)
+        if irdal.FinancingSecuritiesDetailShDal.delete_some_days_data(date=date, start_date=start_date,
+                                                                      end_date=end_date):
+            irdal.FinancingSecuritiesDetailShDal.save_financing_securities_detail_sh(data_dicts, date=date,
+                                                                                     start_date=start_date,
+                                                                                     end_date=end_date)
 
 
 def save_financing_securities_sz(start_date=None, end_date=None):
@@ -124,16 +124,15 @@ def save_financing_securities_sz(start_date=None, end_date=None):
         start_date: 开始日期 format：YYYY-MM-DD 为空时取去年今日
         end_date: 结束日期 format：YYYY-MM-DD 为空时取当前日期
     """
-    fs_sz_dal = irdal.FinancingSecuritiesSzDal()
-    data_dicts = fs_sz_dal.get_financing_securities_sz(start_date, end_date)
+    data_dicts = irdal.FinancingSecuritiesSzDal.get_financing_securities_sz(start_date, end_date)
     if data_dicts:
-        fs_sz_dal.save_financing_securities_sz(data_dicts)
+        irdal.FinancingSecuritiesSzDal.save_financing_securities_sz(data_dicts)
 
 
 def save_financing_securities_detail_sz(date):
     """深市融资融券明细数据 """
-    fsd_sz_dal = irdal.FinancingSecuritiesDetailSzDal()
-    data_dicts = fsd_sz_dal.get_financing_securities_detail_sz(date=date)
+    date = util.get_last_trading_day(date)
+    data_dicts = irdal.FinancingSecuritiesDetailSzDal.get_financing_securities_detail_sz(date=date)
     if data_dicts:
-        if fsd_sz_dal.delete_some_day_data(date=date):
-            fsd_sz_dal.save_financing_securities_detail_sz(data_dicts, date=date)
+        if irdal.FinancingSecuritiesDetailSzDal.delete_some_day_data(date=date):
+            irdal.FinancingSecuritiesDetailSzDal.save_financing_securities_detail_sz(data_dicts, date=date)

@@ -26,8 +26,8 @@ def get_max_stock(insert_date):
 
 
 def get_stocks(insert_date):
-    insert_date = insert_date if insert_date >= '2017-10-11' else '2017-10-11'
     """获取股票列表"""
+    insert_date = insert_date if insert_date >= '2017-10-11' else '2017-10-11'
     # 过滤没有上市的股票, 没有过滤停盘的股票
     return StockBasic.select(StockBasic.code)\
         .where(StockBasic.insert_date == insert_date, StockBasic.timeToMarket != 0)\
