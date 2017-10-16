@@ -18,11 +18,11 @@ def args_parse():
     tran_sub_parsers = transaction_parser.add_subparsers()
     hist_parser = tran_sub_parsers.add_parser('h', help='hist data service')
     hist_parser.add_argument('-hi', action='store_true',
-                                dest='save_stocks_hist_data',
-                                help='save stocks history data')
+                             dest='save_stocks_hist_data',
+                             help='save stocks history data')
     hist_parser.add_argument('-r', action='store_true',
-                                    dest='save_stocks_revote_hist_data',
-                                    help='save stocks revote history data')
+                             dest='save_stocks_revote_hist_data',
+                             help='save stocks revote history data')
 
     transaction_parser.add_argument('-t', action='store_true',
                                     dest='today_data',
@@ -30,13 +30,15 @@ def args_parse():
     transaction_parser.add_argument('-y', action='store_true',
                                     dest='yesterday_data',
                                     help='save yesterday stocks history data, use with [--ktype]')
-    transaction_parser.add_argument('--start', dest='start_date', help='start date')
+    transaction_parser.add_argument('--start', type=int, dest='start_date', help='start date')
     transaction_parser.add_argument('--end', dest='end_date', help='end date')
     transaction_parser.add_argument('--ktype', dest='ktype',
                                     help='数据类型: D=日k线 W=周 M=月 5=5分钟 15=15分钟 30=30分钟 60=60分钟',
                                     choices=['D', 'W', 'M', '5', '15', '30', '60'])
     transaction_parser.add_argument('-a', action='store_true', dest='all_stocks', help='get all stocks data.')
     transaction_parser.add_argument('-s', action='store_true', dest='select_stocks', help='get select stocks data.')
+    transaction_parser.add_argument('--stocks', dest='stocks', nargs='+',
+                                    help='stock codes which want to be deal.')
 
     # fundamentals, basic parser
     fundamentals_parser = top_sub_parsers.add_parser('f', help='fundamentals service(include stock list)')
@@ -45,13 +47,13 @@ def args_parse():
     args = parser.parse_args()
 
     # print(args.drop_table)
-    if hasattr(args, 'all_stocks'):
-        if args.all_stocks:
-            print('all_sotcks true')
-        else:
-            print('all_sotcks false')
-    else:
-        print('do not have all_sotcks attribute')
+    # if hasattr(args, 'all_stocks'):
+    #     if args.all_stocks:
+    #         print('all_sotcks true')
+    #     else:
+    #         print('all_sotcks false')
+    # else:
+    #     print('do not have all_sotcks attribute')
     # args = parser.parse_known_args()
     print(parser.print_help())
     # print(parser.print_usage())
