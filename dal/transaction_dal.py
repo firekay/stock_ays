@@ -450,7 +450,11 @@ def save_today_all_data():
                            'mktcap': row[13], 'nmc': row[14]} for row in data]
             try:
                 TodayAllData.insert_many(data_dicts).execute()
-            except Exception as e:
+            except IOError:
+                logger.exception('Error get today all data, sleep 5m, then try again.')
+                time.sleep(10)
+                save_today_all_data()
+            except Exception:
                 logger.exception('Error save today all stock data, the date is: %s' % today_line)
                 logger.error('Error data is: %s' % data)
             else:
@@ -519,7 +523,7 @@ def get_tick_data(code, date, retry_count=RETRY_COUNT, pause=PAUSE):
             logger.info('Success get tick data,  code is :%s, date is %s.' % (code, date))
         else:
             logger.warn('Empty get tick data,  code is :%s, date is %s.' % (code, date))
-    time.sleep(0.5)
+    # time.sleep(0.5)
 
 
 def save_today_tick_data():
