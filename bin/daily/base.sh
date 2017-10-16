@@ -1,4 +1,5 @@
 #!/bin/bash
+# run 16:20
 
 today=$(date +%Y%m%d)
 today_line=$(date +%Y-%m-%d)
@@ -11,6 +12,7 @@ cd ${daily_dir}/../..
 project_path=$(pwd)
 base_log_dir=${project_path}/logs/${ym}/${day}
 mkdir -p ${base_log_dir}/{transaction,investment,classified,base,macro,winners,bank}
+source ~/.zshenv 
 cd ${project_path}
 
 #echo ${base_log_dir}
@@ -23,11 +25,12 @@ cd ${project_path}
 ##################################################
 # base  基本面数据
 ##################################################
+echo "$(date +'%Y%m%d %T'), begin run ${0} file" > ${base_log_dir}/base.log 2>&1
 python main.py b -s > ${base_log_dir}/base/save_stocks_basic_data.log 2>&1
-python main.py b -pr > ${base_log_dir}/base/save_performance_report.log 2>&1 &
-python main.py b -pa > ${base_log_dir}/base/save_profit_ability.log 2>&1 &
-python main.py b -oa > ${base_log_dir}/base/save_operation_ability.log 2>&1 &
-python main.py b -ga > ${base_log_dir}/base/save_growth_ability.log 2>&1 &
-python main.py b -pd > ${base_log_dir}/base/save_pay_debt_ability.log 2>&1 &
-python main.py b -c > ${base_log_dir}/base/save_cash_flow.log 2>&1 &
+python main.py b -pr > ${base_log_dir}/base/save_performance_report.log 2>&1
+python main.py b -pa > ${base_log_dir}/base/save_profit_ability.log 2>&1
+python main.py b -oa > ${base_log_dir}/base/save_operation_ability.log 2>&1
+python main.py b -ga > ${base_log_dir}/base/save_growth_ability.log 2>&1
+python main.py b -pd > ${base_log_dir}/base/save_pay_debt_ability.log 2>&1
+python main.py b -c > ${base_log_dir}/base/save_cash_flow.log 2>&1
 

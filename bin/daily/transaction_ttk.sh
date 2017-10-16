@@ -1,5 +1,5 @@
 #!/bin/bash
-# run at 16:00
+# run at 22:00
 
 today=$(date +%Y%m%d)
 today_line=$(date +%Y-%m-%d)
@@ -13,7 +13,13 @@ project_path=$(pwd)
 base_log_dir=${project_path}/logs/${ym}/${day}
 mkdir -p ${base_log_dir}/{transaction,investment,classified,base,macro,winners,bank}
 cd ${project_path}
-source ~/.zshenv
 
+# 保证当天的stock basic 先运行完
+##################################################
+#  transaction  交易数据
+##################################################
+# k data today
+source ~/.zshenv
+file_name=$(echo $(basename $0))
 echo "$(date +'%Y%m%d %T'), begin run ${0} file" > ${base_log_dir}/${file_name}.log 2>&1
-python main.py t -tad >> ${base_log_dir}/transaction/save_today_all_data.log 2>&1
+python main.py t -ttk > ${base_log_dir}/transaction/save_today_tick_data.log 2>&1
