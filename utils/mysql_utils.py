@@ -1,7 +1,5 @@
 # encoding: UTF-8
 
-import sys
-sys.path.append('..')
 from configparser import ConfigParser
 from peewee import *
 from playhouse.pool import PooledMySQLDatabase
@@ -70,8 +68,6 @@ def conn(fn):
             if con:
                 con.close()
     return inner
-
-
 
 
 if __name__ == '__main__':
