@@ -13,7 +13,7 @@ from service import transaction_service
 from service import macro_service
 from service import table_service
 from service import winners_list_service as wlservice
-from strategys import common_strategy as cstg
+from strategies import common_strategy as cstg
 from utils import util
 
 logger = logging.getLogger(__name__)
