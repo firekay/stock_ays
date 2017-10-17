@@ -29,9 +29,19 @@ def get_stocks(insert_date):
     """获取股票列表"""
     insert_date = insert_date if insert_date >= '2017-10-11' else '2017-10-11'
     # 过滤没有上市的股票, 没有过滤停盘的股票
-    return StockBasic.select(StockBasic.code)\
+    stock_count = StockBasic.select(StockBasic.code)\
         .where(StockBasic.insert_date == insert_date, StockBasic.timeToMarket != 0)\
-        .order_by(StockBasic.code)
+        .count()
+    if stock_count < 2000:
+        logger.warn('No enough stocks in this day, the date is: %s, the stock count is: %s.'
+                    % (insert_date, stock_count))
+        before_day = util.date2str(util.str2date(insert_date) + datetime.timedelta(days=-1))
+        logger.info('Will get before day stocks, the date is: %s.' % before_day)
+        return get_stocks(before_day)
+    else:
+        return StockBasic.select(StockBasic.code) \
+            .where(StockBasic.insert_date == insert_date, StockBasic.timeToMarket != 0) \
+            .order_by(StockBasic.code)
 
 
 def save_performance_report(year, quarter):
