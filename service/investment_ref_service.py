@@ -83,7 +83,7 @@ def save_new_stocks():
     """新股数据"""
     data_dicts = irdal.NewStocksDal.get_new_stocks()
     if data_dicts:
-        irdal.NewStocksDal.save_new_stocks()
+        irdal.NewStocksDal.save_new_stocks(data_dicts)
 
 
 def save_financing_securities_sh(start_date=None, end_date=None):
