@@ -30,6 +30,20 @@ def range_date_all_include(start_str, end_str):
         yield date
 
 
+def get_last_trading_day(date):
+    """获取给定日期的最近一个交易日.
+       如果是交易日, 返回当天日期, 不是交易日, 返回最近一个交易日
+    
+    Args:
+        date: String type like: '2017-01-01'
+    Returns:
+        string e.g.:'2017-01-01'
+    """
+    dates = ts.trade_cal()
+    dates = dates[dates.isOpen == 1]
+    return dates[dates.calendarDate <= date].calendarDate.max()
+
+
 def range_date_exclude_end(start_str, end_str):
     """循环给定的时间字符串(包含开头, 不包含结尾)"""
     start_d = str2date(start_str)
@@ -103,10 +117,12 @@ def get_ndays_before_line(n):
 
 
 if __name__ == '__main__':
-    start = '2017-09-04'
-    end = '2017-09-27'
-    for date in range_date_all_include(start, end):
-        print(date)
+    start = '2017-09-05'
+    print(get_last_trading_day(start))
+    end = '2017-10-08'
+    print(get_last_trading_day(end))
+    # for date in range_date_all_include(start, end):
+    #     print(date)
 
         # print(get_today())
     # print(str(get_today_line()))
