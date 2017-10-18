@@ -190,7 +190,7 @@ def load_stock_k_data(model_ktype, stock=None, start_date=None, end_date=None):
                 get_stocks = model.select().where(model.code == stock, model.date <= end_date) \
                     .order_by(model.date)
             else:
-                get_stocks = model.select(model.code == stock) \
+                get_stocks = model.select().where(model.code == stock) \
                     .order_by(model.date)
     else:
         if start_date:
