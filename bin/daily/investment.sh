@@ -1,5 +1,5 @@
 #!/bin/bash
-# run at 17:01
+# run at 15:25
 
 today=$(date +%Y%m%d)
 today_line=$(date +%Y-%m-%d)

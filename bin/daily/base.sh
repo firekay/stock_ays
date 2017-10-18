@@ -1,5 +1,5 @@
 #!/bin/bash
-# run 16:20
+# run at 16:20
 
 today=$(date +%Y%m%d)
 today_line=$(date +%Y-%m-%d)
@@ -12,7 +12,7 @@ cd ${daily_dir}/../..
 project_path=$(pwd)
 base_log_dir=${project_path}/logs/${ym}/${day}
 mkdir -p ${base_log_dir}/{transaction,investment,classified,base,macro,winners,bank}
-source ~/.zshenv 
+source ~/.zshenv
 cd ${project_path}
 
 #echo ${base_log_dir}
