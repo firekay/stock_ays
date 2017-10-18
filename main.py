@@ -4,7 +4,6 @@ import logging
 import os
 import sys
 import yaml
-from data import stock_classified as sc
 from service import bank_loan_call_rate_service as blservice
 from service import base_service
 from service import classfication_service
@@ -13,7 +12,6 @@ from service import transaction_service
 from service import macro_service
 from service import table_service
 from service import winners_list_service as wlservice
-from strategies import common_strategy as cstg
 from utils import util
 
 logger = logging.getLogger(__name__)
@@ -48,64 +46,6 @@ def setup_logging(
         logging.config.dictConfig(config)
     else:
         logging.basicConfig(level=default_level)
-
-
-def stock_classified():
-    print('stock classified begin')
-    classfication_service.save_industry_classified()
-    classfication_service.save_concept_classified()
-    classfication_service.save_area_classified()
-    classfication_service.save_sme_classified()
-    classfication_service.save_gem_classified()
-    classfication_service.save_st_classified()
-    classfication_service.save_hs300s()
-    classfication_service.save_sz50s()
-    classfication_service.save_zz500s()
-    classfication_service.save_terminated()
-    classfication_service.save_suspend()
-    print('stock classified end')
-    
-    sme = sc.SmeClassified()
-    sme.create_sme_classified()
-    sme.save_sme_classified()
-    area = sc.AreaClassified()
-    area.create_area_classified()
-    area.save_area_classified()
-    print('begin gem')
-    gem = sc.GemClassified()
-    gem.create_gem_classified()
-    gem.save_gem_classified()
-    print('begin st')
-    st = sc.StClassified()
-    st.create_st_classified()
-    st.save_st_classified()
-    print('begin hs300')
-    hs300 = sc.Hs300()
-    hs300.create_hs300s()
-    hs300.save_hs300s()
-    print('begin sz50')
-    sz50 = sc.Sz50()
-    sz50.create_sz50s()
-    sz50.save_sz50s()
-    print('begin zz500')
-
-    zz500 = sc.Zz500()
-    zz500.create_zz500s()
-    zz500.save_zz500s()
-    print('begin terminate')
-    ter = sc.Terminated()
-    ter.create_terminated()
-    ter.save_terminated()
-    print('begin suspend')
-    suspend = sc.Suspend()
-    suspend.create_suspend()
-    suspend.save_suspend()
-    
-    print('end')
-
-
-def strategy():
-    cstg.macd_service()
 
 
 def save_select_stocks_hist_data(start=None, end=None, ktype=None):
