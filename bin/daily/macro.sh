@@ -18,7 +18,7 @@ source ~/.zshenv
 ###################################################
 # macro  宏观经济数据
 ##################################################
-echo "$(date +'%Y%m%d %T'), begin run ${0} file" >> ${base_log_dir}/launchcrl_run.log 2>&1
+echo "$(date +'%Y%m%d %T'), begin run ${0} file" > ${base_log_dir}/macro.log 2>&1
 python ${project_path}/main.py m -r > ${base_log_dir}/macro/save_required_reserves_rate.log 2>&1
 python ${project_path}/main.py m -ms > ${base_log_dir}/macro/save_money_supply.log 2>&1
 python ${project_path}/main.py m -msb > ${base_log_dir}/macro/save_money_supply_bal.log 2>&1
