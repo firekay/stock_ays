@@ -327,14 +327,10 @@ def args_parse():
 
 
 def main():
-    import tushare as ts
-
     args = args_parse()
     logger.info('Args is: %s.' % args)
     if args.need_open_date:
-        dates = ts.trade_cal()
-        is_open = dates[dates.calendarDate == today_line].query('isOpen==0').empty
-        if not is_open:
+        if not util.is_open(today_line):
             logger.info('Today is not open date, so do nothing.')
             sys.exit(-1)
 
@@ -343,14 +339,20 @@ def main():
         transaction_service.save_stocks_k_data(stocks=args.stocks, start_date=args.start_date,
                                                end_date=args.end_date, ktype=args.ktype)
     if hasattr(args, 'save_yesterday_stocks_k_data') and args.save_yesterday_stocks_k_data:
-        transaction_service.save_yesterday_stocks_k_data(stocks=args.stocks, ktype=args.ktype)
+        if not util.is_open(yesterday_line):
+            logger.info('The date is not open day, so do nothing. Date is %s.' % yesterday_line)
+        else:
+            transaction_service.save_yesterday_stocks_k_data(stocks=args.stocks, ktype=args.ktype)
     if hasattr(args, 'save_today_stocks_k_data') and args.save_today_stocks_k_data:
         transaction_service.save_today_stocks_k_data(stocks=args.stocks, ktype=args.ktype)
     if hasattr(args, 'save_stocks_hist_data') and args.save_stocks_hist_data:
         transaction_service.save_stocks_hist_data(stocks=args.stocks, start_date=args.start_date,
                                                   end_date=args.end_date, ktype=args.ktype)
     if hasattr(args, 'save_yesterday_stocks_history_data') and args.save_yesterday_stocks_history_data:
-        transaction_service.save_yesterday_stocks_hist_data(stocks=args.stocks, ktype=args.ktype)
+        if not util.is_open(yesterday_line):
+            logger.info('The date is not open day, so do nothing. Date is %s.' % yesterday_line)
+        else:
+            transaction_service.save_yesterday_stocks_hist_data(stocks=args.stocks, ktype=args.ktype)
     if hasattr(args, 'save_today_stocks_history_data') and args.save_today_stocks_history_data:
         transaction_service.save_today_stocks_hist_data(stocks=args.stocks, ktype=args.ktype)
     if hasattr(args, 'save_stocks_revote_hist_data') and args.save_stocks_revote_hist_data:
