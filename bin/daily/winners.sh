@@ -19,7 +19,7 @@ cd ${project_path}
 ###################################################
 source ~/.zshenv
 file_name=$(echo $(basename $0))
-echo "$(date +'%Y%m%d %T'), begin run ${0} file" > ${base_log_dir}/${file_name}.log 2>&1
+echo "$(date +'%Y%m%d %T'), begin run ${0} file" >> ${base_log_dir}/launchcrl_run.log 2>&1
 python main.py w -t -d ${today_line} > ${base_log_dir}/winners/save_top_list.log 2>&1
 python main.py w -is > ${base_log_dir}/winners/save_individual_statistics_tops.log 2>&1
 python main.py w -b > ${base_log_dir}/winners/save_broker_tops.log 2>&1
