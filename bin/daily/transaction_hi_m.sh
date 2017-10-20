@@ -22,7 +22,7 @@ cd ${project_path}
 source ~/.zshenv
 file_name=$(echo $(basename $0))
 echo "$(date +'%Y%m%d %T'), begin run ${0} file" > ${base_log_dir}/${file_name}.log 2>&1
-python main.py t -hit -t 5 > ${base_log_dir}/transaction/save_today_stocks_history_data.log 2>&1
-python main.py t -hit -t 15 > ${base_log_dir}/transaction/save_today_stocks_history_data.log 2>&1
-python main.py t -hit -t 30 > ${base_log_dir}/transaction/save_today_stocks_history_data.log 2>&1
-python main.py t -hit -t 60 > ${base_log_dir}/transaction/save_today_stocks_history_data.log 2>&1
+python main.py t -hiy -t 5 > ${base_log_dir}/transaction/save_today_stocks_history_data.log 2>&1
+python main.py t -hiy -t 15 > ${base_log_dir}/transaction/save_today_stocks_history_data.log 2>&1
+python main.py t -hiy -t 30 > ${base_log_dir}/transaction/save_today_stocks_history_data.log 2>&1
+python main.py t -hiy -t 60 > ${base_log_dir}/transaction/save_today_stocks_history_data.log 2>&1
