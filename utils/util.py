@@ -21,6 +21,18 @@ def date2str(date_s):
     return date_s.strftime('%Y-%m-%d')
 
 
+def is_open(date):
+    """查看给定日期是否开盘
+    
+    Args:
+        date: String type like: '2017-01-01'
+    Returns:
+        bool, true if open day, false if not open day
+    """
+    dates = ts.trade_cal()
+    return dates[dates.calendarDate == date].query('isOpen==0').empty
+
+
 def range_date_all_include(start_str, end_str):
     """得到给定日期内的开盘日期"""
     dates = ts.trade_cal()
