@@ -18,7 +18,7 @@ cd ${project_path}
 ###################################################
 ## classified  股票分类数据
 ###################################################
-echo "$(date +'%Y%m%d %T'), begin run ${0} file" > ${base_log_dir}/classified.log 2>&1
+echo "$(date +'%Y%m%d %T'), begin run ${0} file" >> ${base_log_dir}/launchcrl_run.log 2>&1
 python ${project_path}/main.py c -i > ${base_log_dir}/classified/save_industry_classified.log 2>&1
 python ${project_path}/main.py c -c > ${base_log_dir}/classified/save_concept_classified.log 2>&1
 python ${project_path}/main.py c -a > ${base_log_dir}/classified/save_area_classified.log 2>&1

@@ -21,5 +21,5 @@ cd ${project_path}
 # k data today
 source ~/.zshenv
 file_name=$(echo $(basename $0))
-echo "$(date +'%Y%m%d %T'), begin run ${0} file" > ${base_log_dir}/${file_name}.log 2>&1
+echo "$(date +'%Y%m%d %T'), begin run ${0} file" >> ${base_log_dir}/launchcrl_run.log 2>&1
 python main.py t -ttk > ${base_log_dir}/transaction/save_today_tick_data.log 2>&1

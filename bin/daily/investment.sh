@@ -19,7 +19,7 @@ source ~/.zshenv
 ##################################################
 # investment ref  投资参考数据
 ##################################################
-echo "$(date +'%Y%m%d %T'), begin run ${0} file" > ${base_log_dir}/investment.log 2>&1
+echo "$(date +'%Y%m%d %T'), begin run ${0} file" >> ${base_log_dir}/launchcrl_run.log 2>&1
 python main.py i -d > ${base_log_dir}/investment/save_distribution_plans.log 2>&1
 python main.py i -p > ${base_log_dir}/investment/save_performance_forecast.log 2>&1
 python main.py i -r > ${base_log_dir}/investment/save_restricted_stock.log 2>&1
