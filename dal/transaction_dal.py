@@ -67,6 +67,10 @@ def get_stock_k_data(code, start_date=None, end_date=None, autype='qfq', index=F
     try:
         data_df = ts.get_k_data(code, start=start_date, end=end_date, ktype=ktype, index=index,
                                 retry_count=retry_count, pause=pause)
+    except IOError:
+        logger.exception('Error get stock k data, sleep 1m, then try again. code is: %s.' % code)
+        time.sleep(1 * 60)
+        get_stock_k_data(code, start_date, end_date, autype, index, ktype,retry_count, pause)
     except Exception as e:
         if start_date != '' or end_date != '':
             logger.exception('Error get stock %s history k data, start date is: %s, end date is: %s, ktype is: %s.'
@@ -251,7 +255,7 @@ def get_h_revote_data(code, start_date=None, end_date=None, autype='qfp', index=
     try:
         data_df = ts.get_h_data(code, start_date, end_date, autype,
                                 index, retry_count, pause, drop_factor)
-    except IOError as e:
+    except IOError:
         logger.exception('Error get stock h revote data, sleep 5m, then try again. code is: %s.' % code)
         time.sleep(5 * 60)
         get_h_revote_data(code, start_date, end_date, autype, index, retry_count, pause, drop_factor)
@@ -350,6 +354,10 @@ def get_his_data(code, start_date=None, end_date=None, ktype=None, retry_count=R
     try:
         data_df = ts.get_hist_data(code=code, start=start_date, end=end_date, ktype=ktype,
                                    retry_count=retry_count, pause=pause)
+    except IOError:
+        logger.exception('Error get stock history data, sleep 1m, then try again. code is: %s.' % code)
+        time.sleep(1 * 60)
+        get_his_data(code, start_date, end_date, ktype, retry_count, pause)
     except Exception as e:
         if start_date is not None:
             logger.exception('Error get data, code is: %s, start_date is: %s, end_date is: %s,ktype is: %s'

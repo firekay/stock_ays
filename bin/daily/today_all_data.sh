@@ -15,5 +15,5 @@ mkdir -p ${base_log_dir}/{transaction,investment,classified,base,macro,winners,b
 cd ${project_path}
 source ~/.zshenv
 
-echo "$(date +'%Y%m%d %T'), begin run ${0} file" > ${base_log_dir}/${file_name}.log 2>&1
+echo "$(date +'%Y%m%d %T'), begin run ${0} file" >> ${base_log_dir}/launchcrl_run.log 2>&1
 python main.py t -tad >> ${base_log_dir}/transaction/save_today_all_data.log 2>&1

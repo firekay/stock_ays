@@ -3,10 +3,10 @@
 <plist version="1.0">
   <dict>  
     <key>Label</key>  
-    <string>self.transaction_rit.data</string>  
+    <string>self.transaction_bigtrade_index.data</string>  
     <key>ProgramArguments</key>  
       <array>  
-        <string>/Users/kay/SourceCodes/stock_ays/bin/daily/transaction_rit.sh</string>  
+        <string>/Users/kay/SourceCodes/stock_ays/bin/daily/transaction_bigtrade_index.sh</string>  
       </array>  
     <key>StartCalendarInterval</key>  
       <dict>  

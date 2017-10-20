@@ -25,7 +25,7 @@ cd ${project_path}
 ##################################################
 # base  基本面数据
 ##################################################
-echo "$(date +'%Y%m%d %T'), begin run ${0} file" > ${base_log_dir}/base.log 2>&1
+echo "$(date +'%Y%m%d %T'), begin run ${0} file" >> ${base_log_dir}/launchcrl_run.log 2>&1
 python main.py b -pr > ${base_log_dir}/base/save_performance_report.log 2>&1
 python main.py b -pa > ${base_log_dir}/base/save_profit_ability.log 2>&1
 python main.py b -oa > ${base_log_dir}/base/save_operation_ability.log 2>&1

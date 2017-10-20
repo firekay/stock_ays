@@ -21,10 +21,10 @@ cd ${project_path}
 # k data today
 source ~/.zshenv
 file_name=$(echo $(basename $0))
-echo "$(date +'%Y%m%d %T'), begin run ${0} file" > ${base_log_dir}/${file_name}.log 2>&1
-python main.py t -hkt -t 5 > ${base_log_dir}/transaction/save_today_stocks_k_data5.log 2>&1
-python main.py t -hkt -t 15 > ${base_log_dir}/transaction/save_today_stocks_k_data15.log 2>&1
-python main.py t -hkt -t 30 > ${base_log_dir}/transaction/save_today_stocks_k_data30.log 2>&1
+echo "$(date +'%Y%m%d %T'), begin run ${0} file" >> ${base_log_dir}/launchcrl_run.log 2>&1
+python main.py t -hk -s ${today_line} -e ${today_line} -t 5 > ${base_log_dir}/transaction/save_today_stocks_k_data5.log 2>&1
+python main.py t -hk -s ${today_line} -e ${today_line} -t 15 > ${base_log_dir}/transaction/save_today_stocks_k_data15.log 2>&1
+python main.py t -hk -s ${today_line} -e ${today_line} -t 30 > ${base_log_dir}/transaction/save_today_stocks_k_data30.log 2>&1
 # wait until hkt 30 over
-python main.py t -hkt -t 60 > ${base_log_dir}/transaction/save_today_stocks_k_data60.log 2>&1
+python main.py t -hk -s ${today_line} -e ${today_line} -t 60 > ${base_log_dir}/transaction/save_today_stocks_k_data60.log 2>&1
 
