@@ -44,6 +44,23 @@ def get_stocks(insert_date):
             .order_by(StockBasic.code)
 
 
+def load_stocks_before_entering_date(open_date, insert_date=base_dal.today_line):
+    """得到小于给定入市时间的股票列表
+    
+    Args:
+        open_date: 入市时间, 格式: YYYYMMDD
+        insert_date: 插入时间(指定哪一天的股票), 格式: YYYY-MM-DD
+    """
+    stock_count = base_dal.load_stock_count(insert_date)
+    if stock_count < 2000:
+        logger.warn('No enough stocks in this day, the date is: %s, the stock count is: %s.'
+                    % (insert_date, stock_count))
+        before_insert_day = util.date2str(util.str2date(insert_date) + datetime.timedelta(days=-1))
+        return load_stocks_before_entering_date(open_date, before_insert_day)
+    else:
+        return base_dal.load_stocks_before_entering_date(open_date, insert_date)
+
+
 def save_performance_report(year, quarter):
     """业绩报告（主表）
     

@@ -42,6 +42,25 @@ def save_stock_basic(day=None):
         logger.info('Success get and save StockBasic.')
 
 
+def load_stock_count(insert_date=today_line):
+    return StockBasic.select(StockBasic.code) \
+        .where(StockBasic.insert_date == insert_date, StockBasic.timeToMarket != 0) \
+        .count()
+
+
+def load_stocks_before_entering_date(open_date, insert_date=today_line):
+    """得到小于给定入市时间的股票列表
+    
+    Args:
+        open_date: 入市时间, 格式: YYYYMMDD
+        insert_date: 插入时间(指定哪一天的股票), 格式: YYYY-MM-DD
+    """
+    return StockBasic.select(StockBasic.code).where(StockBasic.insert_date == insert_date,
+                                                    StockBasic.timeToMarket < open_date,
+                                                    StockBasic.timeToMarket != 0) \
+        .order_by(StockBasic.code)
+
+
 def get_performance_report(year, quarter):
     """得到业绩报告
 
