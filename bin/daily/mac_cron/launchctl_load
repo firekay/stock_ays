@@ -25,5 +25,5 @@ launchctl remove self.transaction_hk_m.data
 launchctl remove self.investment.data
 launchctl remove self.transaction_hk.data
 launchctl remove self.transaction_hi.data
-launchctl load self.transaction_revote.data.plist
-launchctl load self.transaction_bigtrade_index.data.plist
+launchctl remove self.transaction_revote.data
+launchctl remove self.transaction_bigtrade_index.data
