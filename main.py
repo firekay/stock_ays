@@ -336,6 +336,13 @@ def main():
 
     # transaction 交易数据
     if hasattr(args, 'save_stocks_k_data') and args.save_stocks_k_data:
+        start = args.start_date
+        end = args.end_date
+        if start is not None and end is not None:
+            if start == end:
+                if not util.is_open(start):
+                    logger.info('The date is not open day, so do nothing. Date is %s.' % start)
+                    return
         transaction_service.save_stocks_k_data(stocks=args.stocks, start_date=args.start_date,
                                                end_date=args.end_date, ktype=args.ktype)
     if hasattr(args, 'save_yesterday_stocks_k_data') and args.save_yesterday_stocks_k_data:
@@ -346,6 +353,13 @@ def main():
     if hasattr(args, 'save_today_stocks_k_data') and args.save_today_stocks_k_data:
         transaction_service.save_today_stocks_k_data(stocks=args.stocks, ktype=args.ktype)
     if hasattr(args, 'save_stocks_hist_data') and args.save_stocks_hist_data:
+        start = args.start_date
+        end = args.end_date
+        if start is not None and end is not None:
+            if start == end:
+                if not util.is_open(start):
+                    logger.info('The date is not open day, so do nothing. Date is %s.' % start)
+                    return
         transaction_service.save_stocks_hist_data(stocks=args.stocks, start_date=args.start_date,
                                                   end_date=args.end_date, ktype=args.ktype)
     if hasattr(args, 'save_yesterday_stocks_history_data') and args.save_yesterday_stocks_history_data:
@@ -356,12 +370,23 @@ def main():
     if hasattr(args, 'save_today_stocks_history_data') and args.save_today_stocks_history_data:
         transaction_service.save_today_stocks_hist_data(stocks=args.stocks, ktype=args.ktype)
     if hasattr(args, 'save_stocks_revote_hist_data') and args.save_stocks_revote_hist_data:
+        start = args.start_date
+        end = args.end_date
+        if start is not None and end is not None:
+            if start == end:
+                if not util.is_open(start):
+                    logger.info('The date is not open day, so do nothing. Date is %s.' % start)
+                    return
         transaction_service.save_stock_h_data_revote(stocks=args.stocks, start_date=args.start_date,
                                                      end_date=args.end_date)
     if hasattr(args, 'save_today_all_data') and args.save_today_all_data:
         transaction_service.save_today_all_data()
     if hasattr(args, 'save_tick_data') and args.save_tick_data:
-        transaction_service.save_tick_data(date=args.date, stocks=args.stocks)
+        date = args.date
+        if util.is_open(date):
+            transaction_service.save_tick_data(date=args.date, stocks=args.stocks)
+        else:
+            logger.info('The date is not open day, so do nothing. Date is %s.' % date)
     if hasattr(args, 'save_tick_data_range') and args.save_tick_data_range:
         transaction_service.save_tick_data_range(start_date=args.start_date,
                                                  end_date=args.end_date, stocks=args.stocks)
