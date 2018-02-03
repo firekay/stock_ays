@@ -232,7 +232,7 @@ def save_h_revote_data():
                 break
             data = h_revote_data[2]
             logger.info('Get h revode data from h_revote_data_queue, stock code is: %s.' % code)
-            data_dicts = [{'code': code, 'autype': autype, 'date': row[6], 'open': row[0], 'hign': row[1],
+            data_dicts = [{'code': code, 'autype': autype, 'date': row[6], 'open': row[0], 'high': row[1],
                            'close': row[2], 'low': row[3], 'volume': row[4], 'amount': row[5]} for row in data]
             logger.info('Begin save history revote data, stock is: %s.' % code)
             try:
@@ -305,7 +305,7 @@ def save_his_data():
             data = his_data[2]
             logger.info('Get history data from his_data_queue, code: %s, ktype: %s.' % (code, ktype))
             data_dicts = [{'code': code, 'date': row[14],
-                           'open': row[0], 'hign': row[1], 'close': row[2],
+                           'open': row[0], 'high': row[1], 'close': row[2],
                            'low': row[3], 'volume': row[4],
                            'price_change': row[5], 'p_change':row[6],
                            'ma5':row[7], 'ma10': row[8], 'ma20': row[9],
@@ -431,7 +431,7 @@ def save_revote_his_data(code, start=None, end=None, autype='qfq',
                                 index, retry_count, pause, drop_factor)
         data_df['date'] = pd.Series(data_df.index, index=data_df.index)
         data = data_df.values
-        data_dicts = [{'code': code, 'autype': autype, 'date': row[6], 'open': row[0], 'hign': row[1],
+        data_dicts = [{'code': code, 'autype': autype, 'date': row[6], 'open': row[0], 'high': row[1],
                        'close': row[2], 'low': row[3], 'volume': row[4], 'amount': row[5]} for row in data]
         RevoteHistoryData.insert_many(data_dicts).execute()
     except Exception as e:
@@ -453,7 +453,7 @@ def save_today_all_data():
         if data_df is not None and not data_df.empty:
             data = data_df.values
             data_dicts = [{'code': row[0], 'name': row[1], 'date': today_line, 'changepercent': row[2], 'trade': row[3],
-                           'open': row[4], 'hign': row[5], 'low': row[6], 'settlement': row[7], 'volume': row[8],
+                           'open': row[4], 'high': row[5], 'low': row[6], 'settlement': row[7], 'volume': row[8],
                            'turnoverratio': row[9], 'amount': row[10], 'per': row[11], 'pb': row[12],
                            'mktcap': row[13], 'nmc': row[14]} for row in data]
             try:
