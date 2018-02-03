@@ -22,4 +22,4 @@ cd ${project_path}
 source ~/.zshenv
 file_name=$(echo $(basename $0))
 echo "$(date +'%Y%m%d %T'), begin run ${0} file" >> ${base_log_dir}/launchcrl_run.log 2>&1
-python main.py -o t -tk -d ${yesterday_line} > ${base_log_dir}/transaction/save_tick_data.log 2>&1
+python main.py t -r -s ${today_line} -e ${today_line} > ${base_log_dir}/transaction/save_stocks_revote_hist_data.log 2>&1

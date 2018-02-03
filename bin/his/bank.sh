@@ -1,5 +1,5 @@
 #!/bin/bash
-# run at 22:00
+# run at 16:10
 
 today=$(date +%Y%m%d)
 today_line=$(date +%Y-%m-%d)
@@ -12,14 +12,15 @@ cd ${daily_dir}/../..
 project_path=$(pwd)
 base_log_dir=${project_path}/logs/${ym}/${day}
 mkdir -p ${base_log_dir}/{transaction,investment,classified,base,macro,winners,bank}
+source ~/.zshenv
 cd ${project_path}
 
-# 保证当天的stock basic 先运行完
 ##################################################
-#  transaction  交易数据
+# bank loan   银行间同业拆放利率
 ##################################################
-# k data today
-source ~/.zshenv
-file_name=$(echo $(basename $0))
 echo "$(date +'%Y%m%d %T'), begin run ${0} file" >> ${base_log_dir}/launchcrl_run.log 2>&1
-python main.py -o t -tk -d ${yesterday_line} > ${base_log_dir}/transaction/save_tick_data.log 2>&1
+nohup python main.py l -r > ${base_log_dir}/bank/save_shibor_rate.log 2>&1
+nohup python ${project_path}/main.py l -q > ${base_log_dir}/bank/save_shibor_quote.log 2>&1
+nohup python ${project_path}/main.py l -m > ${base_log_dir}/bank/save_shibor_ma.log 2>&1
+nohup python ${project_path}/main.py l -l > ${base_log_dir}/bank/save_lpr.log 2>&1
+nohup python ${project_path}/main.py l -lm > ${base_log_dir}/bank/save_lpr_ma.log 2>&1

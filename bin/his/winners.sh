@@ -1,5 +1,5 @@
 #!/bin/bash
-# run at 22:00
+# run at 17:30
 
 today=$(date +%Y%m%d)
 today_line=$(date +%Y-%m-%d)
@@ -14,12 +14,15 @@ base_log_dir=${project_path}/logs/${ym}/${day}
 mkdir -p ${base_log_dir}/{transaction,investment,classified,base,macro,winners,bank}
 cd ${project_path}
 
-# 保证当天的stock basic 先运行完
-##################################################
-#  transaction  交易数据
-##################################################
-# k data today
+###################################################
+## winners  龙虎榜数据
+###################################################
 source ~/.zshenv
 file_name=$(echo $(basename $0))
 echo "$(date +'%Y%m%d %T'), begin run ${0} file" >> ${base_log_dir}/launchcrl_run.log 2>&1
-python main.py -o t -tk -d ${yesterday_line} > ${base_log_dir}/transaction/save_tick_data.log 2>&1
+python main.py w -t -d ${today_line} > ${base_log_dir}/winners/save_top_list.log 2>&1
+python main.py w -is > ${base_log_dir}/winners/save_individual_statistics_tops.log 2>&1
+python main.py w -b > ${base_log_dir}/winners/save_broker_tops.log 2>&1
+python main.py w -it > ${base_log_dir}/winners/save_institution_tops.log 2>&1
+python main.py w -id > ${base_log_dir}/winners/save_institution_detail.log 2>&1
+
