@@ -184,19 +184,19 @@ def save_stocks_hist_data(stocks=None, start_date=None, end_date=None, ktype=Non
     if ktype is None:
         for _ktype in ktypes:
             if _ktype.upper() == 'D':
-                model = HistoryKDataD
+                model = HistoryDataD
             elif _ktype.upper() == 'W':
-                model = HistoryKDataW
+                model = HistoryDataW
             elif _ktype.upper() == 'M':
-                model = HistoryKDataM
+                model = HistoryDataM
             elif _ktype == '5':
-                model = HistoryKData5
+                model = HistoryData5
             elif _ktype == '15':
-                model = HistoryKData15
+                model = HistoryData15
             elif _ktype == '30':
-                model = HistoryKData30
+                model = HistoryData30
             elif _ktype == '60':
-                model = HistoryKData60
+                model = HistoryData60
             else:
                 pass
             deleted = True
